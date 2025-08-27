@@ -1,34 +1,11 @@
 import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
-import { 
-  Users, 
-  Plus, 
-  Search, 
-  Edit, 
-  Eye, 
-  Phone, 
-  Mail, 
-  MapPin,
-  Calendar,
-  Heart,
-  AlertTriangle,
-  Syringe,
-  Warning,
-  X,
-  UserCircle
-} from '@phosphor-icons/react'
-import { toast } from 'sonner'
-import { Patient, ChronicCondition, VaccinationRecord } from '@/types/hospital'
 
 export default function PatientManagement() {
   const [patients, setPatients] = useKV<Patient[]>('hospital-patients', [])
@@ -59,98 +36,98 @@ export default function PatientManagement() {
   const handleAddPatient = () => {
     if (!formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.phoneNumber || !formData.address) {
       toast.error('Please fill in all required fields')
-      return
+    setSelec
     }
 
     const newPatient: Patient = {
-      id: crypto.randomUUID(),
-      mrNumber: `MR${Date.now()}`,
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      dateOfBirth: formData.dateOfBirth,
-      gender: formData.gender as 'male' | 'female' | 'other',
-      phoneNumber: formData.phoneNumber,
-      email: formData.email,
-      address: formData.address,
-      emergencyContact: formData.emergencyContact || {
-        name: '',
-        relationship: '',
-        phoneNumber: ''
-      },
-      bloodGroup: formData.bloodGroup,
-      allergies: formData.allergies || [],
-      chronicConditions: formData.chronicConditions || [],
-      vaccinationRecords: formData.vaccinationRecords || [],
-      insuranceInfo: formData.insuranceInfo,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
+    setIsViewDialogOpen()
 
-    setPatients(current => [...current, newPatient])
-    resetForm()
-    setIsAddDialogOpen(false)
-    toast.success('Patient registered successfully')
-  }
-
-  const resetForm = () => {
-    setFormData({
-      gender: 'male',
-      allergies: [],
-      chronicConditions: [],
-      vaccinationRecords: []
-    })
-    setNewCondition({})
-    setNewVaccination({})
+  const addAllergy = () => {
+    
+    if (!allergies.includes(newAllergy.t
+        ...formData,
+      })
     setNewAllergy('')
+
+  const removeAllergy = (allergy: string) => {
+      ...formData
+    })
+
+  const 
+      toast.error('Please fill in all 
+    }
+    const condition: ChronicCondition = {
+      condition: newCondition.condition,
+      severity: newCondition.severity,
+      lastReviewDate: newCondition.lastRev
+    }
+    s
+
+    setNewCondition({})
+
+  const removeChronicConditio
+      ...formData,
   }
 
-  const handleEditPatient = (patient: Patient) => {
-    setFormData(patient)
-    setSelectedPatient(patient)
-    setIsAddDialogOpen(true)
-  }
+  const addVaccinationRecor
+      toast.error
+    }
+    const vaccinatio
+      vaccineName: newVaccin
+      batchNumber: newVaccin
+      
+    }
+    setFormData({
+      vaccinationReco
+   
 
-  const handleUpdatePatient = () => {
-    if (!selectedPatient) return
+  const removeVaccinationRecord = (vaccinationId: s
+      ...formData,
+    })
 
-    setPatients(current => 
-      current.map(p => 
-        p.id === selectedPatient.id 
-          ? { ...p, ...formData, updatedAt: new Date().toISOString() }
-          : p
-      )
-    )
-    resetForm()
-    setSelectedPatient(null)
-    setIsAddDialogOpen(false)
-    toast.success('Patient updated successfully')
-  }
+   
 
-  const handleViewPatient = (patient: Patient) => {
-    setSelectedPatient(patient)
-    setIsViewDialogOpen(true)
-  }
+          <Search className="absolute
+            placeholder="Search 
+
+          />
+        
+          <DialogTrigger asChild>
+              <Plus className="h-4 w-4" />
+            <
+       
+     
+              <
+                {selectedPat
+            </DialogHeader>
+            <Tabs defaultValue="basic" className=
+   
+
+              </TabsList>
+              <TabsContent valu
+                <div classNam
+   
 
   // Add allergy
-  const addAllergy = () => {
+                    />
     if (!newAllergy.trim()) return
     
     const allergies = formData.allergies || []
     if (!allergies.includes(newAllergy.trim())) {
       setFormData({
-        ...formData,
+
         allergies: [...allergies, newAllergy.trim()]
-      })
+        
     }
-    setNewAllergy('')
+                     
   }
 
   // Remove allergy
-  const removeAllergy = (allergy: string) => {
+                      </SelectTrigger>
     setFormData({
       ...formData,
       allergies: (formData.allergies || []).filter(a => a !== allergy)
-    })
+      
   }
 
   // Add chronic condition
@@ -158,29 +135,29 @@ export default function PatientManagement() {
     if (!newCondition.condition || !newCondition.diagnosedDate || !newCondition.severity) {
       toast.error('Please fill in all condition fields')
       return
-    }
+     
 
-    const condition: ChronicCondition = {
+                    />
       id: crypto.randomUUID(),
-      condition: newCondition.condition,
+                <div className="space-y-
       diagnosedDate: newCondition.diagnosedDate,
-      severity: newCondition.severity,
+                      <SelectValue pla
       medications: newCondition.medications || [],
       lastReviewDate: newCondition.lastReviewDate || new Date().toISOString().split('T')[0],
       notes: newCondition.notes
-    }
+     
 
     setFormData({
       ...formData,
       chronicConditions: [...(formData.chronicConditions || []), condition]
     })
-    setNewCondition({})
+                      <
   }
 
   // Remove chronic condition
   const removeChronicCondition = (conditionId: string) => {
     setFormData({
-      ...formData,
+                  
       chronicConditions: (formData.chronicConditions || []).filter(c => c.id !== conditionId)
     })
   }
@@ -190,7 +167,7 @@ export default function PatientManagement() {
     if (!newVaccination.vaccineName || !newVaccination.dateAdministered || !newVaccination.administeredBy) {
       toast.error('Please fill in all vaccination fields')
       return
-    }
+     
 
     const vaccination: VaccinationRecord = {
       id: crypto.randomUUID(),
@@ -200,12 +177,12 @@ export default function PatientManagement() {
       administeredBy: newVaccination.administeredBy,
       nextDueDate: newVaccination.nextDueDate,
       notes: newVaccination.notes
-    }
+     
 
-    setFormData({
-      ...formData,
+                 
+                  
       vaccinationRecords: [...(formData.vaccinationRecords || []), vaccination]
-    })
+      
     setNewVaccination({})
   }
 
@@ -228,13 +205,13 @@ export default function PatientManagement() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
-          />
+            
         </div>
         
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
+                        onChange=
             <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
+                        placeholder="Polic
               Add New Patient
             </Button>
           </DialogTrigger>
@@ -246,7 +223,7 @@ export default function PatientManagement() {
               <DialogDescription>
                 {selectedPatient ? 'Update patient information' : 'Enter patient details to register them in the system'}
               </DialogDescription>
-            </DialogHeader>
+                          .
             
             <Tabs defaultValue="basic" className="w-full">
               <TabsList className="grid w-full grid-cols-4">
@@ -254,7 +231,7 @@ export default function PatientManagement() {
                 <TabsTrigger value="medical">Medical History</TabsTrigger>
                 <TabsTrigger value="allergies">Allergies</TabsTrigger>
                 <TabsTrigger value="vaccinations">Vaccinations</TabsTrigger>
-              </TabsList>
+                        p
 
               <TabsContent value="basic" className="space-y-4">
                 {/* Basic Information */}
@@ -266,9 +243,9 @@ export default function PatientManagement() {
                       value={formData.firstName || ''}
                       onChange={(e) => setFormData({...formData, firstName: e.target.value})}
                       placeholder="Enter first name"
-                    />
+                      
                   </div>
-                  <div className="space-y-2">
+                          onChange={(e) => se
                     <Label htmlFor="lastName">Last Name *</Label>
                     <Input
                       id="lastName"
@@ -294,13 +271,13 @@ export default function PatientManagement() {
                     <Select value={formData.gender} onValueChange={(value) => setFormData({...formData, gender: value as any})}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select gender" />
-                      </SelectTrigger>
+                            <div class
                       <SelectContent>
                         <SelectItem value="male">Male</SelectItem>
                         <SelectItem value="female">Female</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
-                    </Select>
+                            {
                   </div>
                 </div>
 
@@ -312,9 +289,9 @@ export default function PatientManagement() {
                       value={formData.phoneNumber || ''}
                       onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
                       placeholder="Enter phone number"
-                    />
+                    <I
                   </div>
-                  <div className="space-y-2">
+                      className="flex-1"
                     <Label htmlFor="email">Email</Label>
                     <Input
                       id="email"
@@ -322,9 +299,9 @@ export default function PatientManagement() {
                       value={formData.email || ''}
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
                       placeholder="Enter email address"
-                    />
+                      
                   </div>
-                </div>
+                      
 
                 <div className="space-y-2">
                   <Label htmlFor="bloodGroup">Blood Group</Label>
@@ -332,9 +309,9 @@ export default function PatientManagement() {
                     <SelectTrigger>
                       <SelectValue placeholder="Select blood group" />
                     </SelectTrigger>
-                    <SelectContent>
+                </div>
                       <SelectItem value="A+">A+</SelectItem>
-                      <SelectItem value="A-">A-</SelectItem>
+                <div className="space-y-4">
                       <SelectItem value="B+">B+</SelectItem>
                       <SelectItem value="B-">B-</SelectItem>
                       <SelectItem value="AB+">AB+</SelectItem>
@@ -346,7 +323,7 @@ export default function PatientManagement() {
                 </div>
 
                 {/* Address */}
-                <div className="space-y-4">
+                    <div className="grid gr
                   <h3 className="font-semibold">Address Information</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -358,13 +335,13 @@ export default function PatientManagement() {
                           ...formData, 
                           address: { ...formData.address, street: e.target.value } as any
                         })}
-                        placeholder="Enter street address"
+                          onChange={(e) => setNewVaccinati
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="city">City *</Label>
                       <Input
-                        id="city"
+                    <Button onCli
                         value={formData.address?.city || ''}
                         onChange={(e) => setFormData({
                           ...formData, 
@@ -372,13 +349,13 @@ export default function PatientManagement() {
                         })}
                         placeholder="Enter city"
                       />
-                    </div>
+                          
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="state">State *</Label>
+                              <p className="text-sm text-mut
                       <Input
-                        id="state"
+                            )}
                         value={formData.address?.state || ''}
                         onChange={(e) => setFormData({
                           ...formData, 
@@ -386,21 +363,21 @@ export default function PatientManagement() {
                         })}
                         placeholder="Enter state"
                       />
-                    </div>
+                      <Syr
                     <div className="space-y-2">
                       <Label htmlFor="pinCode">PIN Code *</Label>
                       <Input
-                        id="pinCode"
+            <div className="flex jus
                         value={formData.address?.pinCode || ''}
-                        onChange={(e) => setFormData({
+                setSelectedPatient(null)
                           ...formData, 
                           address: { ...formData.address, pinCode: e.target.value } as any
                         })}
-                        placeholder="Enter PIN code"
+          </DialogContent>
                       />
-                    </div>
+      {/* Stats Cards */}
                   </div>
-                </div>
+            <CardTitle
 
                 {/* Emergency Contact */}
                 <div className="space-y-4">
@@ -410,7 +387,7 @@ export default function PatientManagement() {
                       <Label htmlFor="emergencyName">Contact Name</Label>
                       <Input
                         id="emergencyName"
-                        value={formData.emergencyContact?.name || ''}
+        <Card>
                         onChange={(e) => setFormData({
                           ...formData, 
                           emergencyContact: { ...formData.emergencyContact, name: e.target.value } as any
@@ -420,7 +397,7 @@ export default function PatientManagement() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="emergencyRelationship">Relationship</Label>
-                      <Input
+            </div>
                         id="emergencyRelationship"
                         value={formData.emergencyContact?.relationship || ''}
                         onChange={(e) => setFormData({
@@ -428,7 +405,7 @@ export default function PatientManagement() {
                           emergencyContact: { ...formData.emergencyContact, relationship: e.target.value } as any
                         })}
                         placeholder="Relationship"
-                      />
+              <div class
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="emergencyPhone">Phone Number</Label>
@@ -438,15 +415,15 @@ export default function PatientManagement() {
                         onChange={(e) => setFormData({
                           ...formData, 
                           emergencyContact: { ...formData.emergencyContact, phoneNumber: e.target.value } as any
-                        })}
+                        <h3
                         placeholder="Emergency phone number"
-                      />
+                        
                     </div>
-                  </div>
+                        
                 </div>
 
                 {/* Insurance Information */}
-                <div className="space-y-4">
+                          </span>
                   <h3 className="font-semibold">Insurance Information</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -454,7 +431,7 @@ export default function PatientManagement() {
                       <Input
                         id="insuranceProvider"
                         value={formData.insuranceInfo?.provider || ''}
-                        onChange={(e) => setFormData({
+                        {patient.insuranceInfo?.provid
                           ...formData, 
                           insuranceInfo: { ...formData.insuranceInfo, provider: e.target.value } as any
                         })}
@@ -464,7 +441,7 @@ export default function PatientManagement() {
                     <div className="space-y-2">
                       <Label htmlFor="policyNumber">Policy Number</Label>
                       <Input
-                        id="policyNumber"
+            )}
                         value={formData.insuranceInfo?.policyNumber || ''}
                         onChange={(e) => setFormData({
                           ...formData, 
@@ -472,25 +449,25 @@ export default function PatientManagement() {
                         })}
                         placeholder="Policy number"
                       />
-                    </div>
+                <div class
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="expiryDate">Expiry Date</Label>
                       <Input
-                        id="expiryDate"
+                  </div>
                         type="date"
                         value={formData.insuranceInfo?.expiryDate || ''}
                         onChange={(e) => setFormData({
                           ...formData, 
                           insuranceInfo: { ...formData.insuranceInfo, expiryDate: e.target.value } as any
-                        })}
+
                       />
-                    </div>
+                      <div
                     <div className="space-y-2">
                       <Label htmlFor="coverageAmount">Coverage Amount</Label>
                       <Input
-                        id="coverageAmount"
+                      <div>
                         type="number"
                         value={formData.insuranceInfo?.coverageAmount || ''}
                         onChange={(e) => setFormData({
@@ -498,15 +475,15 @@ export default function PatientManagement() {
                           insuranceInfo: { ...formData.insuranceInfo, coverageAmount: Number(e.target.value) } as any
                         })}
                         placeholder="Coverage amount"
-                      />
+
                     </div>
-                    <div className="space-y-2">
+                        <div className="text-sm
                       <Label htmlFor="copayAmount">Copay Amount</Label>
-                      <Input
+                            
                         id="copayAmount"
-                        type="number"
+                          </div>
                         value={formData.insuranceInfo?.copayAmount || ''}
-                        onChange={(e) => setFormData({
+                      {selectedPatient.emergencyContac
                           ...formData, 
                           insuranceInfo: { ...formData.insuranceInfo, copayAmount: Number(e.target.value) } as any
                         })}
@@ -514,11 +491,11 @@ export default function PatientManagement() {
                       />
                     </div>
                   </div>
-                </div>
+                    <d
               </TabsContent>
 
               <TabsContent value="medical" className="space-y-4">
-                <div className="space-y-4">
+                              condition.sev
                   <h3 className="font-semibold">Chronic Conditions</h3>
                   
                   {/* Add Chronic Condition Form */}
@@ -530,9 +507,9 @@ export default function PatientManagement() {
                         <Input
                           value={newCondition.condition || ''}
                           onChange={(e) => setNewCondition({...newCondition, condition: e.target.value})}
-                          placeholder="e.g., Diabetes, Hypertension"
+                      <h3 className="font-semibold text-destructive"
                         />
-                      </div>
+                            
                       <div className="space-y-2">
                         <Label>Diagnosed Date</Label>
                         <Input
@@ -540,15 +517,15 @@ export default function PatientManagement() {
                           value={newCondition.diagnosedDate || ''}
                           onChange={(e) => setNewCondition({...newCondition, diagnosedDate: e.target.value})}
                         />
-                      </div>
                     </div>
+                <TabsConte
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div className="space-y-2">
                         <Label>Severity</Label>
                         <Select 
                           value={newCondition.severity} 
                           onValueChange={(value) => setNewCondition({...newCondition, severity: value as any})}
-                        >
+                         
                           <SelectTrigger>
                             <SelectValue placeholder="Select severity" />
                           </SelectTrigger>
@@ -560,31 +537,31 @@ export default function PatientManagement() {
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label>Last Review Date</Label>
+                            <p>{selectedPatient.insuran
                         <Input
-                          type="date"
+                            <p>₹{sele
                           value={newCondition.lastReviewDate || ''}
                           onChange={(e) => setNewCondition({...newCondition, lastReviewDate: e.target.value})}
                         />
                       </div>
-                    </div>
+                        </
                     <div className="space-y-2 mb-4">
                       <Label>Notes</Label>
-                      <Textarea
+                      <p>No ins
                         value={newCondition.notes || ''}
                         onChange={(e) => setNewCondition({...newCondition, notes: e.target.value})}
                         placeholder="Additional notes about the condition"
-                        rows={2}
+              <div className="te
                       />
                     </div>
                     <Button onClick={addChronicCondition} size="sm">
                       <Plus className="w-4 h-4 mr-2" />
                       Add Condition
-                    </Button>
+}
                   </div>
 
                   {/* Existing Chronic Conditions */}
-                  {formData.chronicConditions && formData.chronicConditions.length > 0 && (
+
                     <div className="space-y-2">
                       <h4 className="font-medium">Current Conditions</h4>
                       {formData.chronicConditions.map((condition) => (
@@ -596,9 +573,9 @@ export default function PatientManagement() {
                                 condition.severity === 'severe' ? 'destructive' : 
                                 condition.severity === 'moderate' ? 'default' : 'secondary'
                               }>
-                                {condition.severity}
+
                               </Badge>
-                            </div>
+
                             <p className="text-sm text-muted-foreground">
                               Diagnosed: {new Date(condition.diagnosedDate).toLocaleDateString()}
                             </p>
@@ -610,29 +587,29 @@ export default function PatientManagement() {
                             variant="outline"
                             size="sm"
                             onClick={() => removeChronicCondition(condition.id)}
-                          >
+
                             <X className="w-4 h-4" />
-                          </Button>
+
                         </div>
-                      ))}
+
                     </div>
-                  )}
+
                 </div>
-              </TabsContent>
+
 
               <TabsContent value="allergies" className="space-y-4">
                 <div className="space-y-4">
-                  <h3 className="font-semibold">Allergies Management</h3>
+
                   
-                  {/* Add Allergy Form */}
+
                   <div className="flex gap-2">
                     <Input
                       value={newAllergy}
                       onChange={(e) => setNewAllergy(e.target.value)}
                       placeholder="Enter allergy (e.g., Penicillin, Peanuts)"
-                      className="flex-1"
+
                     />
-                    <Button onClick={addAllergy}>
+
                       <Plus className="w-4 h-4" />
                     </Button>
                   </div>
@@ -642,7 +619,7 @@ export default function PatientManagement() {
                     <div className="space-y-2">
                       <h4 className="font-medium">Current Allergies</h4>
                       <div className="flex flex-wrap gap-2">
-                        {formData.allergies.map((allergy, index) => (
+
                           <Badge key={index} variant="destructive" className="flex items-center gap-1">
                             <Warning className="w-3 h-3" />
                             {allergy}
@@ -654,37 +631,37 @@ export default function PatientManagement() {
                             >
                               <X className="w-3 h-3" />
                             </Button>
-                          </Badge>
+
                         ))}
-                      </div>
+
                     </div>
-                  )}
+
 
                   {(!formData.allergies || formData.allergies.length === 0) && (
                     <div className="text-center py-8 text-muted-foreground">
                       <AlertTriangle className="mx-auto h-12 w-12 mb-2" />
                       <p>No allergies recorded</p>
-                    </div>
+
                   )}
-                </div>
+
               </TabsContent>
 
               <TabsContent value="vaccinations" className="space-y-4">
-                <div className="space-y-4">
+
                   <h3 className="font-semibold">Vaccination Records</h3>
-                  
+
                   {/* Add Vaccination Form */}
                   <div className="p-4 border rounded-lg bg-muted/20">
                     <h4 className="font-medium mb-3">Add New Vaccination</h4>
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div className="space-y-2">
-                        <Label>Vaccine Name</Label>
+
                         <Input
                           value={newVaccination.vaccineName || ''}
                           onChange={(e) => setNewVaccination({...newVaccination, vaccineName: e.target.value})}
                           placeholder="e.g., COVID-19, Hepatitis B"
                         />
-                      </div>
+
                       <div className="space-y-2">
                         <Label>Date Administered</Label>
                         <Input
@@ -692,29 +669,29 @@ export default function PatientManagement() {
                           value={newVaccination.dateAdministered || ''}
                           onChange={(e) => setNewVaccination({...newVaccination, dateAdministered: e.target.value})}
                         />
-                      </div>
+
                     </div>
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div className="space-y-2">
-                        <Label>Batch Number</Label>
+
                         <Input
                           value={newVaccination.batchNumber || ''}
                           onChange={(e) => setNewVaccination({...newVaccination, batchNumber: e.target.value})}
                           placeholder="Vaccine batch number"
                         />
-                      </div>
+
                       <div className="space-y-2">
                         <Label>Administered By</Label>
                         <Input
                           value={newVaccination.administeredBy || ''}
                           onChange={(e) => setNewVaccination({...newVaccination, administeredBy: e.target.value})}
-                          placeholder="Doctor/Nurse name"
+
                         />
-                      </div>
+
                     </div>
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div className="space-y-2">
-                        <Label>Next Due Date (Optional)</Label>
+
                         <Input
                           type="date"
                           value={newVaccination.nextDueDate || ''}
@@ -726,19 +703,19 @@ export default function PatientManagement() {
                         <Input
                           value={newVaccination.notes || ''}
                           onChange={(e) => setNewVaccination({...newVaccination, notes: e.target.value})}
-                          placeholder="Additional notes"
+
                         />
-                      </div>
+
                     </div>
                     <Button onClick={addVaccinationRecord} size="sm">
                       <Syringe className="w-4 h-4 mr-2" />
-                      Add Vaccination
+
                     </Button>
-                  </div>
+
 
                   {/* Existing Vaccination Records */}
                   {formData.vaccinationRecords && formData.vaccinationRecords.length > 0 && (
-                    <div className="space-y-2">
+
                       <h4 className="font-medium">Vaccination History</h4>
                       {formData.vaccinationRecords.map((vaccination) => (
                         <div key={vaccination.id} className="flex items-center justify-between p-3 border rounded-lg">
@@ -752,55 +729,55 @@ export default function PatientManagement() {
                             </div>
                             <p className="text-sm text-muted-foreground">
                               Administered: {new Date(vaccination.dateAdministered).toLocaleDateString()} by {vaccination.administeredBy}
-                            </p>
+
                             {vaccination.batchNumber && (
                               <p className="text-sm text-muted-foreground">Batch: {vaccination.batchNumber}</p>
-                            )}
+
                             {vaccination.notes && (
                               <p className="text-sm text-muted-foreground mt-1">{vaccination.notes}</p>
                             )}
                           </div>
-                          <Button
+
                             variant="outline"
-                            size="sm"
+
                             onClick={() => removeVaccinationRecord(vaccination.id)}
-                          >
+
                             <X className="w-4 h-4" />
-                          </Button>
+
                         </div>
-                      ))}
+
                     </div>
-                  )}
+
 
                   {(!formData.vaccinationRecords || formData.vaccinationRecords.length === 0) && (
                     <div className="text-center py-8 text-muted-foreground">
                       <Syringe className="mx-auto h-12 w-12 mb-2" />
                       <p>No vaccination records found</p>
-                    </div>
+
                   )}
-                </div>
+
               </TabsContent>
-            </Tabs>
+
 
             <div className="flex justify-end gap-3 pt-4 border-t">
               <Button variant="outline" onClick={() => {
-                setIsAddDialogOpen(false)
-                resetForm()
-                setSelectedPatient(null)
-              }}>
-                Cancel
-              </Button>
-              <Button onClick={selectedPatient ? handleUpdatePatient : handleAddPatient}>
-                {selectedPatient ? 'Update Patient' : 'Register Patient'}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
 
-      {/* Stats Cards */}
+                resetForm()
+
+              }}>
+
+              </Button>
+
+                {selectedPatient ? 'Update Patient' : 'Register Patient'}
+
+            </div>
+
+        </Dialog>
+
+
+
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Patients</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
@@ -808,55 +785,55 @@ export default function PatientManagement() {
           <CardContent>
             <div className="text-2xl font-bold">{patients.length}</div>
           </CardContent>
-        </Card>
+
         
-        <Card>
+
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Today's Registrations</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {patients.filter(p => p.createdAt.split('T')[0] === new Date().toISOString().split('T')[0]).length}
-            </div>
-          </CardContent>
-        </Card>
 
-        <Card>
+          <CardContent>
+
+              {patients.filter(p => p.createdAt.split('T')[0] === new Date().toISOString().split('T')[0]).length}
+
+          </CardContent>
+
+
+
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">With Allergies</CardTitle>
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {patients.filter(p => p.allergies && p.allergies.length > 0).length}
-            </div>
-          </CardContent>
-        </Card>
 
-        <Card>
+          <CardContent>
+
+              {patients.filter(p => p.allergies && p.allergies.length > 0).length}
+
+          </CardContent>
+
+
+
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Chronic Conditions</CardTitle>
             <Heart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
+
           <CardContent>
-            <div className="text-2xl font-bold">
+
               {patients.filter(p => p.chronicConditions && p.chronicConditions.length > 0).length}
-            </div>
+
           </CardContent>
-        </Card>
+
       </div>
 
       {/* Patients List */}
-      <Card>
+
         <CardHeader>
           <CardTitle>Patient Registry</CardTitle>
           <CardDescription>
-            {filteredPatients.length} of {patients.length} patients
+
           </CardDescription>
-        </CardHeader>
+
         <CardContent>
-          <div className="space-y-4">
+
             {filteredPatients.length === 0 ? (
               <div className="text-center py-8">
                 <Users className="mx-auto h-12 w-12 text-muted-foreground" />
@@ -864,23 +841,23 @@ export default function PatientManagement() {
                 <p className="text-muted-foreground">
                   {searchTerm ? 'Try adjusting your search terms' : 'Start by registering your first patient'}
                 </p>
-              </div>
+
             ) : (
               filteredPatients.map((patient) => {
                 const fullName = `${patient.firstName} ${patient.lastName}`;
                 const age = new Date().getFullYear() - new Date(patient.dateOfBirth).getFullYear();
                 
-                return (
+
                 <div key={patient.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-lg font-medium">
                       {patient.firstName?.charAt(0)?.toUpperCase() || 'P'}{patient.lastName?.charAt(0)?.toUpperCase() || ''}
                     </div>
-                    <div className="space-y-1">
+
                       <div className="flex items-center gap-3">
                         <h3 className="font-medium">{fullName}</h3>
                         <Badge variant="outline">{patient.mrNumber}</Badge>
-                        {patient.bloodGroup && (
+
                           <Badge variant="secondary">{patient.bloodGroup}</Badge>
                         )}
                       </div>
@@ -894,31 +871,31 @@ export default function PatientManagement() {
                           <span className="flex items-center gap-1">
                             <Mail className="h-3 w-3" />
                             {patient.email}
-                          </span>
+
                         )}
-                      </div>
+
                       <div className="flex items-center gap-4 text-sm">
                         {patient.allergies && patient.allergies.length > 0 && (
                           <div className="flex items-center gap-1 text-destructive">
                             <AlertTriangle className="h-3 w-3" />
                             <span>Allergies: {patient.allergies.length}</span>
-                          </div>
+
                         )}
                         {patient.chronicConditions && patient.chronicConditions.length > 0 && (
                           <div className="flex items-center gap-1 text-orange-600">
                             <Heart className="h-3 w-3" />
                             <span>Conditions: {patient.chronicConditions.length}</span>
-                          </div>
-                        )}
+
+
                         {patient.insuranceInfo?.provider && (
                           <Badge variant="outline" className="text-xs">
                             {patient.insuranceInfo.provider}
                           </Badge>
                         )}
                       </div>
-                    </div>
+
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm" onClick={() => handleViewPatient(patient)}>
                       <Eye className="h-4 w-4" />
@@ -926,50 +903,50 @@ export default function PatientManagement() {
                     <Button variant="outline" size="sm" onClick={() => handleEditPatient(patient)}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                  </div>
+
                 </div>
                 );
-              })
+              });
             )}
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* View Patient Dialog */}
+        </CardContent>
+
+
+
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Patient Details</DialogTitle>
+
             <DialogDescription>Complete patient information and medical history</DialogDescription>
-          </DialogHeader>
+
           
-          {selectedPatient && (
+
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-2xl font-medium">
                   {selectedPatient.firstName?.charAt(0)?.toUpperCase() || 'P'}{selectedPatient.lastName?.charAt(0)?.toUpperCase() || ''}
                 </div>
-                <div>
+
                   <h2 className="text-2xl font-bold">{selectedPatient.firstName} {selectedPatient.lastName}</h2>
                   <div className="flex items-center gap-4 text-muted-foreground">
                     <span>MR: {selectedPatient.mrNumber}</span>
                     <span>Age: {new Date().getFullYear() - new Date(selectedPatient.dateOfBirth).getFullYear()}</span>
                     <span>Gender: {selectedPatient.gender}</span>
-                    {selectedPatient.bloodGroup && (
+
                       <Badge variant="secondary">{selectedPatient.bloodGroup}</Badge>
-                    )}
+
                   </div>
-                </div>
+
               </div>
 
               <Tabs defaultValue="basic" className="w-full">
-                <TabsList className="grid w-full grid-cols-5">
+
                   <TabsTrigger value="basic">Basic Info</TabsTrigger>
                   <TabsTrigger value="medical">Medical History</TabsTrigger>
                   <TabsTrigger value="allergies">Allergies</TabsTrigger>
                   <TabsTrigger value="vaccinations">Vaccinations</TabsTrigger>
                   <TabsTrigger value="insurance">Insurance</TabsTrigger>
-                </TabsList>
+
 
                 <TabsContent value="basic" className="space-y-4">
                   <div className="grid gap-4 md:grid-cols-2">
@@ -979,7 +956,7 @@ export default function PatientManagement() {
                         <div className="space-y-2 text-sm">
                           <p><span className="font-medium">Date of Birth:</span> {new Date(selectedPatient.dateOfBirth).toLocaleDateString()}</p>
                           <p><span className="font-medium">Blood Group:</span> {selectedPatient.bloodGroup || 'Not specified'}</p>
-                        </div>
+
                       </div>
 
                       <div>
@@ -987,17 +964,17 @@ export default function PatientManagement() {
                         <div className="space-y-2 text-sm">
                           <div className="flex items-center gap-2">
                             <Phone className="h-4 w-4" />
-                            {selectedPatient.phoneNumber}
+
                           </div>
-                          {selectedPatient.email && (
+
                             <div className="flex items-center gap-2">
                               <Mail className="h-4 w-4" />
                               {selectedPatient.email}
-                            </div>
+
                           )}
                         </div>
                       </div>
-                    </div>
+
 
                     <div className="space-y-4">
                       <div>
@@ -1005,17 +982,17 @@ export default function PatientManagement() {
                         <div className="text-sm">
                           <div className="flex items-start gap-2">
                             <MapPin className="h-4 w-4 mt-0.5" />
-                            <div>
+
                               <p>{selectedPatient.address?.street}</p>
                               <p>{selectedPatient.address?.city}, {selectedPatient.address?.state}</p>
                               <p>{selectedPatient.address?.pinCode}</p>
-                            </div>
+
                           </div>
-                        </div>
+
                       </div>
 
                       {selectedPatient.emergencyContact?.name && (
-                        <div>
+
                           <h3 className="font-semibold mb-2">Emergency Contact</h3>
                           <div className="space-y-1 text-sm">
                             <p><span className="font-medium">Name:</span> {selectedPatient.emergencyContact.name}</p>
@@ -1023,9 +1000,9 @@ export default function PatientManagement() {
                             <p><span className="font-medium">Phone:</span> {selectedPatient.emergencyContact.phoneNumber}</p>
                           </div>
                         </div>
-                      )}
+
                     </div>
-                  </div>
+
                 </TabsContent>
 
                 <TabsContent value="medical" className="space-y-4">
@@ -1039,45 +1016,45 @@ export default function PatientManagement() {
                             <Badge variant={
                               condition.severity === 'severe' ? 'destructive' : 
                               condition.severity === 'moderate' ? 'default' : 'secondary'
-                            }>
+
                               {condition.severity}
-                            </Badge>
-                          </div>
+
+
                           <div className="text-sm text-muted-foreground space-y-1">
                             <p>Diagnosed: {new Date(condition.diagnosedDate).toLocaleDateString()}</p>
                             <p>Last Review: {new Date(condition.lastReviewDate).toLocaleDateString()}</p>
                             {condition.notes && <p>Notes: {condition.notes}</p>}
                           </div>
                         </div>
-                      ))}
+
                     </div>
-                  ) : (
+
                     <div className="text-center py-8 text-muted-foreground">
                       <Heart className="mx-auto h-12 w-12 mb-2" />
                       <p>No chronic conditions recorded</p>
-                    </div>
+
                   )}
-                </TabsContent>
+
 
                 <TabsContent value="allergies" className="space-y-4">
                   {selectedPatient.allergies && selectedPatient.allergies.length > 0 ? (
-                    <div className="space-y-3">
+
                       <h3 className="font-semibold text-destructive">Known Allergies</h3>
-                      <div className="flex flex-wrap gap-2">
+
                         {selectedPatient.allergies.map((allergy, index) => (
                           <Badge key={index} variant="destructive" className="flex items-center gap-1">
                             <Warning className="w-3 h-3" />
                             {allergy}
                           </Badge>
-                        ))}
+
                       </div>
-                    </div>
+
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
                       <AlertTriangle className="mx-auto h-12 w-12 mb-2" />
                       <p>No allergies recorded</p>
                     </div>
-                  )}
+
                 </TabsContent>
 
                 <TabsContent value="vaccinations" className="space-y-4">
@@ -1091,27 +1068,27 @@ export default function PatientManagement() {
                             <h4 className="font-medium">{vaccination.vaccineName}</h4>
                             {vaccination.nextDueDate && new Date(vaccination.nextDueDate) > new Date() && (
                               <Badge variant="outline">Next Due: {new Date(vaccination.nextDueDate).toLocaleDateString()}</Badge>
-                            )}
+
                           </div>
                           <div className="text-sm text-muted-foreground space-y-1">
                             <p>Administered: {new Date(vaccination.dateAdministered).toLocaleDateString()}</p>
                             <p>Administered by: {vaccination.administeredBy}</p>
                             {vaccination.batchNumber && <p>Batch: {vaccination.batchNumber}</p>}
-                            {vaccination.notes && <p>Notes: {vaccination.notes}</p>}
+
                           </div>
                         </div>
                       ))}
-                    </div>
+
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
                       <Syringe className="mx-auto h-12 w-12 mb-2" />
                       <p>No vaccination records found</p>
                     </div>
-                  )}
+
                 </TabsContent>
 
                 <TabsContent value="insurance" className="space-y-4">
-                  {selectedPatient.insuranceInfo?.provider ? (
+
                     <div className="space-y-4">
                       <h3 className="font-semibold">Insurance Information</h3>
                       <div className="p-4 border rounded-lg">
@@ -1119,15 +1096,15 @@ export default function PatientManagement() {
                           <div>
                             <p className="font-medium">Provider</p>
                             <p>{selectedPatient.insuranceInfo.provider}</p>
-                          </div>
+
                           <div>
                             <p className="font-medium">Policy Number</p>
                             <p>{selectedPatient.insuranceInfo.policyNumber}</p>
-                          </div>
+
                           <div>
                             <p className="font-medium">Coverage Amount</p>
                             <p>₹{selectedPatient.insuranceInfo.coverageAmount?.toLocaleString()}</p>
-                          </div>
+
                           <div>
                             <p className="font-medium">Copay Amount</p>
                             <p>₹{selectedPatient.insuranceInfo.copayAmount?.toLocaleString()}</p>
@@ -1139,27 +1116,27 @@ export default function PatientManagement() {
                         </div>
                       </div>
                     </div>
-                  ) : (
+
                     <div className="text-center py-8 text-muted-foreground">
                       <UserCircle className="mx-auto h-12 w-12 mb-2" />
                       <p>No insurance information available</p>
-                    </div>
+
                   )}
-                </TabsContent>
+
               </Tabs>
 
               <Separator />
-              
+
               <div className="text-sm text-muted-foreground">
                 <p>Patient registered on {new Date(selectedPatient.createdAt).toLocaleDateString()}</p>
                 {selectedPatient.updatedAt !== selectedPatient.createdAt && (
                   <p>Last updated on {new Date(selectedPatient.updatedAt).toLocaleDateString()}</p>
                 )}
-              </div>
+
             </div>
-          )}
+
         </DialogContent>
-      </Dialog>
+
     </div>
-  )
+
 }
