@@ -602,7 +602,7 @@ export default function LabManagement() {
                             order.status === 'completed' ? 'default' : 
                             order.status === 'in_progress' ? 'secondary' : 'outline'
                           }>
-                            {order.status.replace('_', ' ')}
+                            {order.status?.replace('_', ' ') || 'Unknown'}
                           </Badge>
                           <Badge variant={
                             order.priority === 'stat' ? 'destructive' :

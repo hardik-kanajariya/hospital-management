@@ -297,9 +297,9 @@ export default function InventoryManagement() {
   }
 
   const filteredInventory = inventory.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.supplier.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.supplier?.toLowerCase().includes(searchTerm.toLowerCase())
     
     const matchesCategory = filterCategory === 'all' || item.category === filterCategory
     const matchesType = filterType === 'all' || item.type === filterType
@@ -702,7 +702,7 @@ export default function InventoryManagement() {
                                   item.status === 'active' ? 'default' :
                                   item.status === 'out_of_stock' ? 'destructive' : 'secondary'
                                 }>
-                                  {item.status.replace('_', ' ')}
+                                  {item.status?.replace('_', ' ') || 'Unknown'}
                                 </Badge>
                               </div>
                             </div>
@@ -879,7 +879,7 @@ export default function InventoryManagement() {
                           <div>
                             <p className="font-medium">{transaction.itemName}</p>
                             <p className="text-sm text-muted-foreground capitalize">
-                              {transaction.type.replace('_', ' ')} • {transaction.quantity} units
+                              {transaction.type?.replace('_', ' ') || 'Unknown'} • {transaction.quantity || 0} units
                             </p>
                             {transaction.reason && (
                               <p className="text-xs text-muted-foreground">{transaction.reason}</p>

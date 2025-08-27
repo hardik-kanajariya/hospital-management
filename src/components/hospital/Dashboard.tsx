@@ -24,14 +24,18 @@ export default function Dashboard() {
 
   // Calculate dashboard statistics
   const today = new Date().toISOString().split('T')[0]
-  const todayBills = bills.filter(bill => bill.date?.startsWith(today))
+  const todayBills = bills.filter(bill => bill.date && bill.date.startsWith(today))
   const todayRevenue = todayBills.reduce((sum, bill) => sum + (bill.total || 0), 0)
   
-  const lowStockItems = inventory.filter(item => item.quantity <= item.reorderLevel)
+  const lowStockItems = inventory.filter(item => 
+    item.quantity !== undefined && 
+    item.reorderLevel !== undefined && 
+    item.quantity <= item.reorderLevel
+  )
   
   const upcomingAppointments = appointments
-    .filter(apt => apt.date >= today && apt.status === 'scheduled')
-    .sort((a, b) => new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time))
+    .filter(apt => apt.date && apt.date >= today && apt.status === 'scheduled')
+    .sort((a, b) => new Date((a.date || '') + ' ' + (a.time || '')) - new Date((b.date || '') + ' ' + (b.time || '')))
     .slice(0, 5)
 
   const recentPatients = patients
@@ -50,7 +54,7 @@ export default function Dashboard() {
           <CardContent>
             <div className="text-2xl font-bold">{patients.length}</div>
             <p className="text-xs text-muted-foreground">
-              +{patients.filter(p => p.createdAt >= today).length} today
+              +{patients.filter(p => p.createdAt && p.createdAt >= today).length} today
             </p>
           </CardContent>
         </Card>

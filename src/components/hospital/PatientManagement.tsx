@@ -57,9 +57,9 @@ export default function PatientManagement() {
 
   // Filter patients based on search
   const filteredPatients = patients.filter(patient =>
-    patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.phone.includes(searchTerm) ||
-    patient.id.toLowerCase().includes(searchTerm.toLowerCase())
+    patient.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.phone?.includes(searchTerm) ||
+    patient.id?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const handleAddPatient = () => {
@@ -376,7 +376,7 @@ export default function PatientManagement() {
                 <div key={patient.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-lg font-medium">
-                      {patient.name.charAt(0).toUpperCase()}
+                      {patient.name?.charAt(0)?.toUpperCase() || 'P'}
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-3">
@@ -435,7 +435,7 @@ export default function PatientManagement() {
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-2xl font-medium">
-                  {selectedPatient.name.charAt(0).toUpperCase()}
+                  {selectedPatient.name?.charAt(0)?.toUpperCase() || 'P'}
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold">{selectedPatient.name}</h2>
