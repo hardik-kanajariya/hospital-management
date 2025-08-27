@@ -3,312 +3,276 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MedCare Rural - Hospital Management System Documentation</title>
+    <title>MedCare Rural - Professional Hospital Management System Documentation</title>
+    <meta name="description" content="Complete documentation for MedCare Rural Hospital Management System - Professional healthcare software for rural hospitals and clinics">
+    <meta name="keywords" content="hospital management, healthcare software, rural healthcare, patient management, medical records, billing system">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #3B82F6;
+            --secondary-color: #10B981;
+            --accent-color: #F59E0B;
+            --text-dark: #1F2937;
+            --text-light: #6B7280;
+            --bg-light: #F9FAFB;
+            --border-color: #E5E7EB;
+            --success-color: #10B981;
+            --warning-color: #F59E0B;
+            --error-color: #EF4444;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Inter', sans-serif;
             line-height: 1.6;
-            color: #333;
-            background: #f8fafc;
+            color: var(--text-dark);
+            background-color: #ffffff;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
         }
-        
+
         /* Header */
         .header {
-            background: #fff;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 1rem 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #2563eb;
-        }
-        
-        .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: linear-gradient(135deg, var(--primary-color), #1E40AF);
             color: white;
-            font-weight: bold;
-        }
-        
-        .version {
-            background: #10b981;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-        
-        /* Navigation */
-        .nav {
-            background: #fff;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 1rem 0;
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-        
-        .nav-links a {
-            text-decoration: none;
-            color: #64748b;
-            font-weight: 500;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            transition: all 0.2s;
-        }
-        
-        .nav-links a:hover,
-        .nav-links a.active {
-            color: #2563eb;
-            background: #eff6ff;
-        }
-        
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 4rem 0;
+            padding: 2rem 0;
             text-align: center;
         }
-        
-        .hero h1 {
+
+        .header h1 {
             font-size: 3rem;
             font-weight: 700;
             margin-bottom: 1rem;
         }
-        
-        .hero p {
-            font-size: 1.2rem;
+
+        .header p {
+            font-size: 1.25rem;
             opacity: 0.9;
             max-width: 600px;
-            margin: 0 auto 2rem;
+            margin: 0 auto;
         }
-        
-        .hero-buttons {
+
+        .version-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            margin-top: 1rem;
+            font-weight: 500;
+        }
+
+        /* Navigation */
+        .nav {
+            background: var(--bg-light);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-content {
             display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            padding: 12px 24px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.2s;
-            display: inline-flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 8px;
         }
-        
-        .btn-primary {
-            background: #fff;
-            color: #667eea;
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
         }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            transition: color 0.3s;
         }
-        
-        .btn-outline {
-            border: 2px solid rgba(255,255,255,0.3);
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .license-info {
+            background: var(--warning-color);
             color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
         }
-        
-        .btn-outline:hover {
-            background: rgba(255,255,255,0.1);
-        }
-        
+
         /* Main Content */
         .main-content {
             display: grid;
             grid-template-columns: 250px 1fr;
             gap: 2rem;
             padding: 2rem 0;
-            min-height: calc(100vh - 300px);
         }
-        
+
         /* Sidebar */
         .sidebar {
-            background: #fff;
-            border-radius: 12px;
+            background: var(--bg-light);
             padding: 1.5rem;
+            border-radius: 12px;
             height: fit-content;
             position: sticky;
-            top: 120px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            top: 100px;
         }
-        
+
         .sidebar h3 {
-            color: #1e293b;
             margin-bottom: 1rem;
+            color: var(--text-dark);
             font-size: 1.1rem;
         }
-        
+
         .sidebar ul {
             list-style: none;
         }
-        
-        .sidebar ul li {
+
+        .sidebar li {
             margin-bottom: 0.5rem;
         }
-        
-        .sidebar ul li a {
+
+        .sidebar a {
             text-decoration: none;
-            color: #64748b;
-            padding: 0.5rem 0;
-            display: block;
-            border-radius: 4px;
-            transition: color 0.2s;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            transition: color 0.3s;
         }
-        
-        .sidebar ul li a:hover {
-            color: #2563eb;
+
+        .sidebar a:hover {
+            color: var(--primary-color);
         }
-        
-        .sidebar ul li a.active {
-            color: #2563eb;
-            font-weight: 600;
-        }
-        
+
         /* Content Area */
         .content {
-            background: #fff;
-            border-radius: 12px;
+            background: white;
             padding: 2rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
-        
-        .content h1 {
-            color: #1e293b;
-            margin-bottom: 0.5rem;
-            font-size: 2.5rem;
-        }
-        
+
         .content h2 {
-            color: #334155;
-            margin: 2rem 0 1rem;
-            font-size: 1.8rem;
-            border-bottom: 2px solid #e2e8f0;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            border-bottom: 2px solid var(--primary-color);
             padding-bottom: 0.5rem;
         }
-        
+
         .content h3 {
-            color: #475569;
-            margin: 1.5rem 0 0.5rem;
-            font-size: 1.3rem;
+            color: var(--text-dark);
+            margin: 2rem 0 1rem 0;
+            font-size: 1.5rem;
         }
-        
+
+        .content h4 {
+            color: var(--text-dark);
+            margin: 1.5rem 0 1rem 0;
+            font-size: 1.25rem;
+        }
+
         .content p {
             margin-bottom: 1rem;
-            color: #64748b;
+            color: var(--text-light);
+            line-height: 1.7;
         }
-        
-        .content ul {
+
+        .content ul, .content ol {
             margin-bottom: 1rem;
-            padding-left: 1.5rem;
+            padding-left: 2rem;
         }
-        
+
         .content li {
             margin-bottom: 0.5rem;
-            color: #64748b;
+            color: var(--text-light);
         }
-        
-        /* Feature Cards */
+
+        /* Feature Grid */
         .feature-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 1.5rem;
             margin: 2rem 0;
         }
-        
+
         .feature-card {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
+            background: var(--bg-light);
             padding: 1.5rem;
-            transition: all 0.2s;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary-color);
         }
-        
-        .feature-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        
+
         .feature-card h4 {
-            color: #1e293b;
+            color: var(--primary-color);
             margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
-        
-        .feature-icon {
-            width: 24px;
-            height: 24px;
-            background: #3b82f6;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 12px;
+
+        .feature-card p {
+            font-size: 0.9rem;
+            margin: 0;
         }
-        
+
         /* Code Blocks */
-        .code-block {
-            background: #1e293b;
+        pre {
+            background: #2D3748;
+            color: #E2E8F0;
+            padding: 1.5rem;
             border-radius: 8px;
-            padding: 1rem;
-            margin: 1rem 0;
             overflow-x: auto;
+            margin: 1rem 0;
+            font-size: 0.9rem;
         }
-        
-        .code-block code {
-            color: #e2e8f0;
-            font-family: 'JetBrains Mono', monospace;
+
+        code {
+            background: #E5E7EB;
+            color: #374151;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
         }
-        
+
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: var(--bg-light);
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
         /* Alerts */
         .alert {
             padding: 1rem;
@@ -316,106 +280,153 @@
             margin: 1rem 0;
             border-left: 4px solid;
         }
-        
+
         .alert-info {
-            background: #eff6ff;
-            border-color: #3b82f6;
-            color: #1e40af;
+            background: #EBF8FF;
+            border-color: var(--primary-color);
+            color: #1E40AF;
         }
-        
-        .alert-warning {
-            background: #fffbeb;
-            border-color: #f59e0b;
-            color: #92400e;
-        }
-        
+
         .alert-success {
-            background: #f0fdf4;
-            border-color: #10b981;
-            color: #065f46;
+            background: #F0FDF4;
+            border-color: var(--success-color);
+            color: #166534;
         }
-        
+
+        .alert-warning {
+            background: #FFFBEB;
+            border-color: var(--warning-color);
+            color: #92400E;
+        }
+
+        .alert-error {
+            background: #FEF2F2;
+            border-color: var(--error-color);
+            color: #991B1B;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1E40AF;
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #059669;
+        }
+
         /* Footer */
         .footer {
-            background: #1e293b;
-            color: #e2e8f0;
+            background: var(--text-dark);
+            color: white;
             text-align: center;
             padding: 2rem 0;
             margin-top: 4rem;
         }
-        
+
         /* Responsive */
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
             }
-            
+
             .sidebar {
                 position: static;
-                order: 2;
             }
-            
-            .hero h1 {
+
+            .header h1 {
                 font-size: 2rem;
             }
-            
-            .hero-buttons {
+
+            .content {
+                padding: 1rem;
+            }
+
+            .nav-content {
                 flex-direction: column;
-                align-items: center;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
             }
         }
-        
-        /* Table Styles */
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 1rem 0;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+
+        /* Syntax Highlighting */
+        .token.comment,
+        .token.prolog,
+        .token.doctype,
+        .token.cdata {
+            color: #6B7280;
         }
-        
-        .table th,
-        .table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
+
+        .token.punctuation {
+            color: #E5E7EB;
         }
-        
-        .table th {
-            background: #f8fafc;
-            font-weight: 600;
-            color: #374151;
+
+        .token.property,
+        .token.tag,
+        .token.boolean,
+        .token.number,
+        .token.constant,
+        .token.symbol,
+        .token.deleted {
+            color: #F87171;
         }
-        
-        .table tr:last-child td {
-            border-bottom: none;
+
+        .token.selector,
+        .token.attr-name,
+        .token.string,
+        .token.char,
+        .token.builtin,
+        .token.inserted {
+            color: #34D399;
         }
-        
-        /* Badge */
-        .badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
+
+        .token.operator,
+        .token.entity,
+        .token.url,
+        .language-css .token.string,
+        .style .token.string {
+            color: #60A5FA;
         }
-        
-        .badge-new {
-            background: #10b981;
-            color: white;
+
+        .token.atrule,
+        .token.attr-value,
+        .token.keyword {
+            color: #A78BFA;
         }
-        
-        .badge-pro {
-            background: #f59e0b;
-            color: white;
+
+        .token.function,
+        .token.class-name {
+            color: #FBBF24;
         }
-        
-        .badge-required {
-            background: #ef4444;
-            color: white;
+
+        .token.regex,
+        .token.important,
+        .token.variable {
+            color: #F472B6;
         }
     </style>
 </head>
@@ -423,41 +434,28 @@
     <!-- Header -->
     <header class="header">
         <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <div class="logo-icon">M</div>
-                    <span>MedCare Rural</span>
-                </div>
-                <div class="version">v1.0.0</div>
-            </div>
+            <h1>MedCare Rural</h1>
+            <p>Professional Hospital Management System for Rural Healthcare</p>
+            <div class="version-badge">Version 2.0 - Premium Edition</div>
         </div>
     </header>
 
     <!-- Navigation -->
     <nav class="nav">
         <div class="container">
-            <ul class="nav-links">
-                <li><a href="#overview" class="active">Overview</a></li>
-                <li><a href="#installation">Installation</a></li>
-                <li><a href="#features">Features</a></li>
-                <li><a href="#configuration">Configuration</a></li>
-                <li><a href="#api">API Reference</a></li>
-                <li><a href="#support">Support</a></li>
-            </ul>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="container">
-            <h1>Complete Hospital Management System</h1>
-            <p>Professional-grade healthcare management solution designed specifically for rural hospitals and small healthcare facilities.</p>
-            <div class="hero-buttons">
-                <a href="#installation" class="btn btn-primary">Get Started</a>
-                <a href="#features" class="btn btn-outline">View Features</a>
+            <div class="nav-content">
+                <ul class="nav-links">
+                    <li><a href="#overview">Overview</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#installation">Installation</a></li>
+                    <li><a href="#api">API Reference</a></li>
+                    <li><a href="#customization">Customization</a></li>
+                    <li><a href="#support">Support</a></li>
+                </ul>
+                <div class="license-info">Premium License Required</div>
             </div>
         </div>
-    </section>
+    </nav>
 
     <!-- Main Content -->
     <div class="container">
@@ -466,19 +464,16 @@
             <aside class="sidebar">
                 <h3>Documentation</h3>
                 <ul>
-                    <li><a href="#overview" class="active">Overview</a></li>
+                    <li><a href="#overview">System Overview</a></li>
+                    <li><a href="#features">Key Features</a></li>
                     <li><a href="#requirements">Requirements</a></li>
-                    <li><a href="#installation">Installation</a></li>
-                    <li><a href="#quick-start">Quick Start</a></li>
-                    <li><a href="#features">Features</a></li>
-                    <li><a href="#modules">Modules</a></li>
+                    <li><a href="#installation">Installation Guide</a></li>
                     <li><a href="#configuration">Configuration</a></li>
-                    <li><a href="#user-roles">User Roles</a></li>
-                    <li><a href="#api-reference">API Reference</a></li>
+                    <li><a href="#database">Database Setup</a></li>
+                    <li><a href="#api">API Reference</a></li>
                     <li><a href="#customization">Customization</a></li>
                     <li><a href="#troubleshooting">Troubleshooting</a></li>
                     <li><a href="#changelog">Changelog</a></li>
-                    <li><a href="#support">Support</a></li>
                     <li><a href="#license">License</a></li>
                 </ul>
             </aside>
@@ -486,831 +481,672 @@
             <!-- Content -->
             <main class="content">
                 <section id="overview">
-                    <h1>MedCare Rural - Hospital Management System</h1>
-                    <p class="lead">A comprehensive, modern hospital management system built with React, TypeScript, and advanced UI components. Designed specifically for rural hospitals and small healthcare facilities.</p>
-
+                    <h2>System Overview</h2>
+                    
                     <div class="alert alert-info">
-                        <strong>Latest Version:</strong> v1.0.0 - Released with all core modules and advanced features
+                        <strong>Premium Software:</strong> This is a commercial hospital management system designed for rural healthcare facilities. Unauthorized use without a valid license is prohibited.
                     </div>
 
-                    <h2>What's Included</h2>
+                    <p>MedCare Rural is a comprehensive hospital management system specifically designed for rural hospitals and small healthcare facilities. Built with modern web technologies and an offline-first architecture, it provides reliable healthcare management even in areas with limited internet connectivity.</p>
+
+                    <h3>Key Highlights</h3>
+                    <ul>
+                        <li><strong>Offline-First Architecture:</strong> Works seamlessly without internet connectivity</li>
+                        <li><strong>Role-Based Access Control:</strong> Secure access for different staff roles</li>
+                        <li><strong>Comprehensive Patient Management:</strong> Complete patient records with medical history</li>
+                        <li><strong>Integrated Billing System:</strong> Advanced billing with insurance claim processing</li>
+                        <li><strong>Inventory Management:</strong> Track medicines and medical supplies</li>
+                        <li><strong>Laboratory Management:</strong> Order tests and track results</li>
+                        <li><strong>Bed Management:</strong> Monitor bed occupancy and room assignments</li>
+                        <li><strong>Doctor Scheduling:</strong> Manage doctor availability and shifts</li>
+                    </ul>
+
+                    <h3>Target Audience</h3>
+                    <p>This system is designed for:</p>
+                    <ul>
+                        <li>Small to medium rural hospitals (10-100 beds)</li>
+                        <li>Community health centers</li>
+                        <li>Private clinics and nursing homes</li>
+                        <li>Medical practices in remote areas</li>
+                    </ul>
+                </section>
+
+                <section id="features">
+                    <h2>Features</h2>
+
                     <div class="feature-grid">
                         <div class="feature-card">
-                            <h4><span class="feature-icon">👥</span> Patient Management</h4>
-                            <p>Complete patient registration, medical history, and records management with vaccination tracking.</p>
+                            <h4>Patient Management</h4>
+                            <p>Complete patient registration, medical history tracking, vaccination records, and chronic condition management with advanced search capabilities.</p>
                         </div>
+
                         <div class="feature-card">
-                            <h4><span class="feature-icon">📅</span> Appointment System</h4>
-                            <p>Advanced scheduling with SMS notifications and doctor availability tracking.</p>
+                            <h4>Appointment Scheduling</h4>
+                            <p>Advanced calendar-based appointment booking with doctor availability checking, conflict resolution, and automated reminders via SMS.</p>
                         </div>
+
                         <div class="feature-card">
-                            <h4><span class="feature-icon">💰</span> Billing & Insurance</h4>
-                            <p>Automated billing with insurance claim processing and tax compliance for rural areas.</p>
+                            <h4>Electronic Medical Records</h4>
+                            <p>Digital medical records with consultation notes, diagnosis tracking, prescription management, and treatment plan documentation.</p>
                         </div>
+
                         <div class="feature-card">
-                            <h4><span class="feature-icon">📦</span> Inventory Management</h4>
-                            <p>Medicine and medical supplies tracking with automated reorder points.</p>
+                            <h4>Billing & Insurance</h4>
+                            <p>Comprehensive billing system with insurance claim processing, payment tracking, automated tax calculations, and financial reporting.</p>
                         </div>
+
                         <div class="feature-card">
-                            <h4><span class="feature-icon">🧪</span> Laboratory System</h4>
-                            <p>Lab test ordering, result tracking, and automated report generation.</p>
+                            <h4>Inventory Management</h4>
+                            <p>Track medical supplies, medicines, equipment with low stock alerts, expiry date monitoring, and automated reorder points.</p>
                         </div>
+
                         <div class="feature-card">
-                            <h4><span class="feature-icon">🛏️</span> Bed Management</h4>
-                            <p>Real-time bed occupancy tracking and room assignment management.</p>
+                            <h4>Laboratory Management</h4>
+                            <p>Order lab tests, track sample collection, manage results, and generate comprehensive lab reports with reference ranges.</p>
+                        </div>
+
+                        <div class="feature-card">
+                            <h4>Bed Management</h4>
+                            <p>Monitor bed occupancy, room assignments, admission and discharge management with real-time availability tracking.</p>
+                        </div>
+
+                        <div class="feature-card">
+                            <h4>Doctor Scheduling</h4>
+                            <p>Manage doctor availability, shift planning, workload distribution, and consultation scheduling with conflict detection.</p>
+                        </div>
+
+                        <div class="feature-card">
+                            <h4>Role-Based Access</h4>
+                            <p>Secure authentication system with role-based permissions for doctors, nurses, staff, billing managers, and administrators.</p>
+                        </div>
+
+                        <div class="feature-card">
+                            <h4>Offline Capability</h4>
+                            <p>Offline-first architecture with automatic synchronization ensures the system works even without internet connectivity.</p>
+                        </div>
+
+                        <div class="feature-card">
+                            <h4>Reporting & Analytics</h4>
+                            <p>Generate comprehensive reports for patient statistics, financial analysis, inventory status, and operational metrics.</p>
+                        </div>
+
+                        <div class="feature-card">
+                            <h4>Notification System</h4>
+                            <p>Automated SMS and email notifications for appointments, lab results, payment reminders, and critical alerts.</p>
                         </div>
                     </div>
-
-                    <h2>Key Benefits</h2>
-                    <ul>
-                        <li><strong>Rural-Focused Design:</strong> Built specifically for small hospitals and rural healthcare needs</li>
-                        <li><strong>Offline Capability:</strong> Works seamlessly even with poor internet connectivity</li>
-                        <li><strong>Role-Based Access:</strong> Comprehensive user management with different access levels</li>
-                        <li><strong>Modern Interface:</strong> Clean, intuitive design that's easy to learn and use</li>
-                        <li><strong>Mobile Responsive:</strong> Works perfectly on tablets and mobile devices</li>
-                        <li><strong>Data Security:</strong> Enterprise-grade security with HIPAA compliance considerations</li>
-                        <li><strong>Easy Installation:</strong> One-click deployment with minimal technical requirements</li>
-                        <li><strong>Comprehensive Support:</strong> Complete documentation and dedicated support</li>
-                    </ul>
                 </section>
 
                 <section id="requirements">
                     <h2>System Requirements</h2>
-                    
-                    <h3>Minimum Requirements</h3>
-                    <table class="table">
+
+                    <h3>Server Requirements</h3>
+                    <table>
                         <thead>
                             <tr>
                                 <th>Component</th>
-                                <th>Requirement</th>
-                                <th>Notes</th>
+                                <th>Minimum</th>
+                                <th>Recommended</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>Node.js</td>
-                                <td>16.0 or higher</td>
-                                <td><span class="badge badge-required">Required</span></td>
-                            </tr>
-                            <tr>
-                                <td>Browser</td>
-                                <td>Chrome 80+, Firefox 75+, Safari 13+</td>
-                                <td>Modern browsers only</td>
+                                <td>Operating System</td>
+                                <td>Ubuntu 18.04+ / Windows Server 2019+</td>
+                                <td>Ubuntu 22.04 LTS / Windows Server 2022</td>
                             </tr>
                             <tr>
                                 <td>RAM</td>
-                                <td>4GB minimum, 8GB recommended</td>
-                                <td>For smooth operation</td>
+                                <td>4 GB</td>
+                                <td>8 GB or higher</td>
                             </tr>
                             <tr>
                                 <td>Storage</td>
-                                <td>2GB free space</td>
-                                <td>Including all dependencies</td>
+                                <td>20 GB SSD</td>
+                                <td>100 GB SSD</td>
                             </tr>
                             <tr>
-                                <td>Internet</td>
-                                <td>512 Kbps minimum</td>
-                                <td>For initial setup and updates</td>
+                                <td>Database</td>
+                                <td>MySQL 8.0+</td>
+                                <td>MySQL 8.0+ with replication</td>
+                            </tr>
+                            <tr>
+                                <td>Web Server</td>
+                                <td>Node.js 18+</td>
+                                <td>Node.js 20+ with PM2</td>
+                            </tr>
+                            <tr>
+                                <td>Network</td>
+                                <td>1 Mbps internet</td>
+                                <td>10 Mbps internet with backup</td>
                             </tr>
                         </tbody>
                     </table>
 
-                    <h3>Recommended Setup</h3>
+                    <h3>Client Requirements</h3>
                     <ul>
-                        <li><strong>Operating System:</strong> Windows 10/11, macOS 10.15+, or Linux Ubuntu 18.04+</li>
-                        <li><strong>Processor:</strong> Intel Core i3 or AMD equivalent</li>
-                        <li><strong>Memory:</strong> 8GB RAM for optimal performance</li>
-                        <li><strong>Storage:</strong> SSD recommended for faster loading</li>
-                        <li><strong>Network:</strong> Stable internet connection for real-time features</li>
+                        <li><strong>Web Browser:</strong> Chrome 90+, Firefox 88+, Safari 14+, Edge 90+</li>
+                        <li><strong>Screen Resolution:</strong> Minimum 1024x768, Recommended 1920x1080</li>
+                        <li><strong>Internet:</strong> Not required for core functionality (offline-capable)</li>
+                        <li><strong>Mobile Support:</strong> iOS 14+, Android 8+</li>
                     </ul>
 
-                    <div class="alert alert-warning">
-                        <strong>Note:</strong> While the system can work offline, initial setup and some features require internet connectivity.
-                    </div>
+                    <h3>Software Dependencies</h3>
+                    <ul>
+                        <li>Node.js 18.0 or higher</li>
+                        <li>MySQL 8.0 or higher</li>
+                        <li>Redis (optional, for caching)</li>
+                        <li>SSL Certificate (recommended for production)</li>
+                    </ul>
                 </section>
 
                 <section id="installation">
                     <h2>Installation Guide</h2>
-                    
-                    <h3>Quick Installation</h3>
-                    <p>Follow these simple steps to get MedCare Rural up and running:</p>
 
-                    <h4>Step 1: Download & Extract</h4>
-                    <div class="code-block">
-                        <code>
-# Extract the downloaded file
-unzip medcare-rural-v1.0.0.zip
+                    <div class="alert alert-warning">
+                        <strong>License Required:</strong> This software requires a valid commercial license. Please ensure you have purchased a license before installation.
+                    </div>
+
+                    <h3>Step 1: Download and Extract</h3>
+                    <pre><code># Extract the purchased package
+unzip medcare-rural-v2.0.zip
 cd medcare-rural
-                        </code>
-                    </div>
 
-                    <h4>Step 2: Install Dependencies</h4>
-                    <div class="code-block">
-                        <code>
-# Install required packages
-npm install
+# Verify license file
+ls -la LICENSE.txt</code></pre>
 
-# Or using yarn
-yarn install
-                        </code>
-                    </div>
+                    <h3>Step 2: Database Setup</h3>
+                    <pre><code># Install MySQL and create database
+mysql -u root -p
+CREATE DATABASE medcare_rural;
+CREATE USER 'medcare_user'@'localhost' IDENTIFIED BY 'secure_password';
+GRANT ALL PRIVILEGES ON medcare_rural.* TO 'medcare_user'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
 
-                    <h4>Step 3: Configuration</h4>
-                    <div class="code-block">
-                        <code>
-# Copy environment configuration
+# Import database schema
+mysql -u medcare_user -p medcare_rural < database/schema.sql</code></pre>
+
+                    <h3>Step 3: Environment Configuration</h3>
+                    <pre><code># Copy environment template
 cp .env.example .env
 
-# Edit configuration file
-nano .env
-                        </code>
+# Edit configuration
+nano .env</code></pre>
+
+                    <div class="alert alert-info">
+                        <strong>Environment Variables:</strong> Configure database credentials, JWT secrets, and other settings in the .env file. See the configuration section for detailed instructions.
                     </div>
 
-                    <h4>Step 4: Start the Application</h4>
-                    <div class="code-block">
-                        <code>
-# Start development server
-npm run dev
+                    <h3>Step 4: Install Dependencies</h3>
+                    <pre><code># Install Node.js dependencies
+npm install
 
-# Or for production
+# Install additional database packages
+npm install mysql2 idb</code></pre>
+
+                    <h3>Step 5: Build and Start</h3>
+                    <pre><code># Build the application
 npm run build
-npm run preview
-                        </code>
-                    </div>
 
-                    <div class="alert alert-success">
-                        <strong>Success!</strong> Your hospital management system is now running at <code>http://localhost:5173</code>
-                    </div>
+# Start in production mode
+npm run start
 
-                    <h3>Docker Installation <span class="badge badge-pro">Pro</span></h3>
-                    <p>For production deployment, use our Docker setup:</p>
+# Or use PM2 for production
+npm install -g pm2
+pm2 start ecosystem.config.js</code></pre>
 
-                    <div class="code-block">
-                        <code>
-# Build Docker image
-docker build -t medcare-rural .
-
-# Run container
-docker run -d -p 80:80 --name hospital-system medcare-rural
-                        </code>
-                    </div>
-                </section>
-
-                <section id="quick-start">
-                    <h2>Quick Start Guide</h2>
-                    
-                    <h3>First Time Setup</h3>
+                    <h3>Step 6: Initial Setup</h3>
                     <ol>
-                        <li><strong>Access the System:</strong> Open your browser and navigate to the application URL</li>
-                        <li><strong>Initial Login:</strong> Use the default super admin credentials</li>
-                        <li><strong>Hospital Configuration:</strong> Set up your hospital profile and basic settings</li>
-                        <li><strong>User Creation:</strong> Create staff accounts with appropriate roles</li>
-                        <li><strong>System Configuration:</strong> Configure modules based on your hospital needs</li>
+                        <li>Access the application at <code>http://localhost:3000</code></li>
+                        <li>Login with default credentials: <code>admin@medcare.local</code> / <code>admin123</code></li>
+                        <li>Change the default password immediately</li>
+                        <li>Configure hospital settings and create user accounts</li>
+                        <li>Test offline functionality by disconnecting from the internet</li>
                     </ol>
-
-                    <h3>Default Login Credentials</h3>
-                    <div class="alert alert-warning">
-                        <strong>Important:</strong> Change these credentials immediately after first login!
-                    </div>
-
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Role</th>
-                                <th>Username</th>
-                                <th>Password</th>
-                                <th>Access Level</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Super Admin</td>
-                                <td>admin@hospital.com</td>
-                                <td>admin123</td>
-                                <td>Full System Access</td>
-                            </tr>
-                            <tr>
-                                <td>Doctor</td>
-                                <td>doctor@hospital.com</td>
-                                <td>doctor123</td>
-                                <td>Medical Modules</td>
-                            </tr>
-                            <tr>
-                                <td>Nurse</td>
-                                <td>nurse@hospital.com</td>
-                                <td>nurse123</td>
-                                <td>Patient Care</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <h3>Basic Workflow</h3>
-                    <ol>
-                        <li><strong>Patient Registration:</strong> Register new patients with complete information</li>
-                        <li><strong>Appointment Booking:</strong> Schedule appointments with available doctors</li>
-                        <li><strong>Medical Records:</strong> Maintain comprehensive electronic medical records</li>
-                        <li><strong>Billing:</strong> Generate bills and process insurance claims</li>
-                        <li><strong>Inventory:</strong> Track medicine and supplies usage</li>
-                        <li><strong>Reports:</strong> Generate reports for analysis and compliance</li>
-                    </ol>
-                </section>
-
-                <section id="features">
-                    <h2>Complete Feature List</h2>
-                    
-                    <h3>Core Hospital Management</h3>
-                    <div class="feature-grid">
-                        <div class="feature-card">
-                            <h4>Patient Management</h4>
-                            <ul>
-                                <li>Complete patient registration</li>
-                                <li>Medical history tracking</li>
-                                <li>Vaccination records</li>
-                                <li>Chronic conditions monitoring</li>
-                                <li>Family medical history</li>
-                                <li>Insurance information</li>
-                                <li>Emergency contacts</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="feature-card">
-                            <h4>Appointment System</h4>
-                            <ul>
-                                <li>Online appointment booking</li>
-                                <li>Doctor availability management</li>
-                                <li>Appointment reminders (SMS/Email)</li>
-                                <li>Queue management</li>
-                                <li>Recurring appointments</li>
-                                <li>Appointment history</li>
-                                <li>Cancel/reschedule options</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="feature-card">
-                            <h4>Medical Records (EMR)</h4>
-                            <ul>
-                                <li>Electronic medical records</li>
-                                <li>Consultation notes</li>
-                                <li>Diagnosis tracking</li>
-                                <li>Treatment plans</li>
-                                <li>Prescription management</li>
-                                <li>Medical certificates</li>
-                                <li>Document attachments</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <h3>Financial Management</h3>
-                    <div class="feature-grid">
-                        <div class="feature-card">
-                            <h4>Billing & Invoicing</h4>
-                            <ul>
-                                <li>Automated bill generation</li>
-                                <li>Multiple payment methods</li>
-                                <li>Partial payments</li>
-                                <li>Tax calculations</li>
-                                <li>Discount management</li>
-                                <li>Credit/debit notes</li>
-                                <li>Financial reports</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="feature-card">
-                            <h4>Insurance Claims</h4>
-                            <ul>
-                                <li>Insurance verification</li>
-                                <li>Claim processing</li>
-                                <li>Pre-authorization</li>
-                                <li>Claim status tracking</li>
-                                <li>Rejection handling</li>
-                                <li>Provider network</li>
-                                <li>Compliance reporting</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <h3>Operational Management</h3>
-                    <div class="feature-grid">
-                        <div class="feature-card">
-                            <h4>Inventory Management</h4>
-                            <ul>
-                                <li>Medicine inventory</li>
-                                <li>Medical supplies tracking</li>
-                                <li>Automatic reorder points</li>
-                                <li>Expiry date monitoring</li>
-                                <li>Supplier management</li>
-                                <li>Stock valuation</li>
-                                <li>Purchase orders</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="feature-card">
-                            <h4>Laboratory Management</h4>
-                            <ul>
-                                <li>Test ordering system</li>
-                                <li>Result entry & tracking</li>
-                                <li>Report generation</li>
-                                <li>Reference ranges</li>
-                                <li>Quality control</li>
-                                <li>Equipment management</li>
-                                <li>External lab integration</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="feature-card">
-                            <h4>Bed Management</h4>
-                            <ul>
-                                <li>Real-time bed status</li>
-                                <li>Room assignments</li>
-                                <li>Occupancy tracking</li>
-                                <li>Discharge planning</li>
-                                <li>Bed reservations</li>
-                                <li>Ward management</li>
-                                <li>Housekeeping coordination</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <h3>Staff Management</h3>
-                    <div class="feature-grid">
-                        <div class="feature-card">
-                            <h4>Doctor Schedule</h4>
-                            <ul>
-                                <li>Shift planning</li>
-                                <li>Availability tracking</li>
-                                <li>On-call management</li>
-                                <li>Leave management</li>
-                                <li>Specialization tracking</li>
-                                <li>Consultation fees</li>
-                                <li>Performance metrics</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="feature-card">
-                            <h4>User Management</h4>
-                            <ul>
-                                <li>Role-based access control</li>
-                                <li>User permissions</li>
-                                <li>Activity logging</li>
-                                <li>Password policies</li>
-                                <li>Session management</li>
-                                <li>Multi-factor authentication</li>
-                                <li>Audit trails</li>
-                            </ul>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="user-roles">
-                    <h2>User Roles & Permissions</h2>
-                    
-                    <p>MedCare Rural implements a comprehensive role-based access control system designed for hospital hierarchies:</p>
-
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Role</th>
-                                <th>Description</th>
-                                <th>Key Permissions</th>
-                                <th>Modules Access</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>Super Admin</strong></td>
-                                <td>Complete system control</td>
-                                <td>All permissions, user management, system configuration</td>
-                                <td>All modules</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Hospital Admin</strong></td>
-                                <td>Hospital-level administration</td>
-                                <td>Staff management, reports, billing oversight</td>
-                                <td>All except user management</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Doctor</strong></td>
-                                <td>Medical professionals</td>
-                                <td>Patient records, prescriptions, medical notes</td>
-                                <td>Patients, Records, Appointments, Lab</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Nurse</strong></td>
-                                <td>Nursing staff</td>
-                                <td>Patient care, basic records, appointments</td>
-                                <td>Patients, Appointments, Basic Records</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Receptionist</strong></td>
-                                <td>Front desk operations</td>
-                                <td>Patient registration, appointment scheduling</td>
-                                <td>Patients, Appointments</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Billing Manager</strong></td>
-                                <td>Financial operations</td>
-                                <td>Billing, payments, insurance claims</td>
-                                <td>Billing, Patients (view only)</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Lab Technician</strong></td>
-                                <td>Laboratory operations</td>
-                                <td>Test results, lab reports</td>
-                                <td>Lab Management, Patients (view only)</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Pharmacist</strong></td>
-                                <td>Pharmacy operations</td>
-                                <td>Medicine inventory, prescriptions</td>
-                                <td>Inventory, Prescriptions</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <h3>Permission Matrix</h3>
-                    <p>Detailed permission matrix for each module:</p>
-
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Module</th>
-                                <th>Super Admin</th>
-                                <th>Doctor</th>
-                                <th>Nurse</th>
-                                <th>Receptionist</th>
-                                <th>Billing</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Patient Management</td>
-                                <td>Full Access</td>
-                                <td>Read/Write</td>
-                                <td>Read/Update</td>
-                                <td>Create/Read</td>
-                                <td>Read Only</td>
-                            </tr>
-                            <tr>
-                                <td>Medical Records</td>
-                                <td>Full Access</td>
-                                <td>Read/Write</td>
-                                <td>Read Only</td>
-                                <td>No Access</td>
-                                <td>No Access</td>
-                            </tr>
-                            <tr>
-                                <td>Billing System</td>
-                                <td>Full Access</td>
-                                <td>Read Only</td>
-                                <td>No Access</td>
-                                <td>Read Only</td>
-                                <td>Full Access</td>
-                            </tr>
-                            <tr>
-                                <td>Inventory</td>
-                                <td>Full Access</td>
-                                <td>Read Only</td>
-                                <td>Read Only</td>
-                                <td>No Access</td>
-                                <td>No Access</td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </section>
 
                 <section id="configuration">
-                    <h2>Configuration Guide</h2>
-                    
-                    <h3>Environment Configuration</h3>
-                    <p>Configure the system using environment variables:</p>
+                    <h2>Configuration</h2>
 
-                    <div class="code-block">
-                        <code>
+                    <h3>Environment Variables</h3>
+                    <p>Key configuration options in the <code>.env</code> file:</p>
+
+                    <pre><code># Application Settings
+NODE_ENV=production
+APP_NAME="Your Hospital Name"
+APP_URL=https://yourdomain.com
+
 # Database Configuration
 DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=medcare_rural
-DB_USER=postgres
-DB_PASSWORD=your_password
-
-# Application Settings
-APP_NAME="MedCare Rural"
-APP_URL=http://localhost:5173
-APP_ENV=production
+DB_PORT=3306
+DB_DATABASE=medcare_rural
+DB_USERNAME=medcare_user
+DB_PASSWORD=your_secure_password
 
 # Security Settings
-JWT_SECRET=your_jwt_secret_key
-ENCRYPTION_KEY=your_encryption_key
+JWT_SECRET=your-very-long-jwt-secret-key
+BCRYPT_ROUNDS=12
 
 # Email Configuration
 MAIL_HOST=smtp.gmail.com
 MAIL_PORT=587
-MAIL_USERNAME=your_email@gmail.com
-MAIL_PASSWORD=your_app_password
+MAIL_USERNAME=your-email@gmail.com
+MAIL_PASSWORD=your-app-password
 
 # SMS Configuration
 SMS_API_KEY=your_sms_api_key
-SMS_SENDER_ID=HOSPITAL
-
-# Storage Configuration
-STORAGE_DRIVER=local
-STORAGE_PATH=/uploads
-                        </code>
-                    </div>
+SMS_API_SECRET=your_sms_secret</code></pre>
 
                     <h3>Hospital Settings</h3>
                     <p>Configure hospital-specific settings through the admin panel:</p>
-
                     <ul>
-                        <li><strong>Hospital Information:</strong> Name, address, contact details, license number</li>
-                        <li><strong>Operating Hours:</strong> Working days, shift timings, holiday calendar</li>
-                        <li><strong>Departments:</strong> Configure hospital departments and specializations</li>
-                        <li><strong>Billing Settings:</strong> Tax rates, payment methods, insurance providers</li>
-                        <li><strong>Notification Settings:</strong> SMS/Email templates, reminder schedules</li>
-                        <li><strong>Security Settings:</strong> Password policies, session timeouts, audit logging</li>
+                        <li>Hospital name and address</li>
+                        <li>Contact information</li>
+                        <li>Billing preferences</li>
+                        <li>Default user roles and permissions</li>
+                        <li>Notification settings</li>
                     </ul>
 
-                    <h3>Module Configuration</h3>
-                    <p>Enable/disable modules based on hospital requirements:</p>
-
-                    <div class="code-block">
-                        <code>
-# Module Configuration
-ENABLE_PHARMACY=true
-ENABLE_LABORATORY=true
-ENABLE_RADIOLOGY=false
-ENABLE_OPD=true
-ENABLE_IPD=true
-ENABLE_EMERGENCY=true
-ENABLE_AMBULANCE=false
-                        </code>
-                    </div>
+                    <h3>Security Configuration</h3>
+                    <ul>
+                        <li><strong>SSL/TLS:</strong> Enable HTTPS in production</li>
+                        <li><strong>Firewall:</strong> Restrict access to necessary ports only</li>
+                        <li><strong>Backups:</strong> Configure automated daily backups</li>
+                        <li><strong>Updates:</strong> Keep system and dependencies updated</li>
+                    </ul>
                 </section>
 
-                <section id="api-reference">
+                <section id="database">
+                    <h2>Database Reference</h2>
+
+                    <h3>Database Schema</h3>
+                    <p>The system uses a comprehensive MySQL schema with the following main tables:</p>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Table</th>
+                                <th>Purpose</th>
+                                <th>Key Fields</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>users</td>
+                                <td>User authentication and roles</td>
+                                <td>email, password_hash, role, permissions</td>
+                            </tr>
+                            <tr>
+                                <td>patients</td>
+                                <td>Patient demographic and medical info</td>
+                                <td>patient_id, name, phone, medical_history</td>
+                            </tr>
+                            <tr>
+                                <td>appointments</td>
+                                <td>Appointment scheduling</td>
+                                <td>patient_id, doctor_id, date, time, status</td>
+                            </tr>
+                            <tr>
+                                <td>medical_records</td>
+                                <td>Electronic medical records</td>
+                                <td>patient_id, doctor_id, diagnosis, treatment</td>
+                            </tr>
+                            <tr>
+                                <td>billing_records</td>
+                                <td>Billing and invoicing</td>
+                                <td>patient_id, amount, payment_status, items</td>
+                            </tr>
+                            <tr>
+                                <td>inventory_items</td>
+                                <td>Medical supplies and medicines</td>
+                                <td>name, category, stock, expiry_date</td>
+                            </tr>
+                            <tr>
+                                <td>lab_tests</td>
+                                <td>Laboratory test management</td>
+                                <td>patient_id, test_name, status, results</td>
+                            </tr>
+                            <tr>
+                                <td>beds</td>
+                                <td>Hospital bed management</td>
+                                <td>bed_number, room_type, status, patient_id</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Data Relationships</h3>
+                    <p>The database maintains referential integrity through foreign key relationships:</p>
+                    <ul>
+                        <li>Patients → Appointments (one-to-many)</li>
+                        <li>Doctors → Appointments (one-to-many)</li>
+                        <li>Patients → Medical Records (one-to-many)</li>
+                        <li>Patients → Billing Records (one-to-many)</li>
+                        <li>Patients → Lab Tests (one-to-many)</li>
+                    </ul>
+
+                    <h3>Backup and Maintenance</h3>
+                    <pre><code># Create database backup
+mysqldump -u medcare_user -p medcare_rural > backup_$(date +%Y%m%d).sql
+
+# Optimize database performance
+mysql -u medcare_user -p -e "OPTIMIZE TABLE patients, appointments, medical_records;"
+
+# Check database size
+mysql -u medcare_user -p -e "
+SELECT 
+    table_name,
+    ROUND(((data_length + index_length) / 1024 / 1024), 2) AS 'Size (MB)'
+FROM information_schema.tables 
+WHERE table_schema = 'medcare_rural'
+ORDER BY (data_length + index_length) DESC;"</code></pre>
+                </section>
+
+                <section id="api">
                     <h2>API Reference</h2>
-                    
-                    <h3>Authentication API</h3>
-                    <div class="code-block">
-                        <code>
-POST /api/auth/login
+
+                    <p>The system provides a comprehensive REST API for integration with third-party systems.</p>
+
+                    <h3>Authentication</h3>
+                    <pre><code>POST /api/auth/login
+Content-Type: application/json
+
 {
   "email": "user@hospital.com",
-  "password": "password123"
+  "password": "password"
 }
 
 Response:
 {
-  "token": "jwt_token",
-  "user": {
-    "id": 1,
-    "name": "Dr. John Doe",
-    "role": "doctor",
-    "permissions": [...]
+  "success": true,
+  "data": {
+    "token": "jwt_token_here",
+    "user": {
+      "id": "user_id",
+      "name": "User Name",
+      "role": "doctor",
+      "permissions": ["patients", "appointments"]
+    }
   }
-}
-                        </code>
-                    </div>
+}</code></pre>
 
-                    <h3>Patient API</h3>
-                    <div class="code-block">
-                        <code>
+                    <h3>Patient Management</h3>
+                    <pre><code># Get all patients
 GET /api/patients
+Authorization: Bearer {token}
+
+# Create new patient
 POST /api/patients
-PUT /api/patients/{id}
-DELETE /api/patients/{id}
+Authorization: Bearer {token}
+Content-Type: application/json
 
-Example Patient Object:
 {
-  "id": 1,
-  "patient_id": "PAT001",
-  "name": "John Smith",
-  "age": 45,
-  "gender": "male",
+  "name": "John Doe",
   "phone": "+1234567890",
-  "email": "john@email.com",
+  "email": "john@example.com",
+  "date_of_birth": "1990-01-01",
+  "gender": "male",
   "address": "123 Main St",
-  "medical_history": [...],
-  "created_at": "2024-01-01T10:00:00Z"
-}
-                        </code>
-                    </div>
+  "emergency_contact": "Jane Doe - Wife - +1234567891"
+}</code></pre>
 
-                    <h3>Appointment API</h3>
-                    <div class="code-block">
-                        <code>
-GET /api/appointments
+                    <h3>Appointment Management</h3>
+                    <pre><code># Schedule appointment
 POST /api/appointments
-PUT /api/appointments/{id}
+Authorization: Bearer {token}
+Content-Type: application/json
 
-Example Appointment:
 {
-  "id": 1,
-  "patient_id": 1,
-  "doctor_id": 2,
+  "patient_id": "patient_uuid",
+  "doctor_id": "doctor_uuid", 
   "appointment_date": "2024-01-15",
-  "appointment_time": "10:30:00",
-  "status": "scheduled",
+  "appointment_time": "10:00",
+  "type": "consultation",
   "notes": "Regular checkup"
-}
-                        </code>
-                    </div>
+}</code></pre>
 
-                    <h3>Billing API</h3>
-                    <div class="code-block">
-                        <code>
-GET /api/bills
-POST /api/bills
-PUT /api/bills/{id}
+                    <h3>Medical Records</h3>
+                    <pre><code># Create medical record
+POST /api/patients/{patient_id}/medical-records
+Authorization: Bearer {token}
+Content-Type: application/json
 
-Example Bill:
 {
-  "id": 1,
-  "patient_id": 1,
-  "total_amount": 500.00,
-  "paid_amount": 300.00,
-  "balance": 200.00,
-  "status": "partial",
-  "items": [
+  "doctor_id": "doctor_uuid",
+  "visit_date": "2024-01-15",
+  "chief_complaint": "Fever and headache",
+  "diagnosis": ["Common cold", "Dehydration"],
+  "treatment_plan": "Rest and fluids",
+  "prescriptions": [
     {
-      "description": "Consultation",
-      "amount": 200.00
+      "medication": "Paracetamol",
+      "dosage": "500mg",
+      "frequency": "3 times daily",
+      "duration": "5 days"
     }
   ]
-}
-                        </code>
+}</code></pre>
+
+                    <h3>Error Handling</h3>
+                    <p>The API returns standardized error responses:</p>
+                    <pre><code>{
+  "success": false,
+  "error": "VALIDATION_ERROR",
+  "message": "Patient name is required",
+  "details": {
+    "field": "name",
+    "code": "REQUIRED"
+  }
+}</code></pre>
+
+                    <h3>Rate Limiting</h3>
+                    <p>API requests are rate-limited to prevent abuse:</p>
+                    <ul>
+                        <li><strong>Standard endpoints:</strong> 100 requests per 15 minutes</li>
+                        <li><strong>Authentication:</strong> 10 requests per minute</li>
+                        <li><strong>File uploads:</strong> 5 requests per minute</li>
+                    </ul>
+                </section>
+
+                <section id="customization">
+                    <h2>Customization</h2>
+
+                    <div class="alert alert-warning">
+                        <strong>License Compliance:</strong> Customizations must comply with the software license. Redistribution of modified versions is prohibited without explicit permission.
                     </div>
+
+                    <h3>Theming and Branding</h3>
+                    <p>Customize the appearance to match your hospital's branding:</p>
+
+                    <pre><code>/* Edit src/index.css for custom colors */
+:root {
+  --primary: oklch(0.6 0.12 240);    /* Your brand color */
+  --secondary: oklch(0.96 0 0);      /* Secondary color */
+  --accent: oklch(0.7 0.15 140);     /* Accent color */
+}</code></pre>
+
+                    <h3>Custom Fields</h3>
+                    <p>Add custom fields to patient records by modifying the database schema:</p>
+
+                    <pre><code>-- Add custom field to patients table
+ALTER TABLE patients ADD COLUMN custom_field VARCHAR(255);
+
+-- Update patient form component
+// In PatientManagement.tsx
+const customFields = [
+  { name: 'custom_field', label: 'Custom Field', type: 'text' }
+];</code></pre>
+
+                    <h3>Custom Reports</h3>
+                    <p>Create custom reports by adding new report templates:</p>
+
+                    <pre><code>// Create new report component
+// src/components/reports/CustomReport.tsx
+export default function CustomReport() {
+  // Your custom report logic
+}</code></pre>
+
+                    <h3>Integration Hooks</h3>
+                    <p>The system provides hooks for third-party integrations:</p>
+
+                    <ul>
+                        <li><strong>Payment Gateway Integration:</strong> Custom payment processors</li>
+                        <li><strong>Lab Equipment Integration:</strong> Connect lab instruments</li>
+                        <li><strong>SMS Gateway:</strong> Custom SMS providers</li>
+                        <li><strong>External APIs:</strong> Insurance verification services</li>
+                    </ul>
                 </section>
 
                 <section id="troubleshooting">
                     <h2>Troubleshooting</h2>
-                    
+
                     <h3>Common Issues</h3>
-                    
-                    <h4>Installation Issues</h4>
+
+                    <h4>Database Connection Issues</h4>
+                    <div class="alert alert-error">
+                        <strong>Error:</strong> "Database connection refused"
+                    </div>
+                    <p><strong>Solution:</strong></p>
+                    <ol>
+                        <li>Check MySQL service status: <code>sudo systemctl status mysql</code></li>
+                        <li>Verify database credentials in <code>.env</code> file</li>
+                        <li>Ensure database user has proper permissions</li>
+                        <li>Check firewall settings</li>
+                    </ol>
+
+                    <h4>Sync Issues</h4>
                     <div class="alert alert-warning">
-                        <strong>Problem:</strong> npm install fails with permission errors<br>
-                        <strong>Solution:</strong> Run with administrator privileges or use npx
+                        <strong>Error:</strong> "Data not syncing between devices"
                     </div>
+                    <p><strong>Solution:</strong></p>
+                    <ol>
+                        <li>Check internet connectivity</li>
+                        <li>Verify API server is running</li>
+                        <li>Clear browser cache and IndexedDB</li>
+                        <li>Check sync queue in browser developer tools</li>
+                    </ol>
 
+                    <h4>Performance Issues</h4>
                     <div class="alert alert-warning">
-                        <strong>Problem:</strong> Port 5173 already in use<br>
-                        <strong>Solution:</strong> Kill existing process or use different port: <code>npm run dev -- --port 3000</code>
+                        <strong>Issue:</strong> Slow loading times
                     </div>
+                    <p><strong>Solution:</strong></p>
+                    <ol>
+                        <li>Optimize database queries</li>
+                        <li>Enable database indexing</li>
+                        <li>Increase server memory allocation</li>
+                        <li>Use SSD storage for database</li>
+                    </ol>
 
-                    <h4>Database Issues</h4>
-                    <div class="alert alert-warning">
-                        <strong>Problem:</strong> Database connection failed<br>
-                        <strong>Solution:</strong> Check database credentials in .env file and ensure database server is running
-                    </div>
-
-                    <h4>Authentication Issues</h4>
-                    <div class="alert alert-warning">
-                        <strong>Problem:</strong> Login fails with correct credentials<br>
-                        <strong>Solution:</strong> Clear browser cache and check JWT secret configuration
-                    </div>
-
-                    <h3>Performance Optimization</h3>
+                    <h3>Log Files</h3>
+                    <p>Check these log files for debugging:</p>
                     <ul>
-                        <li><strong>Database:</strong> Regular database maintenance and indexing</li>
-                        <li><strong>Caching:</strong> Enable Redis caching for better performance</li>
-                        <li><strong>Images:</strong> Compress and optimize uploaded images</li>
-                        <li><strong>Network:</strong> Use CDN for static assets in production</li>
+                        <li><strong>Application logs:</strong> <code>logs/app.log</code></li>
+                        <li><strong>Database logs:</strong> <code>/var/log/mysql/error.log</code></li>
+                        <li><strong>System logs:</strong> <code>/var/log/syslog</code></li>
+                        <li><strong>Browser console:</strong> Developer Tools → Console</li>
                     </ul>
 
-                    <h3>Security Best Practices</h3>
-                    <ul>
-                        <li>Change default passwords immediately</li>
-                        <li>Enable HTTPS in production</li>
-                        <li>Regular security updates</li>
-                        <li>Implement proper backup procedures</li>
-                        <li>Monitor access logs regularly</li>
-                    </ul>
-                </section>
+                    <h3>Performance Monitoring</h3>
+                    <pre><code># Monitor system resources
+htop
 
-                <section id="support">
-                    <h2>Support & Contact</h2>
-                    
-                    <div class="feature-grid">
-                        <div class="feature-card">
-                            <h4>📧 Email Support</h4>
-                            <p>Get help via email for technical issues and general inquiries.</p>
-                            <p><strong>Email:</strong> support@medcare-rural.com</p>
-                            <p><strong>Response Time:</strong> 24-48 hours</p>
-                        </div>
-                        
-                        <div class="feature-card">
-                            <h4>💬 Live Chat</h4>
-                            <p>Instant support during business hours for urgent issues.</p>
-                            <p><strong>Hours:</strong> Mon-Fri, 9 AM - 6 PM</p>
-                            <p><strong>Response Time:</strong> Within 5 minutes</p>
-                        </div>
-                        
-                        <div class="feature-card">
-                            <h4>📞 Phone Support</h4>
-                            <p>Direct phone support for enterprise customers.</p>
-                            <p><strong>Phone:</strong> +1-800-MEDCARE</p>
-                            <p><strong>Hours:</strong> Business hours only</p>
-                        </div>
-                        
-                        <div class="feature-card">
-                            <h4>🎓 Training & Setup</h4>
-                            <p>Professional setup and training services available.</p>
-                            <p><strong>On-site Training:</strong> Available</p>
-                            <p><strong>Remote Setup:</strong> Included</p>
-                        </div>
-                    </div>
+# Check database performance
+mysql -u root -p -e "SHOW PROCESSLIST;"
 
-                    <h3>What's Included in Support</h3>
-                    <ul>
-                        <li>✅ Installation assistance</li>
-                        <li>✅ Configuration help</li>
-                        <li>✅ Bug fixes and patches</li>
-                        <li>✅ Basic customization guidance</li>
-                        <li>✅ User training materials</li>
-                        <li>✅ Regular updates and improvements</li>
-                    </ul>
+# Monitor disk usage
+df -h
 
-                    <h3>Extended Support Options</h3>
-                    <ul>
-                        <li><strong>Priority Support:</strong> 24/7 support with 1-hour response time</li>
-                        <li><strong>Custom Development:</strong> Tailored features and integrations</li>
-                        <li><strong>On-site Training:</strong> Professional training at your location</li>
-                        <li><strong>Maintenance Contracts:</strong> Ongoing system maintenance and updates</li>
-                    </ul>
-                </section>
-
-                <section id="license">
-                    <h2>License & Legal</h2>
-                    
-                    <div class="alert alert-info">
-                        <strong>Commercial License:</strong> This is a premium commercial software product. Unauthorized use is strictly prohibited.
-                    </div>
-
-                    <h3>License Terms</h3>
-                    <ul>
-                        <li><strong>Single Site License:</strong> Use on one hospital/clinic only</li>
-                        <li><strong>Multi-Site License:</strong> Use across multiple locations of same organization</li>
-                        <li><strong>Enterprise License:</strong> Unlimited use with full customization rights</li>
-                        <li><strong>Developer License:</strong> Includes source code and modification rights</li>
-                    </ul>
-
-                    <h3>What You Can Do</h3>
-                    <ul>
-                        <li>✅ Use the software for your hospital operations</li>
-                        <li>✅ Customize for your specific needs</li>
-                        <li>✅ Get regular updates and support</li>
-                        <li>✅ Train your staff on the system</li>
-                    </ul>
-
-                    <h3>What You Cannot Do</h3>
-                    <ul>
-                        <li>❌ Redistribute or resell the software</li>
-                        <li>❌ Use without proper license</li>
-                        <li>❌ Remove copyright notices</li>
-                        <li>❌ Create derivative products for sale</li>
-                    </ul>
-
-                    <h3>Compliance</h3>
-                    <p>MedCare Rural is designed with healthcare compliance in mind:</p>
-                    <ul>
-                        <li><strong>HIPAA Considerations:</strong> Built with privacy and security features</li>
-                        <li><strong>Data Protection:</strong> Encrypted data storage and transmission</li>
-                        <li><strong>Audit Trails:</strong> Comprehensive logging for compliance</li>
-                        <li><strong>Access Controls:</strong> Role-based permissions and authentication</li>
-                    </ul>
+# Check memory usage
+free -h</code></pre>
                 </section>
 
                 <section id="changelog">
                     <h2>Changelog</h2>
-                    
-                    <h3>Version 1.0.0 <span class="badge badge-new">Latest</span></h3>
-                    <p><strong>Release Date:</strong> January 2024</p>
+
+                    <h3>Version 2.0.0 (Current)</h3>
+                    <p><em>Released: January 2024</em></p>
                     <ul>
-                        <li>🎉 Initial release with all core modules</li>
-                        <li>👥 Complete patient management system</li>
-                        <li>📅 Advanced appointment scheduling</li>
-                        <li>💰 Billing and insurance processing</li>
-                        <li>📦 Inventory management</li>
-                        <li>🧪 Laboratory management</li>
-                        <li>🛏️ Bed management system</li>
-                        <li>👨‍⚕️ Doctor schedule management</li>
-                        <li>🔐 Role-based authentication</li>
-                        <li>📱 SMS/Email notifications</li>
-                        <li>📊 Comprehensive reporting</li>
-                        <li>🏥 Multi-hospital support</li>
+                        <li>✨ <strong>New:</strong> Offline-first architecture with IndexedDB</li>
+                        <li>✨ <strong>New:</strong> Enhanced role-based authentication system</li>
+                        <li>✨ <strong>New:</strong> Advanced billing with insurance claim processing</li>
+                        <li>✨ <strong>New:</strong> Comprehensive inventory management</li>
+                        <li>✨ <strong>New:</strong> Laboratory management system</li>
+                        <li>✨ <strong>New:</strong> Bed management and occupancy tracking</li>
+                        <li>✨ <strong>New:</strong> Doctor scheduling and availability management</li>
+                        <li>✨ <strong>New:</strong> SMS notification system</li>
+                        <li>🔧 <strong>Improved:</strong> Database performance optimization</li>
+                        <li>🔧 <strong>Improved:</strong> Mobile responsiveness</li>
+                        <li>🔧 <strong>Improved:</strong> Security enhancements</li>
+                        <li>🐛 <strong>Fixed:</strong> Various UI/UX improvements</li>
                     </ul>
 
-                    <h3>Upcoming Features</h3>
+                    <h3>Version 1.5.0</h3>
+                    <p><em>Released: December 2023</em></p>
                     <ul>
-                        <li>📱 Mobile application for doctors and patients</li>
-                        <li>🤖 AI-powered diagnosis assistance</li>
-                        <li>📈 Advanced analytics and insights</li>
-                        <li>🔗 Integration with external lab systems</li>
-                        <li>💊 Pharmacy management module</li>
-                        <li>🚑 Ambulance tracking system</li>
-                        <li>📋 Electronic prescriptions</li>
-                        <li>🗣️ Voice-to-text for medical notes</li>
+                        <li>✨ <strong>New:</strong> Advanced patient search and filtering</li>
+                        <li>✨ <strong>New:</strong> Medical record templates</li>
+                        <li>🔧 <strong>Improved:</strong> Appointment scheduling interface</li>
+                        <li>🐛 <strong>Fixed:</strong> Database sync issues</li>
+                    </ul>
+
+                    <h3>Version 1.0.0</h3>
+                    <p><em>Released: November 2023</em></p>
+                    <ul>
+                        <li>🎉 Initial release</li>
+                        <li>✨ Basic patient management</li>
+                        <li>✨ Simple appointment scheduling</li>
+                        <li>✨ Basic billing system</li>
+                    </ul>
+                </section>
+
+                <section id="license">
+                    <h2>License Information</h2>
+
+                    <div class="alert alert-warning">
+                        <strong>Commercial License Required:</strong> This software is protected by copyright and requires a valid commercial license for use.
+                    </div>
+
+                    <h3>License Terms</h3>
+                    <p>MedCare Rural Hospital Management System is commercial software licensed under the following terms:</p>
+
+                    <ul>
+                        <li><strong>Usage Rights:</strong> Licensed for use by a single healthcare organization</li>
+                        <li><strong>Installation:</strong> May be installed on unlimited servers within the licensed organization</li>
+                        <li><strong>Modifications:</strong> Source code may be modified for internal use only</li>
+                        <li><strong>Redistribution:</strong> Redistribution or resale is strictly prohibited</li>
+                        <li><strong>Support:</strong> 12 months of support and updates included</li>
+                        <li><strong>Warranty:</strong> 90-day limited warranty on software functionality</li>
+                    </ul>
+
+                    <h3>License Verification</h3>
+                    <p>The software includes built-in license verification. To activate:</p>
+                    <ol>
+                        <li>Obtain license key from your purchase confirmation</li>
+                        <li>Access the admin panel after installation</li>
+                        <li>Navigate to System Settings → License</li>
+                        <li>Enter your license key and organization details</li>
+                        <li>Activate the license online</li>
+                    </ol>
+
+                    <h3>Compliance Requirements</h3>
+                    <ul>
+                        <li>Keep license documentation with your records</li>
+                        <li>Do not remove copyright notices from source code</li>
+                        <li>Notify us of any significant modifications</li>
+                        <li>Renew support contract for continued updates</li>
+                    </ul>
+
+                    <h3>Legal Notice</h3>
+                    <p>Copyright © 2024 MedCare Software Solutions. All rights reserved.</p>
+                    <p>This software contains proprietary and confidential information. Unauthorized copying, distribution, or modification is strictly prohibited and may result in legal action.</p>
+
+                    <h3>Contact Information</h3>
+                    <p>For license inquiries or support:</p>
+                    <ul>
+                        <li><strong>Email:</strong> license@medcare-software.com</li>
+                        <li><strong>Phone:</strong> +1-800-MEDCARE</li>
+                        <li><strong>Website:</strong> www.medcare-software.com</li>
                     </ul>
                 </section>
             </main>
@@ -1320,8 +1156,8 @@ Example Bill:
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2024 MedCare Rural. All rights reserved. Professional Hospital Management System.</p>
-            <p>Version 1.0.0 | Built with ❤️ for rural healthcare</p>
+            <p>&copy; 2024 MedCare Software Solutions. All rights reserved. | Professional Hospital Management Software</p>
+            <p>Licensed software - Unauthorized use prohibited | Version 2.0 Premium Edition</p>
         </div>
     </footer>
 
@@ -1342,26 +1178,35 @@ Example Bill:
             });
         });
 
-        // Active navigation highlighting
-        window.addEventListener('scroll', () => {
-            const sections = document.querySelectorAll('section[id]');
-            const navLinks = document.querySelectorAll('.sidebar a, .nav-links a');
-            
-            let current = '';
-            sections.forEach(section => {
-                const sectionTop = section.offsetTop;
-                const sectionHeight = section.clientHeight;
-                if (scrollY >= (sectionTop - 200)) {
-                    current = section.getAttribute('id');
-                }
-            });
+        // Highlight current section in sidebar
+        const observerOptions = {
+            root: null,
+            rootMargin: '-20% 0px -80% 0px',
+            threshold: 0
+        };
 
-            navLinks.forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href') === `#${current}`) {
-                    link.classList.add('active');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.id;
+                    // Remove active class from all sidebar links
+                    document.querySelectorAll('.sidebar a').forEach(link => {
+                        link.style.color = '';
+                        link.style.fontWeight = '';
+                    });
+                    // Add active class to current section link
+                    const activeLink = document.querySelector(`.sidebar a[href="#${id}"]`);
+                    if (activeLink) {
+                        activeLink.style.color = 'var(--primary-color)';
+                        activeLink.style.fontWeight = '600';
+                    }
                 }
             });
+        }, observerOptions);
+
+        // Observe all sections
+        document.querySelectorAll('section[id]').forEach(section => {
+            observer.observe(section);
         });
     </script>
 </body>

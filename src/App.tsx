@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useState, useEffect } from 'react'
+import { db } from '@/lib/database'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
@@ -40,10 +40,37 @@ import NotificationCenter from '@/components/hospital/NotificationCenter'
 
 function App() {
   const [activeTab, setActiveTab] = useState('landing')
-  const [patients] = useKV('hospital-patients', [])
-  const [appointments] = useKV('hospital-appointments', [])
-  const [todayAppointments] = useKV('today-appointments', [])
+  const [patients, setPatients] = useState([])
+  const [appointments, setAppointments] = useState([])
+  const [todayAppointments, setTodayAppointments] = useState([])
   const { user, isAuthenticated, logout, canAccessModule } = useAuth()
+
+  // Initialize database on app start
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        await db.initialize()
+        // Load initial data
+        const patientsData = await db.getAll('patients')
+        const appointmentsData = await db.getAll('appointments')
+        setPatients(patientsData)
+        setAppointments(appointmentsData)
+        
+        // Filter today's appointments
+        const today = new Date().toISOString().split('T')[0]
+        const todayAppts = appointmentsData.filter(apt => 
+          apt.appointment_date === today
+        )
+        setTodayAppointments(todayAppts)
+      } catch (error) {
+        console.error('Failed to initialize app:', error)
+      }
+    }
+
+    if (isAuthenticated) {
+      initializeApp()
+    }
+  }, [isAuthenticated])
 
   // Show landing page if not authenticated
   if (!isAuthenticated) {
