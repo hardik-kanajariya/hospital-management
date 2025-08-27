@@ -929,7 +929,7 @@ export default function PatientManagement() {
                   </div>
                 </div>
                 );
-              });
+              })
             )}
           </div>
         </CardContent>
