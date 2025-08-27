@@ -1,164 +1,128 @@
-# Product Requirements Document: MedCare Rural Hospital Management System
+# MedCare Rural - Hospital Management System PRD
 
 ## Core Purpose & Success
 
-**Mission Statement**: Provide a comprehensive, offline-capable hospital management system specifically designed for small rural hospitals in India, enabling efficient patient care, streamlined operations, and improved healthcare delivery.
+**Mission Statement**: Provide a comprehensive, offline-capable hospital management system specifically designed for rural healthcare facilities to modernize operations while addressing infrastructure challenges.
 
 **Success Indicators**: 
-- Reduced patient wait times through efficient appointment scheduling
-- Improved financial management with automated billing and payment tracking
-- Enhanced medical record keeping with digital EMR system
-- Better inventory management preventing medicine stockouts
-- Increased operational efficiency for small hospital staff
+- Reduce patient registration time by 70%
+- Increase appointment scheduling efficiency by 80%
+- Eliminate manual paperwork for medical records
+- Improve inventory tracking accuracy to 95%+
+- Enable digital billing and insurance claim processing
 
-**Experience Qualities**: Professional, Intuitive, Reliable
+**Experience Qualities**: Intuitive, Reliable, Efficient
 
 ## Project Classification & Approach
 
-**Complexity Level**: Complex Application (advanced functionality with persistent data)
-**Primary User Activity**: Creating, Managing, and Tracking (hospital operations)
+**Complexity Level**: Complex Application (advanced functionality, multi-user roles, comprehensive data management)
+
+**Primary User Activity**: Acting and Creating (healthcare professionals managing patient care, records, and hospital operations)
 
 ## Core Problem Analysis
 
-Rural hospitals in India face unique challenges:
-- 65% of population lives in villages with limited healthcare access
-- 83% shortage of specialists in Community Health Centers
-- 75.9% lack awareness of digital healthcare solutions
-- Manual notebook records lead to inefficiencies and errors
-- Poor inventory management causes medicine shortages
-- Inconsistent billing and payment tracking
+Rural hospitals face critical challenges:
+- Manual record keeping leading to data loss and inefficiency
+- Poor appointment scheduling causing patient overcrowding
+- Inadequate inventory management resulting in stockouts
+- Complex billing and insurance processing
+- Lack of doctor schedule coordination
+- Inefficient bed and resource allocation
 
 ## Essential Features
 
-### 1. Patient Management System
-- **Functionality**: Complete patient registration, medical history tracking, family member linking
-- **Purpose**: Central patient database for continuity of care
-- **Success Criteria**: Fast patient lookup, comprehensive medical history access
+### Patient Management System
+- **Functionality**: Complete patient registration, medical history, family linking
+- **Purpose**: Centralized patient data for better care coordination
+- **Success Criteria**: 100% digital patient records with quick search and retrieval
 
-### 2. Appointment Scheduling
-- **Functionality**: Doctor availability management, time slot booking, queue management
-- **Purpose**: Reduce patient wait times and optimize doctor schedules
-- **Success Criteria**: Double-booking prevention, real-time appointment status updates
+### Appointment Scheduling
+- **Functionality**: Calendar-based scheduling with doctor availability tracking
+- **Purpose**: Eliminate scheduling conflicts and reduce patient wait times
+- **Success Criteria**: Real-time scheduling with automated conflict resolution
 
-### 3. Medical Records (EMR)
-- **Functionality**: Digital consultation notes, prescription management, lab results tracking
-- **Purpose**: Replace paper records with searchable digital system
-- **Success Criteria**: Quick record retrieval, structured medical data entry
+### Doctor Schedule Management
+- **Functionality**: Shift planning, availability tracking, multi-location support
+- **Purpose**: Optimize doctor utilization and patient access
+- **Success Criteria**: Automated schedule generation with conflict detection
 
-### 4. Billing & Financial Management
-- **Functionality**: Invoice generation, payment tracking, insurance claims processing
-- **Purpose**: Streamline revenue management and reduce payment delays
-- **Success Criteria**: Automated bill calculation, clear payment status tracking
+### Medical Records & EMR
+- **Functionality**: Digital consultation notes, diagnosis tracking, prescription management
+- **Purpose**: Comprehensive medical documentation for continuity of care
+- **Success Criteria**: Searchable medical histories with treatment timelines
 
-### 5. Inventory Management
+### Lab Test Management
+- **Functionality**: Test ordering, result tracking, report generation
+- **Purpose**: Streamline laboratory workflow and result delivery
+- **Success Criteria**: Automated test ordering with digital result distribution
+
+### Hospital Bed Management
+- **Functionality**: Room assignments, occupancy tracking, bed availability
+- **Purpose**: Optimize bed utilization and patient placement
+- **Success Criteria**: Real-time bed status with automated assignment suggestions
+
+### Billing & Insurance System
+- **Functionality**: Invoice generation, payment tracking, insurance claim processing
+- **Purpose**: Automate financial operations and insurance workflows
+- **Success Criteria**: Automated billing with integrated insurance claim submission
+
+### Inventory Management
 - **Functionality**: Medicine and supply tracking, expiry monitoring, reorder alerts
-- **Purpose**: Prevent stockouts and reduce medicine wastage
-- **Success Criteria**: Real-time stock levels, proactive low-stock notifications
-
-### 6. Dashboard & Analytics
-- **Functionality**: Real-time operational metrics, financial summaries, alerts
-- **Purpose**: Provide hospital administrators with actionable insights
-- **Success Criteria**: Clear KPI visualization, trend identification
+- **Purpose**: Prevent stockouts and reduce waste through smart inventory control
+- **Success Criteria**: 95% inventory accuracy with automated reorder points
 
 ## Design Direction
 
 ### Visual Tone & Identity
-**Emotional Response**: The design should evoke trust, professionalism, and calm efficiency. Users should feel confident in the system's reliability and find it reassuring rather than overwhelming.
-
-**Design Personality**: Clean, professional, and approachable. The interface should feel like a trusted medical tool rather than a complex software system.
-
-**Visual Metaphors**: Medical iconography (stethoscope, heart, cross), organizational elements (folders, charts), and clear status indicators (color-coded badges).
-
-**Simplicity Spectrum**: Minimal interface with progressive disclosure - essential information immediately visible, detailed data accessible when needed.
+**Emotional Response**: Trust, professionalism, calm efficiency
+**Design Personality**: Clean, medical, reliable, accessible
+**Visual Metaphors**: Healthcare iconography, clean lines, medical blue color scheme
+**Simplicity Spectrum**: Minimal interface with progressive disclosure for complex functions
 
 ### Color Strategy
-**Color Scheme Type**: Medical-inspired monochromatic with strategic accent colors
-
-**Primary Color**: Professional medical blue (oklch(0.6 0.12 240)) - conveys trust, healthcare, and professionalism
-**Secondary Colors**: Clean whites and light grays for organization and readability
-**Accent Color**: Success green (oklch(0.7 0.15 140)) for positive actions and status indicators
-**Warning Color**: Medical red (oklch(0.65 0.2 20)) for critical alerts and urgent items
-
-**Color Psychology**: Blue establishes medical authority and trust, green provides positive reinforcement for successful actions, red creates appropriate urgency for critical items.
-
-**Foreground/Background Pairings**: 
-- Background (white): Primary text (dark gray) - 21:1 contrast ratio
-- Card (white): Card text (dark gray) - 21:1 contrast ratio  
-- Primary (medical blue): White text - 4.8:1 contrast ratio
-- Secondary (light gray): Dark text - 15.4:1 contrast ratio
-- Accent (green): White text - 4.6:1 contrast ratio
-- Destructive (red): White text - 4.2:1 contrast ratio
+**Color Scheme Type**: Medical-focused monochromatic with accent colors
+**Primary Color**: Medical blue (oklch(0.6 0.12 240)) - trust and professionalism
+**Secondary Colors**: Clean whites and light grays for backgrounds
+**Accent Color**: Success green (oklch(0.7 0.15 140)) for positive actions
+**Destructive Color**: Medical red (oklch(0.65 0.2 20)) for critical alerts
+**Color Psychology**: Blues convey trust and reliability, essential in healthcare
 
 ### Typography System
-**Font Pairing Strategy**: Single font family (Inter) with multiple weights for hierarchy and consistency
-**Typographic Hierarchy**: Bold headers, medium subheadings, regular body text, light captions
-**Font Personality**: Clean, professional, highly legible - optimized for both digital screens and potential printing
-**Which fonts**: Inter (Google Fonts) - excellent readability, professional appearance, comprehensive character set
-**Legibility Check**: Inter is specifically designed for UI readability with optimal letter spacing and clear character differentiation
+**Font Pairing Strategy**: Single font family (Inter) with varied weights
+**Typographic Hierarchy**: Clear distinction between headers, body text, and metadata
+**Font Personality**: Modern, readable, professional
+**Which fonts**: Inter - chosen for excellent legibility at all sizes
+**Legibility Check**: Inter provides optimal readability for medical data
 
 ### Visual Hierarchy & Layout
-**Attention Direction**: Card-based layout guides attention to individual items, color-coded badges provide instant status recognition
-**White Space Philosophy**: Generous spacing between sections creates breathing room and reduces cognitive load
-**Grid System**: Consistent spacing using Tailwind's scale, responsive grid layouts adapt to different screen sizes
-**Content Density**: Balanced information presentation - essential data visible, details available on demand
-
-### Animations
-**Purposeful Meaning**: Subtle hover effects and state transitions communicate interactivity
-**Hierarchy of Movement**: Status changes and success confirmations receive gentle animation feedback
-**Contextual Appropriateness**: Minimal, professional animations that don't distract from medical workflows
+**Attention Direction**: Critical patient information prominently displayed
+**White Space Philosophy**: Generous spacing to reduce cognitive load
+**Grid System**: Card-based layout with consistent spacing
+**Responsive Approach**: Mobile-first for tablet and smartphone usage
+**Content Density**: Balanced information display without overwhelming users
 
 ### UI Elements & Component Selection
-**Component Usage**: shadcn components for consistency - Cards for data presentation, Dialogs for data entry, Badges for status indicators, Tables for detailed listings
-**Component States**: Clear visual feedback for all interactive states (hover, active, disabled, loading)
-**Icon Selection**: Phosphor icons for medical and operational concepts (stethoscope, heart, calendar, users)
-**Spacing System**: Consistent 4px base unit using Tailwind's spacing scale
-**Mobile Adaptation**: Responsive layouts that work on tablets commonly used in rural healthcare settings
+**Component Usage**: 
+- Tabs for main navigation between modules
+- Cards for data grouping and visual separation
+- Tables for data display with sorting and filtering
+- Forms with validation for data entry
+- Modals for focused tasks
+
+**Component States**: Clear visual feedback for all interactive elements
+**Icon Selection**: Phosphor icons for medical and administrative actions
+**Mobile Adaptation**: Touch-friendly sizing with responsive breakpoints
 
 ## Implementation Considerations
 
-### Scalability Needs
-- Support for multiple hospital locations
-- Data export capabilities for regulatory compliance
-- Integration readiness for government health schemes
-- Offline-first architecture for unreliable internet connectivity
-
-### Rural-Specific Requirements
-- **Language Support**: Hindi and English interfaces with medical terminology
-- **Low Bandwidth Optimization**: Minimal data usage, optimized for 2G/3G networks
-- **Offline Capability**: Core functions work without internet connection
-- **Simple Training**: Interface designed for users with basic digital literacy
-- **Print-Friendly**: Bill and prescription printing for patient records
-
-### Technical Architecture
-- **Data Persistence**: Browser-based storage with sync capabilities
-- **Responsive Design**: Works on desktop, tablet, and mobile devices
-- **Progressive Web App**: Can be installed and used like a native application
-- **Security**: Patient data encryption and access controls
-
-## Success Metrics
-
-### Operational Metrics
-- Reduction in patient registration time (target: 50% faster)
-- Decrease in appointment scheduling conflicts (target: 90% reduction)
-- Improvement in inventory management (target: zero stockouts)
-- Increase in billing accuracy (target: 95% error-free)
-
-### User Experience Metrics
-- User adoption rate among hospital staff
-- Time to complete common tasks
-- User satisfaction scores
-- Error rates in data entry
-
-### Business Impact
-- Revenue cycle improvement
-- Reduction in medicine wastage
-- Improved patient satisfaction
-- Compliance with healthcare regulations
+**Scalability Needs**: Support for multiple hospital locations and user roles
+**Testing Focus**: Data integrity, offline functionality, user workflows
+**Critical Questions**: How to handle offline data synchronization, multi-tenant isolation
 
 ## Reflection
 
-This hospital management system addresses the critical gap in rural healthcare technology by providing an affordable, user-friendly solution designed specifically for the constraints and needs of small Indian hospitals. The one-time purchase model removes ongoing cost burdens, while the offline-first architecture ensures reliability in areas with poor connectivity.
-
-The design prioritizes simplicity and efficiency, recognizing that rural healthcare workers may have limited time for extensive training. By focusing on essential workflows and providing clear visual feedback, the system can improve patient care quality while reducing administrative burden.
-
-The modular architecture allows hospitals to implement features gradually, starting with basic patient registration and growing into comprehensive management as staff becomes comfortable with the system.
+This solution uniquely addresses rural healthcare challenges through:
+- Offline-first architecture for unreliable internet
+- Simplified workflows designed for varying technical skills
+- Comprehensive feature set eliminating need for multiple systems
+- Cost-effective one-time purchase model suitable for small hospitals

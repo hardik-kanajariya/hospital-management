@@ -14,7 +14,10 @@ import {
   CalendarPlus,
   Activity,
   Heart,
-  Stethoscope
+  Stethoscope,
+  UserCircle,
+  TestTube,
+  Bed
 } from '@phosphor-icons/react'
 
 // Hospital components
@@ -24,6 +27,9 @@ import AppointmentScheduling from '@/components/hospital/AppointmentScheduling'
 import MedicalRecords from '@/components/hospital/MedicalRecords'
 import BillingSystem from '@/components/hospital/BillingSystem'
 import InventoryManagement from '@/components/hospital/InventoryManagement'
+import DoctorSchedule from '@/components/hospital/DoctorSchedule'
+import LabManagement from '@/components/hospital/LabManagement'
+import BedManagement from '@/components/hospital/BedManagement'
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard')
@@ -93,7 +99,7 @@ function App() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 lg:w-fit lg:grid-cols-6">
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-9 lg:w-fit">
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <Activity className="w-4 h-4" />
               <span className="hidden sm:inline">Dashboard</span>
@@ -106,9 +112,21 @@ function App() {
               <Calendar className="w-4 h-4" />
               <span className="hidden sm:inline">Appointments</span>
             </TabsTrigger>
+            <TabsTrigger value="doctors" className="flex items-center gap-2">
+              <UserCircle className="w-4 h-4" />
+              <span className="hidden sm:inline">Doctors</span>
+            </TabsTrigger>
             <TabsTrigger value="records" className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
               <span className="hidden sm:inline">Records</span>
+            </TabsTrigger>
+            <TabsTrigger value="lab" className="flex items-center gap-2">
+              <TestTube className="w-4 h-4" />
+              <span className="hidden sm:inline">Lab</span>
+            </TabsTrigger>
+            <TabsTrigger value="beds" className="flex items-center gap-2">
+              <Bed className="w-4 h-4" />
+              <span className="hidden sm:inline">Beds</span>
             </TabsTrigger>
             <TabsTrigger value="billing" className="flex items-center gap-2">
               <CreditCard className="w-4 h-4" />
@@ -152,6 +170,36 @@ function App() {
               </div>
             </div>
             <MedicalRecords />
+          </TabsContent>
+
+          <TabsContent value="doctors" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight">Doctor Schedule Management</h2>
+                <p className="text-muted-foreground">Manage doctor schedules, availability and shifts</p>
+              </div>
+            </div>
+            <DoctorSchedule />
+          </TabsContent>
+
+          <TabsContent value="lab" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight">Laboratory Management</h2>
+                <p className="text-muted-foreground">Order tests, track results and generate reports</p>
+              </div>
+            </div>
+            <LabManagement />
+          </TabsContent>
+
+          <TabsContent value="beds" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight">Bed Management</h2>
+                <p className="text-muted-foreground">Track bed occupancy and room assignments</p>
+              </div>
+            </div>
+            <BedManagement />
           </TabsContent>
 
           <TabsContent value="billing" className="space-y-6">

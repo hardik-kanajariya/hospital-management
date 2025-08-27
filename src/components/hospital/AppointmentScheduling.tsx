@@ -26,13 +26,12 @@ interface Appointment {
   createdAt: string
 }
 
-const doctors = [
-  'Dr. Rajesh Kumar - General Medicine',
-  'Dr. Priya Sharma - Pediatrics',
-  'Dr. Anil Singh - Orthopedics',
-  'Dr. Sunita Patel - Gynecology',
-  'Dr. Vikram Joshi - Surgery'
-]
+export default function AppointmentScheduling() {
+  const [appointments, setAppointments] = useKV('hospital-appointments', [])
+  const [patients] = useKV('hospital-patients', [])
+  const [doctors] = useKV('hospital-doctors', [])
+  const [schedules] = useKV('doctor-schedules', [])
+  const [todayAppointments, setTodayAppointments] = useKV('today-appointments', [])
 
 const appointmentTypes = [
   'General Consultation',
@@ -50,7 +49,6 @@ const timeSlots = [
   '16:00', '16:30', '17:00', '17:30', '18:00'
 ]
 
-export default function AppointmentScheduling() {
   const [appointments, setAppointments] = useKV('hospital-appointments', [])
   const [patients] = useKV('hospital-patients', [])
   const [todayAppointments, setTodayAppointments] = useKV('today-appointments', [])
@@ -273,9 +271,9 @@ export default function AppointmentScheduling() {
                       <SelectValue placeholder="Choose a doctor" />
                     </SelectTrigger>
                     <SelectContent>
-                      {doctors.map((doctor) => (
-                        <SelectItem key={doctor} value={doctor}>
-                          {doctor}
+                      {doctors.filter(d => d.status === 'active').map((doctor) => (
+                        <SelectItem key={doctor.id} value={`Dr. ${doctor.name}`}>
+                          Dr. {doctor.name} - {doctor.specialization}
                         </SelectItem>
                       ))}
                     </SelectContent>

@@ -5,10 +5,25 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Package, Plus, Search, AlertTriangle, TrendingDown, Eye, Edit } from '@phosphor-icons/react'
+import { Textarea } from '@/components/ui/textarea'
+import { 
+  Package, 
+  Plus, 
+  Search, 
+  AlertTriangle, 
+  TrendingDown, 
+  Eye, 
+  Edit,
+  ShoppingCart,
+  Archive,
+  Calendar,
+  DollarSign,
+  Pill,
+  FirstAid
+} from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 interface InventoryItem {
@@ -19,349 +34,306 @@ interface InventoryItem {
   quantity: number
   unit: string
   reorderLevel: number
+  maxLevel: number
   costPrice: number
   sellingPrice: number
   supplier: string
+  supplierContact?: string
   batchNumber?: string
+  manufacturingDate?: string
   expiryDate?: string
   location: string
   description?: string
+  barcode?: string
+  status: 'active' | 'discontinued' | 'out_of_stock'
   lastUpdated: string
+  createdAt: string
+}
+
+interface StockTransaction {
+  id: string
+  itemId: string
+  itemName: string
+  type: 'purchase' | 'issue' | 'return' | 'adjustment' | 'expired'
+  quantity: number
+  unitPrice?: number
+  totalAmount?: number
+  reason?: string
+  batchNumber?: string
+  expiryDate?: string
+  issuedTo?: string
+  date: string
+  createdBy: string
+  notes?: string
+}
+
+interface PurchaseOrder {
+  id: string
+  supplier: string
+  orderDate: string
+  expectedDelivery?: string
+  actualDelivery?: string
+  status: 'pending' | 'approved' | 'ordered' | 'received' | 'cancelled'
+  items: Array<{
+    itemId: string
+    itemName: string
+    quantity: number
+    unitPrice: number
+    totalPrice: number
+  }>
+  totalAmount: number
+  notes?: string
+  createdBy: string
   createdAt: string
 }
 
 const categories = {
   medicine: [
-    'Antibiotics',
-    'Analgesics',
-    'Antidiabetics',
-    'Cardiovascular',
-    'Respiratory',
-    'Vaccines',
-    'Vitamins',
-    'Antiseptics'
+    'Antibiotics', 'Analgesics', 'Antidiabetics', 'Cardiovascular', 'Respiratory', 
+    'Vaccines', 'Vitamins', 'Antiseptics', 'Emergency Medicines', 'Chronic Disease'
   ],
   supply: [
-    'Disposables',
-    'Surgical Instruments',
-    'Laboratory Supplies',
-    'First Aid',
-    'Bandages & Dressings',
-    'IV Fluids',
-    'Oxygen',
-    'Cleaning Supplies'
+    'Disposables', 'Surgical Instruments', 'Laboratory Supplies', 'First Aid',
+    'Bandages & Dressings', 'IV Fluids', 'Syringes & Needles', 'PPE'
   ],
   equipment: [
-    'Diagnostic Equipment',
-    'Surgical Equipment',
-    'Patient Monitoring',
-    'Laboratory Equipment',
-    'Emergency Equipment',
-    'Furniture',
-    'IT Equipment',
-    'Maintenance Tools'
+    'Diagnostic Equipment', 'Monitoring Devices', 'Surgical Equipment',
+    'Laboratory Equipment', 'Emergency Equipment', 'Furniture'
   ]
 }
 
-const units = [
-  'Tablets',
-  'Bottles',
-  'Vials',
-  'Boxes',
-  'Pieces',
-  'Strips',
-  'Packets',
-  'Liters',
-  'Ml',
-  'Kg',
-  'Grams',
-  'Units'
-]
+const units = ['Tablets', 'Capsules', 'Bottles', 'Vials', 'Boxes', 'Pieces', 'Kg', 'Grams', 'Liters', 'ML']
 
-const locations = [
-  'Main Pharmacy',
-  'Emergency Store',
-  'Ward Storage',
-  'Laboratory',
-  'Operation Theatre',
-  'ICU Storage',
-  'General Store',
-  'Cold Storage'
+const commonSuppliers = [
+  'MedSupply India', 'HealthCare Distributors', 'PharmaLink', 'MediCore Solutions',
+  'Surgical Supply Co.', 'Lab Equipment Ltd.', 'Emergency Medical Supplies', 'Local Pharmacy'
 ]
 
 export default function InventoryManagement() {
-  const [inventory, setInventory] = useKV('hospital-inventory', [])
-  
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [inventory, setInventory] = useKV<InventoryItem[]>('hospital-inventory', [])
+  const [transactions, setTransactions] = useKV<StockTransaction[]>('stock-transactions', [])
+  const [purchaseOrders, setPurchaseOrders] = useKV<PurchaseOrder[]>('purchase-orders', [])
+
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isTransactionDialogOpen, setIsTransactionDialogOpen] = useState(false)
+  const [isPurchaseOrderDialogOpen, setIsPurchaseOrderDialogOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [isStockUpdateOpen, setIsStockUpdateOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterCategory, setFilterCategory] = useState('all')
   const [filterType, setFilterType] = useState('all')
-  const [filterStatus, setFilterStatus] = useState('all')
 
-  const [newItem, setNewItem] = useState({
-    name: '',
-    category: '',
-    type: 'medicine' as const,
+  const [itemFormData, setItemFormData] = useState<Partial<InventoryItem>>({
+    type: 'medicine',
     quantity: 0,
-    unit: '',
-    reorderLevel: 0,
-    costPrice: 0,
-    sellingPrice: 0,
-    supplier: '',
-    batchNumber: '',
-    expiryDate: '',
-    location: '',
-    description: ''
+    reorderLevel: 10,
+    maxLevel: 100,
+    status: 'active'
   })
 
-  const [stockUpdate, setStockUpdate] = useState({
-    type: 'add' as 'add' | 'remove',
+  const [transactionFormData, setTransactionFormData] = useState<Partial<StockTransaction>>({
+    type: 'purchase',
     quantity: 0,
-    reason: '',
-    notes: ''
+    date: new Date().toISOString().split('T')[0]
   })
 
-  const filteredInventory = inventory.filter(item => {
-    const matchesSearch = item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.supplier?.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesCategory = filterCategory === 'all' || item.category === filterCategory
-    const matchesType = filterType === 'all' || item.type === filterType
-    
-    let matchesStatus = true
-    if (filterStatus === 'low-stock') {
-      matchesStatus = item.quantity <= item.reorderLevel
-    } else if (filterStatus === 'out-of-stock') {
-      matchesStatus = item.quantity === 0
-    } else if (filterStatus === 'expired') {
-      matchesStatus = item.expiryDate ? new Date(item.expiryDate) < new Date() : false
-    } else if (filterStatus === 'expiring-soon') {
-      const oneMonthFromNow = new Date()
-      oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1)
-      matchesStatus = item.expiryDate ? new Date(item.expiryDate) <= oneMonthFromNow : false
-    }
-    
-    return matchesSearch && matchesCategory && matchesType && matchesStatus
+  const [purchaseOrderFormData, setPurchaseOrderFormData] = useState<Partial<PurchaseOrder>>({
+    orderDate: new Date().toISOString().split('T')[0],
+    status: 'pending',
+    items: [],
+    totalAmount: 0
   })
-
-  // Calculate inventory stats
-  const lowStockItems = inventory.filter(item => item.quantity <= item.reorderLevel)
-  const outOfStockItems = inventory.filter(item => item.quantity === 0)
-  const expiredItems = inventory.filter(item => 
-    item.expiryDate && new Date(item.expiryDate) < new Date()
-  )
-  const expiringSoonItems = inventory.filter(item => {
-    if (!item.expiryDate) return false
-    const oneMonthFromNow = new Date()
-    oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1)
-    return new Date(item.expiryDate) <= oneMonthFromNow && new Date(item.expiryDate) >= new Date()
-  })
-
-  const totalInventoryValue = inventory.reduce((sum, item) => sum + (item.quantity * item.costPrice), 0)
 
   const handleAddItem = () => {
-    if (!newItem.name || !newItem.category || !newItem.unit || !newItem.location) {
+    if (!itemFormData.name || !itemFormData.category || !itemFormData.supplier) {
       toast.error('Please fill in all required fields')
       return
     }
 
-    const item: InventoryItem = {
+    const newItem: InventoryItem = {
       id: `INV${Date.now()}`,
-      name: newItem.name,
-      category: newItem.category,
-      type: newItem.type,
-      quantity: newItem.quantity,
-      unit: newItem.unit,
-      reorderLevel: newItem.reorderLevel,
-      costPrice: newItem.costPrice,
-      sellingPrice: newItem.sellingPrice,
-      supplier: newItem.supplier,
-      batchNumber: newItem.batchNumber,
-      expiryDate: newItem.expiryDate,
-      location: newItem.location,
-      description: newItem.description,
+      name: itemFormData.name!,
+      category: itemFormData.category!,
+      type: itemFormData.type as any,
+      quantity: Number(itemFormData.quantity) || 0,
+      unit: itemFormData.unit || 'Pieces',
+      reorderLevel: Number(itemFormData.reorderLevel) || 10,
+      maxLevel: Number(itemFormData.maxLevel) || 100,
+      costPrice: Number(itemFormData.costPrice) || 0,
+      sellingPrice: Number(itemFormData.sellingPrice) || 0,
+      supplier: itemFormData.supplier!,
+      supplierContact: itemFormData.supplierContact,
+      batchNumber: itemFormData.batchNumber,
+      manufacturingDate: itemFormData.manufacturingDate,
+      expiryDate: itemFormData.expiryDate,
+      location: itemFormData.location || 'Main Store',
+      description: itemFormData.description,
+      barcode: itemFormData.barcode,
+      status: itemFormData.status as any,
       lastUpdated: new Date().toISOString(),
       createdAt: new Date().toISOString()
     }
 
-    setInventory(currentInventory => [...currentInventory, item])
+    setInventory(current => [...current, newItem])
     
-    // Reset form
-    setNewItem({
-      name: '',
-      category: '',
+    // Create initial stock transaction
+    if (newItem.quantity > 0) {
+      const initialTransaction: StockTransaction = {
+        id: `TXN${Date.now()}`,
+        itemId: newItem.id,
+        itemName: newItem.name,
+        type: 'purchase',
+        quantity: newItem.quantity,
+        unitPrice: newItem.costPrice,
+        totalAmount: newItem.quantity * newItem.costPrice,
+        reason: 'Initial stock',
+        batchNumber: newItem.batchNumber,
+        expiryDate: newItem.expiryDate,
+        date: new Date().toISOString().split('T')[0],
+        createdBy: 'Admin',
+        notes: 'Initial inventory setup'
+      }
+      setTransactions(current => [...current, initialTransaction])
+    }
+
+    setItemFormData({
       type: 'medicine',
       quantity: 0,
-      unit: '',
-      reorderLevel: 0,
-      costPrice: 0,
-      sellingPrice: 0,
-      supplier: '',
-      batchNumber: '',
-      expiryDate: '',
-      location: '',
-      description: ''
+      reorderLevel: 10,
+      maxLevel: 100,
+      status: 'active'
     })
-    
-    setIsDialogOpen(false)
-    toast.success(`Item ${item.name} added to inventory`)
+    setIsAddDialogOpen(false)
+    toast.success('Inventory item added successfully')
   }
 
-  const handleUpdateStock = () => {
-    if (!selectedItem || stockUpdate.quantity <= 0) {
-      toast.error('Please enter a valid quantity')
+  const handleAddTransaction = () => {
+    if (!selectedItem || !transactionFormData.quantity || !transactionFormData.type) {
+      toast.error('Please fill in all required fields')
       return
     }
 
-    let newQuantity = selectedItem.quantity
-    if (stockUpdate.type === 'add') {
-      newQuantity += stockUpdate.quantity
-    } else {
-      newQuantity = Math.max(0, newQuantity - stockUpdate.quantity)
+    const quantity = Number(transactionFormData.quantity)
+    const newTransaction: StockTransaction = {
+      id: `TXN${Date.now()}`,
+      itemId: selectedItem.id,
+      itemName: selectedItem.name,
+      type: transactionFormData.type as any,
+      quantity,
+      unitPrice: transactionFormData.unitPrice,
+      totalAmount: transactionFormData.unitPrice ? quantity * transactionFormData.unitPrice : undefined,
+      reason: transactionFormData.reason,
+      batchNumber: transactionFormData.batchNumber,
+      expiryDate: transactionFormData.expiryDate,
+      issuedTo: transactionFormData.issuedTo,
+      date: transactionFormData.date!,
+      createdBy: 'Admin',
+      notes: transactionFormData.notes
     }
 
-    setInventory(currentInventory =>
-      currentInventory.map(item =>
+    // Update inventory quantity
+    const quantityChange = 
+      transactionFormData.type === 'purchase' || transactionFormData.type === 'return' ? quantity :
+      transactionFormData.type === 'issue' || transactionFormData.type === 'expired' ? -quantity :
+      quantity // adjustment can be positive or negative
+
+    setInventory(current =>
+      current.map(item =>
         item.id === selectedItem.id
-          ? { ...item, quantity: newQuantity, lastUpdated: new Date().toISOString() }
+          ? {
+              ...item,
+              quantity: Math.max(0, item.quantity + quantityChange),
+              status: (item.quantity + quantityChange) <= 0 ? 'out_of_stock' : item.status,
+              lastUpdated: new Date().toISOString()
+            }
           : item
       )
     )
 
-    setStockUpdate({ type: 'add', quantity: 0, reason: '', notes: '' })
-    setIsStockUpdateOpen(false)
-    toast.success(`Stock updated for ${selectedItem.name}`)
+    setTransactions(current => [...current, newTransaction])
+    setTransactionFormData({
+      type: 'purchase',
+      quantity: 0,
+      date: new Date().toISOString().split('T')[0]
+    })
+    setIsTransactionDialogOpen(false)
+    toast.success('Stock transaction recorded successfully')
+  }
+
+  const handleEditItem = (item: InventoryItem) => {
+    setSelectedItem(item)
+    setItemFormData(item)
+    setIsEditDialogOpen(true)
   }
 
   const handleUpdateItem = () => {
-    if (!selectedItem) return
+    if (!selectedItem || !itemFormData.name) {
+      toast.error('Please fill in required fields')
+      return
+    }
 
-    setInventory(currentInventory =>
-      currentInventory.map(item =>
+    setInventory(current =>
+      current.map(item =>
         item.id === selectedItem.id
-          ? { ...selectedItem, lastUpdated: new Date().toISOString() }
+          ? {
+              ...item,
+              ...itemFormData,
+              lastUpdated: new Date().toISOString()
+            }
           : item
       )
     )
 
     setIsEditDialogOpen(false)
+    setSelectedItem(null)
+    setItemFormData({
+      type: 'medicine',
+      quantity: 0,
+      reorderLevel: 10,
+      maxLevel: 100,
+      status: 'active'
+    })
     toast.success('Item updated successfully')
   }
 
-  const getStockStatus = (item: InventoryItem) => {
-    if (item.quantity === 0) {
-      return <Badge variant="destructive">Out of Stock</Badge>
-    } else if (item.quantity <= item.reorderLevel) {
-      return <Badge variant="default" className="bg-yellow-500">Low Stock</Badge>
-    } else {
-      return <Badge variant="default" className="bg-green-500">In Stock</Badge>
-    }
-  }
-
-  const getExpiryStatus = (item: InventoryItem) => {
-    if (!item.expiryDate) return null
+  const filteredInventory = inventory.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.supplier.toLowerCase().includes(searchTerm.toLowerCase())
     
-    const expiryDate = new Date(item.expiryDate)
-    const today = new Date()
-    const oneMonthFromNow = new Date()
-    oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1)
+    const matchesCategory = filterCategory === 'all' || item.category === filterCategory
+    const matchesType = filterType === 'all' || item.type === filterType
+    
+    return matchesSearch && matchesCategory && matchesType
+  })
 
-    if (expiryDate < today) {
-      return <Badge variant="destructive">Expired</Badge>
-    } else if (expiryDate <= oneMonthFromNow) {
-      return <Badge variant="default" className="bg-orange-500">Expiring Soon</Badge>
-    }
-    return null
-  }
+  const lowStockItems = inventory.filter(item => item.quantity <= item.reorderLevel && item.status === 'active')
+  const expiringItems = inventory.filter(item => {
+    if (!item.expiryDate) return false
+    const expiryDate = new Date(item.expiryDate)
+    const thirtyDaysFromNow = new Date()
+    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30)
+    return expiryDate <= thirtyDaysFromNow && item.quantity > 0
+  })
+  const outOfStockItems = inventory.filter(item => item.quantity === 0)
+  const totalValue = inventory.reduce((sum, item) => sum + (item.quantity * item.costPrice), 0)
 
   return (
     <div className="space-y-6">
-      {/* Inventory Dashboard */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Items</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{inventory.length}</div>
-            <p className="text-xs text-muted-foreground">
-              ₹{totalInventoryValue.toLocaleString()} value
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Low Stock</CardTitle>
-            <TrendingDown className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{lowStockItems.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Require restocking
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Out of Stock</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{outOfStockItems.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Immediate attention
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Expired</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{expiredItems.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Need disposal
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Expiring Soon</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{expiringSoonItems.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Within 30 days
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Header and Controls */}
-      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+      {/* Header Actions */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-1">
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder="Search inventory..."
+              placeholder="Search inventory items..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
             />
           </div>
           
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2">
             <Select value={filterType} onValueChange={setFilterType}>
               <SelectTrigger className="w-[120px]">
                 <SelectValue />
@@ -373,61 +345,81 @@ export default function InventoryManagement() {
                 <SelectItem value="equipment">Equipment</SelectItem>
               </SelectContent>
             </Select>
-            
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
+
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
               <SelectTrigger className="w-[140px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="low-stock">Low Stock</SelectItem>
-                <SelectItem value="out-of-stock">Out of Stock</SelectItem>
-                <SelectItem value="expired">Expired</SelectItem>
-                <SelectItem value="expiring-soon">Expiring Soon</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
+                {Object.values(categories).flat().map((category) => (
+                  <SelectItem key={category} value={category}>{category}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
         </div>
+        
+        <div className="flex gap-2">
+          <Dialog open={isPurchaseOrderDialogOpen} onOpenChange={setIsPurchaseOrderDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                <ShoppingCart className="h-4 w-4" />
+                Purchase Order
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create Purchase Order</DialogTitle>
+                <DialogDescription>Generate purchase order for low stock items</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  This feature would create purchase orders for items below reorder level. 
+                  Currently {lowStockItems.length} items need restocking.
+                </p>
+                <div className="space-y-2">
+                  {lowStockItems.slice(0, 5).map(item => (
+                    <div key={item.id} className="flex justify-between items-center p-2 border rounded">
+                      <span>{item.name}</span>
+                      <Badge variant="destructive">{item.quantity} remaining</Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <Button onClick={() => setIsPurchaseOrderDialogOpen(false)}>Close</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Item
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Add New Inventory Item</DialogTitle>
-              <DialogDescription>
-                Add a new medicine, supply, or equipment to the inventory.
-              </DialogDescription>
-            </DialogHeader>
-
-            <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="basic">Basic Info</TabsTrigger>
-                <TabsTrigger value="pricing">Pricing & Stock</TabsTrigger>
-                <TabsTrigger value="details">Additional Details</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="basic" className="space-y-4">
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Add Item
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Add Inventory Item</DialogTitle>
+                <DialogDescription>Add a new item to the hospital inventory</DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-6">
+                {/* Basic Information */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Item Name *</Label>
                     <Input
-                      value={newItem.name}
-                      onChange={(e) => setNewItem({...newItem, name: e.target.value})}
+                      value={itemFormData.name || ''}
+                      onChange={(e) => setItemFormData({...itemFormData, name: e.target.value})}
                       placeholder="Enter item name"
                     />
                   </div>
-
                   <div className="space-y-2">
                     <Label>Type *</Label>
-                    <Select 
-                      value={newItem.type} 
-                      onValueChange={(value: any) => setNewItem({...newItem, type: value, category: ''})}
-                    >
+                    <Select value={itemFormData.type} onValueChange={(value) => setItemFormData({...itemFormData, type: value as any, category: ''})}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -443,97 +435,75 @@ export default function InventoryManagement() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Category *</Label>
-                    <Select 
-                      value={newItem.category} 
-                      onValueChange={(value) => setNewItem({...newItem, category: value})}
-                    >
+                    <Select value={itemFormData.category} onValueChange={(value) => setItemFormData({...itemFormData, category: value})}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories[newItem.type]?.map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {category}
-                          </SelectItem>
+                        {itemFormData.type && categories[itemFormData.type as keyof typeof categories]?.map((category) => (
+                          <SelectItem key={category} value={category}>{category}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-
                   <div className="space-y-2">
-                    <Label>Unit *</Label>
-                    <Select 
-                      value={newItem.unit} 
-                      onValueChange={(value) => setNewItem({...newItem, unit: value})}
-                    >
+                    <Label>Unit</Label>
+                    <Select value={itemFormData.unit} onValueChange={(value) => setItemFormData({...itemFormData, unit: value})}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select unit" />
                       </SelectTrigger>
                       <SelectContent>
                         {units.map((unit) => (
-                          <SelectItem key={unit} value={unit}>
-                            {unit}
-                          </SelectItem>
+                          <SelectItem key={unit} value={unit}>{unit}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Location *</Label>
-                  <Select 
-                    value={newItem.location} 
-                    onValueChange={(value) => setNewItem({...newItem, location: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select storage location" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {locations.map((location) => (
-                        <SelectItem key={location} value={location}>
-                          {location}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Supplier</Label>
-                  <Input
-                    value={newItem.supplier}
-                    onChange={(e) => setNewItem({...newItem, supplier: e.target.value})}
-                    placeholder="Supplier name"
-                  />
-                </div>
-              </TabsContent>
-
-              <TabsContent value="pricing" className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                {/* Stock Information */}
+                <div className="grid grid-cols-4 gap-4">
                   <div className="space-y-2">
-                    <Label>Initial Quantity</Label>
+                    <Label>Current Quantity</Label>
                     <Input
                       type="number"
                       min="0"
-                      value={newItem.quantity}
-                      onChange={(e) => setNewItem({...newItem, quantity: parseInt(e.target.value) || 0})}
+                      value={itemFormData.quantity || ''}
+                      onChange={(e) => setItemFormData({...itemFormData, quantity: Number(e.target.value)})}
                       placeholder="0"
                     />
                   </div>
-
                   <div className="space-y-2">
                     <Label>Reorder Level</Label>
                     <Input
                       type="number"
                       min="0"
-                      value={newItem.reorderLevel}
-                      onChange={(e) => setNewItem({...newItem, reorderLevel: parseInt(e.target.value) || 0})}
-                      placeholder="Minimum stock level"
+                      value={itemFormData.reorderLevel || ''}
+                      onChange={(e) => setItemFormData({...itemFormData, reorderLevel: Number(e.target.value)})}
+                      placeholder="10"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Max Level</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={itemFormData.maxLevel || ''}
+                      onChange={(e) => setItemFormData({...itemFormData, maxLevel: Number(e.target.value)})}
+                      placeholder="100"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Location</Label>
+                    <Input
+                      value={itemFormData.location || ''}
+                      onChange={(e) => setItemFormData({...itemFormData, location: e.target.value})}
+                      placeholder="Main Store"
                     />
                   </div>
                 </div>
 
+                {/* Pricing */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Cost Price (₹)</Label>
@@ -541,448 +511,604 @@ export default function InventoryManagement() {
                       type="number"
                       min="0"
                       step="0.01"
-                      value={newItem.costPrice}
-                      onChange={(e) => setNewItem({...newItem, costPrice: parseFloat(e.target.value) || 0})}
-                      placeholder="Purchase price per unit"
+                      value={itemFormData.costPrice || ''}
+                      onChange={(e) => setItemFormData({...itemFormData, costPrice: Number(e.target.value)})}
+                      placeholder="0.00"
                     />
                   </div>
-
                   <div className="space-y-2">
                     <Label>Selling Price (₹)</Label>
                     <Input
                       type="number"
                       min="0"
                       step="0.01"
-                      value={newItem.sellingPrice}
-                      onChange={(e) => setNewItem({...newItem, sellingPrice: parseFloat(e.target.value) || 0})}
-                      placeholder="Selling price per unit"
+                      value={itemFormData.sellingPrice || ''}
+                      onChange={(e) => setItemFormData({...itemFormData, sellingPrice: Number(e.target.value)})}
+                      placeholder="0.00"
                     />
                   </div>
                 </div>
-              </TabsContent>
 
-              <TabsContent value="details" className="space-y-4">
+                {/* Supplier Information */}
                 <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Supplier *</Label>
+                    <Select value={itemFormData.supplier} onValueChange={(value) => setItemFormData({...itemFormData, supplier: value})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select supplier" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {commonSuppliers.map((supplier) => (
+                          <SelectItem key={supplier} value={supplier}>{supplier}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Supplier Contact</Label>
+                    <Input
+                      value={itemFormData.supplierContact || ''}
+                      onChange={(e) => setItemFormData({...itemFormData, supplierContact: e.target.value})}
+                      placeholder="Phone/Email"
+                    />
+                  </div>
+                </div>
+
+                {/* Batch & Expiry Information */}
+                <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label>Batch Number</Label>
                     <Input
-                      value={newItem.batchNumber}
-                      onChange={(e) => setNewItem({...newItem, batchNumber: e.target.value})}
-                      placeholder="Batch/Lot number"
+                      value={itemFormData.batchNumber || ''}
+                      onChange={(e) => setItemFormData({...itemFormData, batchNumber: e.target.value})}
+                      placeholder="Batch number"
                     />
                   </div>
-
+                  <div className="space-y-2">
+                    <Label>Manufacturing Date</Label>
+                    <Input
+                      type="date"
+                      value={itemFormData.manufacturingDate || ''}
+                      onChange={(e) => setItemFormData({...itemFormData, manufacturingDate: e.target.value})}
+                    />
+                  </div>
                   <div className="space-y-2">
                     <Label>Expiry Date</Label>
                     <Input
                       type="date"
-                      value={newItem.expiryDate}
-                      onChange={(e) => setNewItem({...newItem, expiryDate: e.target.value})}
-                      min={new Date().toISOString().split('T')[0]}
+                      value={itemFormData.expiryDate || ''}
+                      onChange={(e) => setItemFormData({...itemFormData, expiryDate: e.target.value})}
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label>Description</Label>
-                  <Input
-                    value={newItem.description}
-                    onChange={(e) => setNewItem({...newItem, description: e.target.value})}
+                  <Textarea
+                    value={itemFormData.description || ''}
+                    onChange={(e) => setItemFormData({...itemFormData, description: e.target.value})}
                     placeholder="Additional details about the item"
+                    rows={2}
                   />
                 </div>
-              </TabsContent>
-            </Tabs>
+              </div>
 
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleAddItem}>
-                Add Item
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleAddItem}>Add Item</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
-      {/* Inventory List */}
-      <div className="space-y-4">
-        {filteredInventory.length === 0 ? (
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-5">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Items</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{inventory.length}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Low Stock</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-destructive" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-destructive">{lowStockItems.length}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Out of Stock</CardTitle>
+            <TrendingDown className="h-4 w-4 text-destructive" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-destructive">{outOfStockItems.length}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Expiring Soon</CardTitle>
+            <Calendar className="h-4 w-4 text-yellow-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-600">{expiringItems.length}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Value</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">₹{totalValue.toLocaleString()}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="inventory" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="inventory">Inventory</TabsTrigger>
+          <TabsTrigger value="alerts">Alerts</TabsTrigger>
+          <TabsTrigger value="transactions">Transactions</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="inventory" className="space-y-4">
           <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <Package className="h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-lg font-medium text-muted-foreground">No inventory items found</p>
-              <p className="text-sm text-muted-foreground">
-                {searchTerm ? 'Try adjusting your search criteria' : 'Add your first inventory item'}
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          filteredInventory.map((item) => (
-            <Card key={item.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center">
-                      <Package className="w-6 h-6" />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-lg font-semibold">{item.name}</h3>
-                        <Badge variant="outline">{item.id}</Badge>
-                        <Badge variant="secondary">{item.type}</Badge>
-                        {getStockStatus(item)}
-                        {getExpiryStatus(item)}
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-sm text-muted-foreground">
-                          <strong>Category:</strong> {item.category} • 
-                          <strong> Location:</strong> {item.location}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          <strong>Quantity:</strong> {item.quantity} {item.unit} • 
-                          <strong> Reorder Level:</strong> {item.reorderLevel} {item.unit}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          <strong>Cost:</strong> ₹{item.costPrice} • 
-                          <strong> Selling:</strong> ₹{item.sellingPrice} per {item.unit}
-                        </p>
-                        {item.supplier && (
-                          <p className="text-sm text-muted-foreground">
-                            <strong>Supplier:</strong> {item.supplier}
-                          </p>
-                        )}
-                        {item.expiryDate && (
-                          <p className="text-sm text-muted-foreground">
-                            <strong>Expiry:</strong> {new Date(item.expiryDate).toLocaleDateString()}
-                          </p>
-                        )}
-                      </div>
-                    </div>
+            <CardHeader>
+              <CardTitle>Inventory Items</CardTitle>
+              <CardDescription>
+                {filteredInventory.length} of {inventory.length} items
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {filteredInventory.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Package className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <h3 className="mt-4 text-lg font-semibold">No inventory items found</h3>
+                    <p className="text-muted-foreground">
+                      {searchTerm ? 'Try adjusting your search terms' : 'Start by adding your first inventory item'}
+                    </p>
                   </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => setSelectedItem(item)}
-                        >
-                          <Eye className="w-4 h-4 mr-1" />
-                          View
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                          <DialogTitle>Item Details</DialogTitle>
-                          <DialogDescription>
-                            Complete information for {item.name}
-                          </DialogDescription>
-                        </DialogHeader>
-                        
-                        {selectedItem && (
-                          <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <Label className="text-sm font-medium text-muted-foreground">Item Name</Label>
-                                <p>{selectedItem.name}</p>
+                ) : (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {filteredInventory.map((item) => (
+                      <Card key={item.id} className={`hover:shadow-md transition-shadow ${
+                        item.quantity <= item.reorderLevel ? 'border-destructive' : 
+                        item.quantity === 0 ? 'border-destructive bg-destructive/5' : ''
+                      }`}>
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <h3 className="font-medium">{item.name}</h3>
+                              <div className="flex items-center gap-2 mt-1">
+                                <Badge variant="outline" className="text-xs">
+                                  {item.type === 'medicine' ? <Pill className="w-3 h-3 mr-1" /> :
+                                   item.type === 'supply' ? <FirstAid className="w-3 h-3 mr-1" /> :
+                                   <Package className="w-3 h-3 mr-1" />}
+                                  {item.category}
+                                </Badge>
+                                <Badge variant={
+                                  item.status === 'active' ? 'default' :
+                                  item.status === 'out_of_stock' ? 'destructive' : 'secondary'
+                                }>
+                                  {item.status.replace('_', ' ')}
+                                </Badge>
                               </div>
-                              <div>
-                                <Label className="text-sm font-medium text-muted-foreground">Item ID</Label>
-                                <p>{selectedItem.id}</p>
-                              </div>
-                              <div>
-                                <Label className="text-sm font-medium text-muted-foreground">Type</Label>
-                                <p className="capitalize">{selectedItem.type}</p>
-                              </div>
-                              <div>
-                                <Label className="text-sm font-medium text-muted-foreground">Category</Label>
-                                <p>{selectedItem.category}</p>
-                              </div>
-                              <div>
-                                <Label className="text-sm font-medium text-muted-foreground">Current Stock</Label>
-                                <p className="font-bold">{selectedItem.quantity} {selectedItem.unit}</p>
-                              </div>
-                              <div>
-                                <Label className="text-sm font-medium text-muted-foreground">Reorder Level</Label>
-                                <p>{selectedItem.reorderLevel} {selectedItem.unit}</p>
-                              </div>
-                              <div>
-                                <Label className="text-sm font-medium text-muted-foreground">Cost Price</Label>
-                                <p>₹{selectedItem.costPrice} per {selectedItem.unit}</p>
-                              </div>
-                              <div>
-                                <Label className="text-sm font-medium text-muted-foreground">Selling Price</Label>
-                                <p>₹{selectedItem.sellingPrice} per {selectedItem.unit}</p>
-                              </div>
-                              <div>
-                                <Label className="text-sm font-medium text-muted-foreground">Location</Label>
-                                <p>{selectedItem.location}</p>
-                              </div>
-                              <div>
-                                <Label className="text-sm font-medium text-muted-foreground">Supplier</Label>
-                                <p>{selectedItem.supplier || 'Not specified'}</p>
-                              </div>
-                              {selectedItem.batchNumber && (
-                                <div>
-                                  <Label className="text-sm font-medium text-muted-foreground">Batch Number</Label>
-                                  <p>{selectedItem.batchNumber}</p>
-                                </div>
-                              )}
-                              {selectedItem.expiryDate && (
-                                <div>
-                                  <Label className="text-sm font-medium text-muted-foreground">Expiry Date</Label>
-                                  <p>{new Date(selectedItem.expiryDate).toLocaleDateString()}</p>
-                                </div>
-                              )}
                             </div>
-                            
-                            {selectedItem.description && (
-                              <div>
-                                <Label className="text-sm font-medium text-muted-foreground">Description</Label>
-                                <p className="mt-1">{selectedItem.description}</p>
-                              </div>
-                            )}
-                            
-                            <div>
-                              <Label className="text-sm font-medium text-muted-foreground">Last Updated</Label>
-                              <p className="mt-1">{new Date(selectedItem.lastUpdated).toLocaleString()}</p>
+                            <div className="flex gap-1">
+                              <Button variant="outline" size="sm" onClick={() => {
+                                setSelectedItem(item)
+                                setIsTransactionDialogOpen(true)
+                              }}>
+                                <Archive className="h-3 w-3" />
+                              </Button>
+                              <Button variant="outline" size="sm" onClick={() => handleEditItem(item)}>
+                                <Edit className="h-3 w-3" />
+                              </Button>
                             </div>
                           </div>
-                        )}
-                      </DialogContent>
-                    </Dialog>
 
-                    <Dialog open={isStockUpdateOpen} onOpenChange={setIsStockUpdateOpen}>
-                      <DialogTrigger asChild>
-                        <Button 
-                          size="sm"
-                          onClick={() => setSelectedItem(item)}
-                        >
-                          Update Stock
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Update Stock</DialogTitle>
-                          <DialogDescription>
-                            Add or remove stock for {item.name}
-                          </DialogDescription>
-                        </DialogHeader>
-
-                        <div className="space-y-4">
-                          <div className="p-4 bg-muted rounded-lg">
-                            <div className="flex justify-between items-center">
-                              <span>Current Stock:</span>
-                              <span className="font-bold">{item.quantity} {item.unit}</span>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span>Stock:</span>
+                              <span className={`font-medium ${
+                                item.quantity <= item.reorderLevel ? 'text-destructive' : ''
+                              }`}>
+                                {item.quantity} {item.unit}
+                              </span>
                             </div>
-                            <div className="flex justify-between items-center">
+                            <div className="flex justify-between">
                               <span>Reorder Level:</span>
                               <span>{item.reorderLevel} {item.unit}</span>
                             </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>Action</Label>
-                            <Select 
-                              value={stockUpdate.type} 
-                              onValueChange={(value: any) => setStockUpdate({...stockUpdate, type: value})}
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="add">Add Stock</SelectItem>
-                                <SelectItem value="remove">Remove Stock</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>Quantity</Label>
-                            <Input
-                              type="number"
-                              min="1"
-                              value={stockUpdate.quantity}
-                              onChange={(e) => setStockUpdate({
-                                ...stockUpdate, 
-                                quantity: parseInt(e.target.value) || 0
-                              })}
-                              placeholder="Enter quantity"
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>Reason</Label>
-                            <Select 
-                              value={stockUpdate.reason} 
-                              onValueChange={(value) => setStockUpdate({...stockUpdate, reason: value})}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select reason" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {stockUpdate.type === 'add' ? (
-                                  <>
-                                    <SelectItem value="purchase">New Purchase</SelectItem>
-                                    <SelectItem value="return">Patient Return</SelectItem>
-                                    <SelectItem value="transfer">Transfer In</SelectItem>
-                                    <SelectItem value="correction">Stock Correction</SelectItem>
-                                  </>
-                                ) : (
-                                  <>
-                                    <SelectItem value="dispensed">Dispensed to Patient</SelectItem>
-                                    <SelectItem value="expired">Expired Items</SelectItem>
-                                    <SelectItem value="damaged">Damaged Items</SelectItem>
-                                    <SelectItem value="transfer">Transfer Out</SelectItem>
-                                    <SelectItem value="correction">Stock Correction</SelectItem>
-                                  </>
-                                )}
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>Notes</Label>
-                            <Input
-                              value={stockUpdate.notes}
-                              onChange={(e) => setStockUpdate({...stockUpdate, notes: e.target.value})}
-                              placeholder="Additional notes (optional)"
-                            />
-                          </div>
-                        </div>
-
-                        <DialogFooter>
-                          <Button variant="outline" onClick={() => setIsStockUpdateOpen(false)}>
-                            Cancel
-                          </Button>
-                          <Button onClick={handleUpdateStock}>
-                            Update Stock
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-
-                    <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => setSelectedItem(item)}
-                        >
-                          <Edit className="w-4 h-4 mr-1" />
-                          Edit
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                          <DialogTitle>Edit Item</DialogTitle>
-                          <DialogDescription>
-                            Update item information for {item.name}
-                          </DialogDescription>
-                        </DialogHeader>
-
-                        {selectedItem && (
-                          <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-2">
-                                <Label>Item Name</Label>
-                                <Input
-                                  value={selectedItem.name}
-                                  onChange={(e) => setSelectedItem({...selectedItem, name: e.target.value})}
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label>Reorder Level</Label>
-                                <Input
-                                  type="number"
-                                  value={selectedItem.reorderLevel}
-                                  onChange={(e) => setSelectedItem({
-                                    ...selectedItem, 
-                                    reorderLevel: parseInt(e.target.value) || 0
-                                  })}
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label>Cost Price (₹)</Label>
-                                <Input
-                                  type="number"
-                                  step="0.01"
-                                  value={selectedItem.costPrice}
-                                  onChange={(e) => setSelectedItem({
-                                    ...selectedItem, 
-                                    costPrice: parseFloat(e.target.value) || 0
-                                  })}
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label>Selling Price (₹)</Label>
-                                <Input
-                                  type="number"
-                                  step="0.01"
-                                  value={selectedItem.sellingPrice}
-                                  onChange={(e) => setSelectedItem({
-                                    ...selectedItem, 
-                                    sellingPrice: parseFloat(e.target.value) || 0
-                                  })}
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label>Supplier</Label>
-                                <Input
-                                  value={selectedItem.supplier}
-                                  onChange={(e) => setSelectedItem({...selectedItem, supplier: e.target.value})}
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label>Location</Label>
-                                <Select 
-                                  value={selectedItem.location} 
-                                  onValueChange={(value) => setSelectedItem({...selectedItem, location: value})}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {locations.map((location) => (
-                                      <SelectItem key={location} value={location}>
-                                        {location}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
+                            <div className="flex justify-between">
+                              <span>Location:</span>
+                              <span>{item.location}</span>
                             </div>
-                            
-                            <div className="space-y-2">
-                              <Label>Description</Label>
-                              <Input
-                                value={selectedItem.description || ''}
-                                onChange={(e) => setSelectedItem({...selectedItem, description: e.target.value})}
-                              />
+                            <div className="flex justify-between">
+                              <span>Price:</span>
+                              <span>₹{item.sellingPrice}</span>
                             </div>
+                            {item.expiryDate && (
+                              <div className="flex justify-between">
+                                <span>Expires:</span>
+                                <span className={
+                                  new Date(item.expiryDate) <= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) 
+                                    ? 'text-yellow-600' : ''
+                                }>
+                                  {new Date(item.expiryDate).toLocaleDateString()}
+                                </span>
+                              </div>
+                            )}
                           </div>
-                        )}
 
-                        <DialogFooter>
-                          <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                            Cancel
-                          </Button>
-                          <Button onClick={handleUpdateItem}>
-                            Update Item
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
+                          {item.quantity <= item.reorderLevel && (
+                            <div className="mt-3 p-2 bg-destructive/10 border border-destructive/20 rounded text-xs text-destructive">
+                              <AlertTriangle className="h-3 w-3 inline mr-1" />
+                              Low stock - Reorder required
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="alerts" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Low Stock Alerts */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-destructive">
+                  <AlertTriangle className="h-5 w-5" />
+                  Low Stock Items ({lowStockItems.length})
+                </CardTitle>
+                <CardDescription>Items below reorder level</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {lowStockItems.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-4">No low stock items</p>
+                  ) : (
+                    lowStockItems.map((item) => (
+                      <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <p className="font-medium">{item.name}</p>
+                          <p className="text-sm text-muted-foreground">{item.category}</p>
+                        </div>
+                        <div className="text-right">
+                          <Badge variant="destructive">{item.quantity} {item.unit}</Badge>
+                          <p className="text-xs text-muted-foreground">
+                            Min: {item.reorderLevel} {item.unit}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
-          ))
-        )}
-      </div>
+
+            {/* Expiring Items */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-yellow-600">
+                  <Calendar className="h-5 w-5" />
+                  Expiring Soon ({expiringItems.length})
+                </CardTitle>
+                <CardDescription>Items expiring within 30 days</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {expiringItems.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-4">No items expiring soon</p>
+                  ) : (
+                    expiringItems.map((item) => (
+                      <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <p className="font-medium">{item.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Batch: {item.batchNumber || 'N/A'}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <Badge variant="outline" className="text-yellow-600">
+                            {new Date(item.expiryDate!).toLocaleDateString()}
+                          </Badge>
+                          <p className="text-xs text-muted-foreground">
+                            {item.quantity} {item.unit} in stock
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="transactions" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Stock Transactions</CardTitle>
+              <CardDescription>Recent stock movements and adjustments</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {transactions.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Archive className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <h3 className="mt-4 text-lg font-semibold">No transactions found</h3>
+                    <p className="text-muted-foreground">Stock transactions will appear here</p>
+                  </div>
+                ) : (
+                  transactions
+                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                    .slice(0, 10)
+                    .map((transaction) => (
+                      <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                            transaction.type === 'purchase' ? 'bg-green-100 text-green-600' :
+                            transaction.type === 'issue' ? 'bg-blue-100 text-blue-600' :
+                            transaction.type === 'return' ? 'bg-yellow-100 text-yellow-600' :
+                            transaction.type === 'expired' ? 'bg-red-100 text-red-600' :
+                            'bg-gray-100 text-gray-600'
+                          }`}>
+                            {transaction.type === 'purchase' ? '+' :
+                             transaction.type === 'issue' ? '-' :
+                             transaction.type === 'return' ? '↺' :
+                             transaction.type === 'expired' ? '⚠' : '±'}
+                          </div>
+                          <div>
+                            <p className="font-medium">{transaction.itemName}</p>
+                            <p className="text-sm text-muted-foreground capitalize">
+                              {transaction.type.replace('_', ' ')} • {transaction.quantity} units
+                            </p>
+                            {transaction.reason && (
+                              <p className="text-xs text-muted-foreground">{transaction.reason}</p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="text-right">
+                          <p className="text-sm font-medium">
+                            {new Date(transaction.date).toLocaleDateString()}
+                          </p>
+                          {transaction.totalAmount && (
+                            <p className="text-sm text-muted-foreground">
+                              ₹{transaction.totalAmount.toLocaleString()}
+                            </p>
+                          )}
+                          {transaction.issuedTo && (
+                            <p className="text-xs text-muted-foreground">
+                              To: {transaction.issuedTo}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Stock Transaction Dialog */}
+      <Dialog open={isTransactionDialogOpen} onOpenChange={setIsTransactionDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Record Stock Transaction</DialogTitle>
+            <DialogDescription>
+              {selectedItem && `Update stock for ${selectedItem.name}`}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {selectedItem && (
+              <div className="p-4 bg-muted/30 rounded-lg">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">{selectedItem.name}</span>
+                  <span>Current Stock: {selectedItem.quantity} {selectedItem.unit}</span>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Transaction Type *</Label>
+                <Select value={transactionFormData.type} onValueChange={(value) => setTransactionFormData({...transactionFormData, type: value as any})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="purchase">Purchase (Add Stock)</SelectItem>
+                    <SelectItem value="issue">Issue (Remove Stock)</SelectItem>
+                    <SelectItem value="return">Return (Add Stock)</SelectItem>
+                    <SelectItem value="adjustment">Adjustment</SelectItem>
+                    <SelectItem value="expired">Mark as Expired</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Quantity *</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={transactionFormData.quantity || ''}
+                  onChange={(e) => setTransactionFormData({...transactionFormData, quantity: Number(e.target.value)})}
+                  placeholder="Enter quantity"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Date</Label>
+                <Input
+                  type="date"
+                  value={transactionFormData.date}
+                  onChange={(e) => setTransactionFormData({...transactionFormData, date: e.target.value})}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Unit Price (if purchase)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={transactionFormData.unitPrice || ''}
+                  onChange={(e) => setTransactionFormData({...transactionFormData, unitPrice: Number(e.target.value)})}
+                  placeholder="Unit price"
+                />
+              </div>
+            </div>
+
+            {(transactionFormData.type === 'purchase' || transactionFormData.type === 'return') && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Batch Number</Label>
+                  <Input
+                    value={transactionFormData.batchNumber || ''}
+                    onChange={(e) => setTransactionFormData({...transactionFormData, batchNumber: e.target.value})}
+                    placeholder="Batch number"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Expiry Date</Label>
+                  <Input
+                    type="date"
+                    value={transactionFormData.expiryDate || ''}
+                    onChange={(e) => setTransactionFormData({...transactionFormData, expiryDate: e.target.value})}
+                  />
+                </div>
+              </div>
+            )}
+
+            {transactionFormData.type === 'issue' && (
+              <div className="space-y-2">
+                <Label>Issued To</Label>
+                <Input
+                  value={transactionFormData.issuedTo || ''}
+                  onChange={(e) => setTransactionFormData({...transactionFormData, issuedTo: e.target.value})}
+                  placeholder="Department or person name"
+                />
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label>Reason</Label>
+              <Input
+                value={transactionFormData.reason || ''}
+                onChange={(e) => setTransactionFormData({...transactionFormData, reason: e.target.value})}
+                placeholder="Reason for transaction"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Notes</Label>
+              <Textarea
+                value={transactionFormData.notes || ''}
+                onChange={(e) => setTransactionFormData({...transactionFormData, notes: e.target.value})}
+                placeholder="Additional notes"
+                rows={2}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setIsTransactionDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddTransaction}>Record Transaction</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Item Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Inventory Item</DialogTitle>
+            <DialogDescription>Update item information</DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Item Name</Label>
+                <Input
+                  value={itemFormData.name || ''}
+                  onChange={(e) => setItemFormData({...itemFormData, name: e.target.value})}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Reorder Level</Label>
+                <Input
+                  type="number"
+                  value={itemFormData.reorderLevel || ''}
+                  onChange={(e) => setItemFormData({...itemFormData, reorderLevel: Number(e.target.value)})}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Cost Price</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={itemFormData.costPrice || ''}
+                  onChange={(e) => setItemFormData({...itemFormData, costPrice: Number(e.target.value)})}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Selling Price</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={itemFormData.sellingPrice || ''}
+                  onChange={(e) => setItemFormData({...itemFormData, sellingPrice: Number(e.target.value)})}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select value={itemFormData.status} onValueChange={(value) => setItemFormData({...itemFormData, status: value as any})}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="discontinued">Discontinued</SelectItem>
+                  <SelectItem value="out_of_stock">Out of Stock</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleUpdateItem}>Update Item</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

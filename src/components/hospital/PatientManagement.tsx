@@ -4,169 +4,161 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { UserPlus, Search, Edit, Eye, Phone, Mail, User, MapPin } from '@phosphor-icons/react'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Textarea } from '@/components/ui/textarea'
+import { 
+  Users, 
+  Plus, 
+  Search, 
+  Edit, 
+  Eye, 
+  Phone, 
+  Mail, 
+  MapPin,
+  Calendar,
+  Heart,
+  AlertTriangle
+} from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 interface Patient {
   id: string
   name: string
   age: number
-  gender: string
+  gender: 'male' | 'female' | 'other'
   phone: string
   email?: string
   address: string
   bloodGroup?: string
   emergencyContact: string
-  medicalHistory?: string
+  emergencyPhone: string
   allergies?: string
+  medicalHistory?: string
   insurance?: {
     provider: string
     policyNumber: string
     validUntil: string
   }
+  registrationDate: string
   createdAt: string
-  lastVisit?: string
 }
 
 export default function PatientManagement() {
-  const [patients, setPatients] = useKV('hospital-patients', [])
+  const [patients, setPatients] = useKV<Patient[]>('hospital-patients', [])
   const [searchTerm, setSearchTerm] = useState('')
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
-  const [isEditing, setIsEditing] = useState(false)
-
-  const [newPatient, setNewPatient] = useState({
-    name: '',
-    age: '',
-    gender: '',
-    phone: '',
-    email: '',
-    address: '',
-    bloodGroup: '',
-    emergencyContact: '',
-    medicalHistory: '',
-    allergies: '',
-    hasInsurance: false,
-    insuranceProvider: '',
-    policyNumber: '',
-    policyValidUntil: ''
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
+  const [formData, setFormData] = useState<Partial<Patient>>({
+    gender: 'male'
   })
 
+  // Filter patients based on search
   const filteredPatients = patients.filter(patient =>
-    patient.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.phone?.includes(searchTerm) ||
-    patient.id?.toLowerCase().includes(searchTerm.toLowerCase())
+    patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.phone.includes(searchTerm) ||
+    patient.id.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const handleAddPatient = () => {
-    if (!newPatient.name || !newPatient.age || !newPatient.gender || !newPatient.phone) {
+    if (!formData.name || !formData.age || !formData.phone || !formData.address) {
       toast.error('Please fill in all required fields')
       return
     }
 
-    const patient: Patient = {
-      id: `PAT${Date.now()}`,
-      name: newPatient.name,
-      age: parseInt(newPatient.age),
-      gender: newPatient.gender,
-      phone: newPatient.phone,
-      email: newPatient.email,
-      address: newPatient.address,
-      bloodGroup: newPatient.bloodGroup,
-      emergencyContact: newPatient.emergencyContact,
-      medicalHistory: newPatient.medicalHistory,
-      allergies: newPatient.allergies,
-      insurance: newPatient.hasInsurance ? {
-        provider: newPatient.insuranceProvider,
-        policyNumber: newPatient.policyNumber,
-        validUntil: newPatient.policyValidUntil
-      } : undefined,
-      createdAt: new Date().toISOString(),
+    const newPatient: Patient = {
+      id: `PT${Date.now()}`,
+      name: formData.name,
+      age: Number(formData.age),
+      gender: formData.gender as 'male' | 'female' | 'other',
+      phone: formData.phone,
+      email: formData.email,
+      address: formData.address,
+      bloodGroup: formData.bloodGroup,
+      emergencyContact: formData.emergencyContact || '',
+      emergencyPhone: formData.emergencyPhone || '',
+      allergies: formData.allergies,
+      medicalHistory: formData.medicalHistory,
+      insurance: formData.insurance,
+      registrationDate: new Date().toISOString().split('T')[0],
+      createdAt: new Date().toISOString()
     }
 
-    setPatients(currentPatients => [...currentPatients, patient])
-    setNewPatient({
-      name: '',
-      age: '',
-      gender: '',
-      phone: '',
-      email: '',
-      address: '',
-      bloodGroup: '',
-      emergencyContact: '',
-      medicalHistory: '',
-      allergies: '',
-      hasInsurance: false,
-      insuranceProvider: '',
-      policyNumber: '',
-      policyValidUntil: ''
-    })
-    setIsDialogOpen(false)
-    toast.success(`Patient ${patient.name} registered successfully with ID: ${patient.id}`)
+    setPatients(current => [...current, newPatient])
+    setFormData({ gender: 'male' })
+    setIsAddDialogOpen(false)
+    toast.success('Patient registered successfully')
+  }
+
+  const handleEditPatient = (patient: Patient) => {
+    setFormData(patient)
+    setSelectedPatient(patient)
+    setIsAddDialogOpen(true)
   }
 
   const handleUpdatePatient = () => {
     if (!selectedPatient) return
 
-    setPatients(currentPatients =>
-      currentPatients.map(patient =>
-        patient.id === selectedPatient.id ? selectedPatient : patient
+    setPatients(current => 
+      current.map(p => 
+        p.id === selectedPatient.id 
+          ? { ...p, ...formData }
+          : p
       )
     )
-    setIsEditing(false)
-    toast.success('Patient information updated successfully')
+    setFormData({ gender: 'male' })
+    setSelectedPatient(null)
+    setIsAddDialogOpen(false)
+    toast.success('Patient updated successfully')
   }
 
-  const getPatientAge = (patient: Patient) => {
-    const today = new Date()
-    const birthYear = today.getFullYear() - patient.age
-    return today.getFullYear() - birthYear
+  const handleViewPatient = (patient: Patient) => {
+    setSelectedPatient(patient)
+    setIsViewDialogOpen(true)
   }
 
   return (
     <div className="space-y-6">
-      {/* Header and Search */}
+      {/* Header with Search and Add Button */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex-1 max-w-md">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              placeholder="Search patients by name, phone, or ID..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            placeholder="Search patients by name, phone, or ID..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
         </div>
-
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
-              <UserPlus className="w-4 h-4 mr-2" />
+            <Button className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
               Add New Patient
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Register New Patient</DialogTitle>
+              <DialogTitle>
+                {selectedPatient ? 'Edit Patient' : 'Register New Patient'}
+              </DialogTitle>
               <DialogDescription>
-                Enter patient information to create a new medical record.
+                {selectedPatient ? 'Update patient information' : 'Enter patient details to register them in the system'}
               </DialogDescription>
             </DialogHeader>
-
+            
             <div className="grid gap-4 py-4">
+              {/* Basic Information */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name *</Label>
                   <Input
                     id="name"
-                    value={newPatient.name}
-                    onChange={(e) => setNewPatient({...newPatient, name: e.target.value})}
+                    value={formData.name || ''}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
                     placeholder="Enter full name"
                   />
                 </div>
@@ -175,9 +167,9 @@ export default function PatientManagement() {
                   <Input
                     id="age"
                     type="number"
-                    value={newPatient.age}
-                    onChange={(e) => setNewPatient({...newPatient, age: e.target.value})}
-                    placeholder="Age in years"
+                    value={formData.age || ''}
+                    onChange={(e) => setFormData({...formData, age: Number(e.target.value)})}
+                    placeholder="Enter age"
                   />
                 </div>
               </div>
@@ -185,20 +177,20 @@ export default function PatientManagement() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="gender">Gender *</Label>
-                  <Select onValueChange={(value) => setNewPatient({...newPatient, gender: value})}>
+                  <Select value={formData.gender} onValueChange={(value) => setFormData({...formData, gender: value as any})}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Male">Male</SelectItem>
-                      <SelectItem value="Female">Female</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="bloodGroup">Blood Group</Label>
-                  <Select onValueChange={(value) => setNewPatient({...newPatient, bloodGroup: value})}>
+                  <Select value={formData.bloodGroup} onValueChange={(value) => setFormData({...formData, bloodGroup: value})}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select blood group" />
                     </SelectTrigger>
@@ -216,14 +208,15 @@ export default function PatientManagement() {
                 </div>
               </div>
 
+              {/* Contact Information */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone Number *</Label>
                   <Input
                     id="phone"
-                    value={newPatient.phone}
-                    onChange={(e) => setNewPatient({...newPatient, phone: e.target.value})}
-                    placeholder="+91 9876543210"
+                    value={formData.phone || ''}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    placeholder="Enter phone number"
                   />
                 </div>
                 <div className="space-y-2">
@@ -231,31 +224,55 @@ export default function PatientManagement() {
                   <Input
                     id="email"
                     type="email"
-                    value={newPatient.email}
-                    onChange={(e) => setNewPatient({...newPatient, email: e.target.value})}
-                    placeholder="patient@example.com"
+                    value={formData.email || ''}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    placeholder="Enter email address"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
+                <Label htmlFor="address">Address *</Label>
                 <Textarea
                   id="address"
-                  value={newPatient.address}
-                  onChange={(e) => setNewPatient({...newPatient, address: e.target.value})}
-                  placeholder="Complete address with village/city, district, state"
+                  value={formData.address || ''}
+                  onChange={(e) => setFormData({...formData, address: e.target.value})}
+                  placeholder="Enter complete address"
                   rows={2}
                 />
               </div>
 
+              {/* Emergency Contact */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="emergencyContact">Emergency Contact Name</Label>
+                  <Input
+                    id="emergencyContact"
+                    value={formData.emergencyContact || ''}
+                    onChange={(e) => setFormData({...formData, emergencyContact: e.target.value})}
+                    placeholder="Emergency contact name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="emergencyPhone">Emergency Phone</Label>
+                  <Input
+                    id="emergencyPhone"
+                    value={formData.emergencyPhone || ''}
+                    onChange={(e) => setFormData({...formData, emergencyPhone: e.target.value})}
+                    placeholder="Emergency phone number"
+                  />
+                </div>
+              </div>
+
+              {/* Medical Information */}
               <div className="space-y-2">
-                <Label htmlFor="emergencyContact">Emergency Contact</Label>
-                <Input
-                  id="emergencyContact"
-                  value={newPatient.emergencyContact}
-                  onChange={(e) => setNewPatient({...newPatient, emergencyContact: e.target.value})}
-                  placeholder="Emergency contact number"
+                <Label htmlFor="allergies">Known Allergies</Label>
+                <Textarea
+                  id="allergies"
+                  value={formData.allergies || ''}
+                  onChange={(e) => setFormData({...formData, allergies: e.target.value})}
+                  placeholder="List any known allergies"
+                  rows={2}
                 />
               </div>
 
@@ -263,339 +280,250 @@ export default function PatientManagement() {
                 <Label htmlFor="medicalHistory">Medical History</Label>
                 <Textarea
                   id="medicalHistory"
-                  value={newPatient.medicalHistory}
-                  onChange={(e) => setNewPatient({...newPatient, medicalHistory: e.target.value})}
-                  placeholder="Previous medical conditions, surgeries, medications..."
+                  value={formData.medicalHistory || ''}
+                  onChange={(e) => setFormData({...formData, medicalHistory: e.target.value})}
+                  placeholder="Previous medical conditions, surgeries, etc."
                   rows={3}
                 />
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="allergies">Known Allergies</Label>
-                <Textarea
-                  id="allergies"
-                  value={newPatient.allergies}
-                  onChange={(e) => setNewPatient({...newPatient, allergies: e.target.value})}
-                  placeholder="Food allergies, drug allergies, environmental allergies..."
-                  rows={2}
-                />
-              </div>
-
-              {/* Insurance Information */}
-              <div className="space-y-4 border-t pt-4">
-                <div className="flex items-center justify-between">
-                  <Label className="text-base font-medium">Insurance Information</Label>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={newPatient.hasInsurance}
-                      onChange={(e) => setNewPatient({...newPatient, hasInsurance: e.target.checked})}
-                      className="rounded"
-                    />
-                    <Label className="text-sm">Has Insurance</Label>
-                  </div>
-                </div>
-
-                {newPatient.hasInsurance && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Insurance Provider</Label>
-                        <Input
-                          value={newPatient.insuranceProvider}
-                          onChange={(e) => setNewPatient({...newPatient, insuranceProvider: e.target.value})}
-                          placeholder="Insurance company name"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Policy Number</Label>
-                        <Input
-                          value={newPatient.policyNumber}
-                          onChange={(e) => setNewPatient({...newPatient, policyNumber: e.target.value})}
-                          placeholder="Policy/Card number"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Policy Valid Until</Label>
-                      <Input
-                        type="date"
-                        value={newPatient.policyValidUntil}
-                        onChange={(e) => setNewPatient({...newPatient, policyValidUntil: e.target.value})}
-                        min={new Date().toISOString().split('T')[0]}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
             </div>
 
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => {
+                setIsAddDialogOpen(false)
+                setFormData({ gender: 'male' })
+                setSelectedPatient(null)
+              }}>
                 Cancel
               </Button>
-              <Button onClick={handleAddPatient}>
-                Register Patient
+              <Button onClick={selectedPatient ? handleUpdatePatient : handleAddPatient}>
+                {selectedPatient ? 'Update Patient' : 'Register Patient'}
               </Button>
-            </DialogFooter>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
 
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Patients</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{patients.length}</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Today's Registrations</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {patients.filter(p => p.registrationDate === new Date().toISOString().split('T')[0]).length}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">With Allergies</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {patients.filter(p => p.allergies && p.allergies.trim()).length}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Insured Patients</CardTitle>
+            <Heart className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {patients.filter(p => p.insurance?.provider).length}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Patients List */}
-      <div className="grid gap-4">
-        {filteredPatients.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <User className="h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-lg font-medium text-muted-foreground">No patients found</p>
-              <p className="text-sm text-muted-foreground">
-                {searchTerm ? 'Try adjusting your search criteria' : 'Start by registering your first patient'}
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          filteredPatients.map((patient) => (
-            <Card key={patient.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-lg font-bold">
-                      {patient.name?.charAt(0)?.toUpperCase() || 'P'}
+      <Card>
+        <CardHeader>
+          <CardTitle>Patient Registry</CardTitle>
+          <CardDescription>
+            {filteredPatients.length} of {patients.length} patients
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {filteredPatients.length === 0 ? (
+              <div className="text-center py-8">
+                <Users className="mx-auto h-12 w-12 text-muted-foreground" />
+                <h3 className="mt-4 text-lg font-semibold">No patients found</h3>
+                <p className="text-muted-foreground">
+                  {searchTerm ? 'Try adjusting your search terms' : 'Start by registering your first patient'}
+                </p>
+              </div>
+            ) : (
+              filteredPatients.map((patient) => (
+                <div key={patient.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-lg font-medium">
+                      {patient.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-semibold">{patient.name}</h3>
+                      <div className="flex items-center gap-3">
+                        <h3 className="font-medium">{patient.name}</h3>
                         <Badge variant="outline">{patient.id}</Badge>
                         {patient.bloodGroup && (
                           <Badge variant="secondary">{patient.bloodGroup}</Badge>
                         )}
                       </div>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span>{patient.age} years • {patient.gender}</span>
+                        <span>Age {patient.age} • {patient.gender}</span>
                         <span className="flex items-center gap-1">
-                          <Phone className="w-3 h-3" />
+                          <Phone className="h-3 w-3" />
                           {patient.phone}
                         </span>
                         {patient.email && (
                           <span className="flex items-center gap-1">
-                            <Mail className="w-3 h-3" />
+                            <Mail className="h-3 w-3" />
                             {patient.email}
                           </span>
                         )}
                       </div>
-                      {patient.address && (
-                        <p className="text-sm text-muted-foreground flex items-center gap-1">
-                          <MapPin className="w-3 h-3" />
-                          {patient.address}
-                        </p>
+                      {patient.allergies && (
+                        <div className="flex items-center gap-1 text-sm text-destructive">
+                          <AlertTriangle className="h-3 w-3" />
+                          <span>Allergies: {patient.allergies}</span>
+                        </div>
                       )}
                     </div>
                   </div>
+                  
                   <div className="flex items-center gap-2">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => setSelectedPatient(patient)}
-                        >
-                          <Eye className="w-4 h-4 mr-1" />
-                          View
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                          <DialogTitle>Patient Details</DialogTitle>
-                          <DialogDescription>
-                            Complete medical record for {patient.name}
-                          </DialogDescription>
-                        </DialogHeader>
-                        
-                        {selectedPatient && (
-                          <Tabs defaultValue="details" className="w-full">
-                            <TabsList className="grid w-full grid-cols-2">
-                              <TabsTrigger value="details">Personal Details</TabsTrigger>
-                              <TabsTrigger value="medical">Medical Information</TabsTrigger>
-                            </TabsList>
-                            
-                            <TabsContent value="details" className="space-y-4">
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <Label className="text-sm font-medium text-muted-foreground">Patient ID</Label>
-                                  <p className="text-sm">{selectedPatient.id}</p>
-                                </div>
-                                <div>
-                                  <Label className="text-sm font-medium text-muted-foreground">Registration Date</Label>
-                                  <p className="text-sm">{new Date(selectedPatient.createdAt).toLocaleDateString()}</p>
-                                </div>
-                                <div>
-                                  <Label className="text-sm font-medium text-muted-foreground">Full Name</Label>
-                                  <p className="text-sm">{selectedPatient.name}</p>
-                                </div>
-                                <div>
-                                  <Label className="text-sm font-medium text-muted-foreground">Age & Gender</Label>
-                                  <p className="text-sm">{selectedPatient.age} years, {selectedPatient.gender}</p>
-                                </div>
-                                <div>
-                                  <Label className="text-sm font-medium text-muted-foreground">Phone</Label>
-                                  <p className="text-sm">{selectedPatient.phone}</p>
-                                </div>
-                                <div>
-                                  <Label className="text-sm font-medium text-muted-foreground">Email</Label>
-                                  <p className="text-sm">{selectedPatient.email || 'Not provided'}</p>
-                                </div>
-                                <div className="col-span-2">
-                                  <Label className="text-sm font-medium text-muted-foreground">Address</Label>
-                                  <p className="text-sm">{selectedPatient.address || 'Not provided'}</p>
-                                </div>
-                                <div>
-                                  <Label className="text-sm font-medium text-muted-foreground">Emergency Contact</Label>
-                                  <p className="text-sm">{selectedPatient.emergencyContact || 'Not provided'}</p>
-                                </div>
-                                <div>
-                                  <Label className="text-sm font-medium text-muted-foreground">Blood Group</Label>
-                                  <p className="text-sm">{selectedPatient.bloodGroup || 'Not specified'}</p>
-                                </div>
-                              </div>
-                            </TabsContent>
-                            
-                            <TabsContent value="medical" className="space-y-4">
-                              <div>
-                                <Label className="text-sm font-medium text-muted-foreground">Medical History</Label>
-                                <p className="text-sm mt-1">{selectedPatient.medicalHistory || 'No medical history recorded'}</p>
-                              </div>
-                              <div>
-                                <Label className="text-sm font-medium text-muted-foreground">Known Allergies</Label>
-                                <p className="text-sm mt-1">{selectedPatient.allergies || 'No known allergies'}</p>
-                              </div>
-                              <div>
-                                <Label className="text-sm font-medium text-muted-foreground">Insurance Information</Label>
-                                {selectedPatient.insurance ? (
-                                  <div className="text-sm mt-1 space-y-1">
-                                    <p><strong>Provider:</strong> {selectedPatient.insurance.provider}</p>
-                                    <p><strong>Policy Number:</strong> {selectedPatient.insurance.policyNumber}</p>
-                                    <p><strong>Valid Until:</strong> {new Date(selectedPatient.insurance.validUntil).toLocaleDateString()}</p>
-                                  </div>
-                                ) : (
-                                  <p className="text-sm mt-1">No insurance information</p>
-                                )}
-                              </div>
-                              <div>
-                                <Label className="text-sm font-medium text-muted-foreground">Last Visit</Label>
-                                <p className="text-sm mt-1">{selectedPatient.lastVisit ? new Date(selectedPatient.lastVisit).toLocaleDateString() : 'No previous visits'}</p>
-                              </div>
-                            </TabsContent>
-                          </Tabs>
-                        )}
-                      </DialogContent>
-                    </Dialog>
-
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => {
-                        setSelectedPatient(patient)
-                        setIsEditing(true)
-                      }}
-                    >
-                      <Edit className="w-4 h-4 mr-1" />
-                      Edit
+                    <Button variant="outline" size="sm" onClick={() => handleViewPatient(patient)}>
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => handleEditPatient(patient)}>
+                      <Edit className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
+              ))
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Edit Patient Dialog */}
-      {selectedPatient && (
-        <Dialog open={isEditing} onOpenChange={setIsEditing}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Edit Patient Information</DialogTitle>
-              <DialogDescription>
-                Update patient details for {selectedPatient.name}
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Full Name</Label>
-                  <Input
-                    value={selectedPatient.name}
-                    onChange={(e) => setSelectedPatient({...selectedPatient, name: e.target.value})}
-                  />
+      {/* View Patient Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Patient Details</DialogTitle>
+            <DialogDescription>Complete patient information</DialogDescription>
+          </DialogHeader>
+          
+          {selectedPatient && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-2xl font-medium">
+                  {selectedPatient.name.charAt(0).toUpperCase()}
                 </div>
-                <div className="space-y-2">
-                  <Label>Age</Label>
-                  <Input
-                    type="number"
-                    value={selectedPatient.age}
-                    onChange={(e) => setSelectedPatient({...selectedPatient, age: parseInt(e.target.value)})}
-                  />
+                <div>
+                  <h2 className="text-2xl font-bold">{selectedPatient.name}</h2>
+                  <div className="flex items-center gap-4 text-muted-foreground">
+                    <span>ID: {selectedPatient.id}</span>
+                    <span>Age: {selectedPatient.age}</span>
+                    <span>Gender: {selectedPatient.gender}</span>
+                    {selectedPatient.bloodGroup && (
+                      <Badge variant="secondary">{selectedPatient.bloodGroup}</Badge>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Phone Number</Label>
-                  <Input
-                    value={selectedPatient.phone}
-                    onChange={(e) => setSelectedPatient({...selectedPatient, phone: e.target.value})}
-                  />
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold mb-2">Contact Information</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-4 w-4" />
+                        {selectedPatient.phone}
+                      </div>
+                      {selectedPatient.email && (
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-4 w-4" />
+                          {selectedPatient.email}
+                        </div>
+                      )}
+                      <div className="flex items-start gap-2">
+                        <MapPin className="h-4 w-4 mt-0.5" />
+                        <span>{selectedPatient.address}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {(selectedPatient.emergencyContact || selectedPatient.emergencyPhone) && (
+                    <div>
+                      <h3 className="font-semibold mb-2">Emergency Contact</h3>
+                      <div className="space-y-1 text-sm">
+                        {selectedPatient.emergencyContact && (
+                          <p>Name: {selectedPatient.emergencyContact}</p>
+                        )}
+                        {selectedPatient.emergencyPhone && (
+                          <p>Phone: {selectedPatient.emergencyPhone}</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="space-y-2">
-                  <Label>Email</Label>
-                  <Input
-                    value={selectedPatient.email || ''}
-                    onChange={(e) => setSelectedPatient({...selectedPatient, email: e.target.value})}
-                  />
+
+                <div className="space-y-4">
+                  {selectedPatient.allergies && (
+                    <div>
+                      <h3 className="font-semibold mb-2 text-destructive">Allergies</h3>
+                      <p className="text-sm text-destructive">{selectedPatient.allergies}</p>
+                    </div>
+                  )}
+
+                  {selectedPatient.medicalHistory && (
+                    <div>
+                      <h3 className="font-semibold mb-2">Medical History</h3>
+                      <p className="text-sm">{selectedPatient.medicalHistory}</p>
+                    </div>
+                  )}
+
+                  {selectedPatient.insurance?.provider && (
+                    <div>
+                      <h3 className="font-semibold mb-2">Insurance</h3>
+                      <div className="text-sm space-y-1">
+                        <p>Provider: {selectedPatient.insurance.provider}</p>
+                        <p>Policy: {selectedPatient.insurance.policyNumber}</p>
+                        <p>Valid Until: {selectedPatient.insurance.validUntil}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>Address</Label>
-                <Textarea
-                  value={selectedPatient.address}
-                  onChange={(e) => setSelectedPatient({...selectedPatient, address: e.target.value})}
-                  rows={2}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Medical History</Label>
-                <Textarea
-                  value={selectedPatient.medicalHistory || ''}
-                  onChange={(e) => setSelectedPatient({...selectedPatient, medicalHistory: e.target.value})}
-                  rows={3}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Known Allergies</Label>
-                <Textarea
-                  value={selectedPatient.allergies || ''}
-                  onChange={(e) => setSelectedPatient({...selectedPatient, allergies: e.target.value})}
-                  rows={2}
-                />
+              <div className="pt-4 border-t">
+                <p className="text-sm text-muted-foreground">
+                  Registered on {new Date(selectedPatient.registrationDate).toLocaleDateString()}
+                </p>
               </div>
             </div>
-
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsEditing(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleUpdatePatient}>
-                Update Patient
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
