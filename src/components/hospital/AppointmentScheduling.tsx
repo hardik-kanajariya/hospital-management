@@ -1,65 +1,67 @@
 import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Calendar } from '@/components/ui/calendar'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { CalendarPlus, Clock, User, CheckCircle, XCircle, Calendar as CalendarIcon, Search, Receipt } from '@phosphor-icons/react'
-import { toast } from 'sonner'
-import { format } from 'date-fns'
-
-interface Appointment {
   id: string
-  patientId: string
   patientName: string
-  doctor: string
   type: string
-  date: string
   time: string
-  status: 'scheduled' | 'in-progress' | 'completed' | 'cancelled'
   notes?: string
-  createdAt: string
 }
 
-export default function AppointmentScheduling() {
-  const [appointments, setAppointments] = useKV('hospital-appointments', [])
-  const [patients] = useKV('hospital-patients', [])
-  const [doctors] = useKV('hospital-doctors', [])
-  const [schedules] = useKV('doctor-schedules', [])
-  const [todayAppointments, setTodayAppointments] = useKV('today-appointments', [])
-
-const appointmentTypes = [
-  'General Consultation',
+  'Dr. Priya Sharma - P
+  id: string
+]
+  patientName: string
   'Follow-up',
-  'Emergency',
-  'Specialist Consultation',
-  'Health Checkup',
-  'Vaccination',
-  'Minor Surgery'
+  type: string
+  'Vaccination
+  time: string
+const timeSlots = [
+  notes?: string
+]
+}
+
+  
+  const [selectedDate, setSelectedDate] 
+  const [filterStatus, setFilterSt
+
+    patientId: '',
+    doctor: '',
+]
+
+
+  const selectedDateStrin
+  'Follow-up',
+    const matc
+                         app
+    const matchesSt
+    let matchesD
+      matchesDate
 ]
 
 const timeSlots = [
-  '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-  '12:00', '12:30', '14:00', '14:30', '15:00', '15:30',
-  '16:00', '16:30', '17:00', '17:30', '18:00'
+  // Get booked time slots for selected date and doctor
+    return appointments
+      .map(apt => apt.time)
 ]
 
-  const [appointments, setAppointments] = useKV('hospital-appointments', [])
-  const [patients] = useKV('hospital-patients', [])
-  const [todayAppointments, setTodayAppointments] = useKV('today-appointments', [])
+      toast.error('Please fill in all required fi
+    }
+    // Check if time slot is already booked
+    if (bookedSlots.includes(newAppointment.time)) {
   
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
-  const [searchTerm, setSearchTerm] = useState('')
-  const [filterStatus, setFilterStatus] = useState('all')
-  const [filterDate, setFilterDate] = useState('today')
 
-  const [newAppointment, setNewAppointment] = useState({
+      id: `APT${Date.now()}`,
+      patientName: newAppointment.patientName,
+      type: newAppointment.type,
+      time: newAppointment.time,
+
+    }
     patientId: '',
     patientName: '',
     doctor: '',
@@ -95,7 +97,7 @@ const timeSlots = [
     return appointments
       .filter(apt => apt.date === date && apt.doctor === doctor && apt.status !== 'cancelled')
       .map(apt => apt.time)
-  }
+   
 
   const handleScheduleAppointment = () => {
     if (!newAppointment.patientId || !newAppointment.doctor || !newAppointment.type || 
@@ -148,25 +150,25 @@ const timeSlots = [
     setAppointments(currentAppointments =>
       currentAppointments.map(appointment =>
         appointment.id === appointmentId 
-          ? { ...appointment, status: newStatus }
+            <Button>
           : appointment
-      )
+       
     )
     
     // Update today's appointments if needed
-    setTodayAppointments(current =>
+                Book an appointment
       current.map(appointment =>
-        appointment.id === appointmentId 
+
           ? { ...appointment, status: newStatus }
           : appointment
       )
-    )
+     
     
     toast.success(`Appointment status updated to ${newStatus}`)
   }
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
+                    <
       case 'scheduled':
         return <Badge variant="outline" className="text-blue-600">Scheduled</Badge>
       case 'in-progress':
@@ -178,7 +180,7 @@ const timeSlots = [
       default:
         return <Badge variant="outline">{status}</Badge>
     }
-  }
+   
 
   return (
     <div className="space-y-6">
@@ -190,17 +192,17 @@ const timeSlots = [
             <Input
               placeholder="Search appointments..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+                      {appointmentTypes.map((type) => (
               className="pl-10"
-            />
+              
           </div>
           
           <div className="flex gap-2">
             <Select value={filterStatus} onValueChange={setFilterStatus}>
               <SelectTrigger className="w-[140px]">
-                <SelectValue />
+                  <Label>Appoin
               </SelectTrigger>
-              <SelectContent>
+                      <Button
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="scheduled">Scheduled</SelectItem>
                 <SelectItem value="in-progress">In Progress</SelectItem>
@@ -212,13 +214,13 @@ const timeSlots = [
             <Select value={filterDate} onValueChange={setFilterDate}>
               <SelectTrigger className="w-[140px]">
                 <SelectValue />
-              </SelectTrigger>
+                  </Popover>
               <SelectContent>
-                <SelectItem value="today">Today</SelectItem>
+                <div className="space-y-2">
                 <SelectItem value="selected">Selected Date</SelectItem>
                 <SelectItem value="all">All Dates</SelectItem>
               </SelectContent>
-            </Select>
+                    <
           </div>
         </div>
 
@@ -226,21 +228,21 @@ const timeSlots = [
           <DialogTrigger asChild>
             <Button>
               <CalendarPlus className="w-4 h-4 mr-2" />
-              Schedule Appointment
+                          >
             </Button>
-          </DialogTrigger>
+                        )
           <DialogContent className="max-w-2xl">
-            <DialogHeader>
+                  </Select
               <DialogTitle>Schedule New Appointment</DialogTitle>
-              <DialogDescription>
+
                 Book an appointment for a patient with available doctors.
-              </DialogDescription>
+                <Input
             </DialogHeader>
 
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="patient">Select Patient *</Label>
-                <Select 
+            <DialogFoote
                   onValueChange={(value) => {
                     const patient = patients.find(p => p.id === value)
                     setNewAppointment({
@@ -252,312 +254,312 @@ const timeSlots = [
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Choose a patient" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {patients.map((patient) => (
-                      <SelectItem key={patient.id} value={patient.id}>
-                        {patient.name} - {patient.id}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="doctor">Select Doctor *</Label>
-                  <Select onValueChange={(value) => setNewAppointment({...newAppointment, doctor: value})}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose a doctor" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {doctors.filter(d => d.status === 'active').map((doctor) => (
-                        <SelectItem key={doctor.id} value={`Dr. ${doctor.name}`}>
-                          Dr. {doctor.name} - {doctor.specialization}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="type">Appointment Type *</Label>
-                  <Select onValueChange={(value) => setNewAppointment({...newAppointment, type: value})}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {appointmentTypes.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Appointment Date *</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-start">
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {newAppointment.date ? format(new Date(newAppointment.date), 'PPP') : 'Select date'}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={newAppointment.date ? new Date(newAppointment.date) : undefined}
-                        onSelect={(date) => {
-                          if (date) {
-                            setNewAppointment({...newAppointment, date: date.toISOString().split('T')[0]})
-                          }
-                        }}
-                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="time">Appointment Time *</Label>
-                  <Select 
-                    onValueChange={(value) => setNewAppointment({...newAppointment, time: value})}
-                    disabled={!newAppointment.doctor || !newAppointment.date}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select time" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timeSlots.map((time) => {
-                        const isBooked = newAppointment.doctor && newAppointment.date ? 
-                          getBookedSlots(newAppointment.date, newAppointment.doctor).includes(time) : false
-                        return (
-                          <SelectItem 
-                            key={time} 
-                            value={time} 
-                            disabled={isBooked}
-                          >
-                            {time} {isBooked ? '(Booked)' : ''}
-                          </SelectItem>
-                        )
-                      })}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notes (Optional)</Label>
-                <Input
-                  id="notes"
-                  value={newAppointment.notes}
-                  onChange={(e) => setNewAppointment({...newAppointment, notes: e.target.value})}
-                  placeholder="Additional notes or special instructions"
-                />
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleScheduleAppointment}>
-                Schedule Appointment
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Calendar Date Picker */}
-      {filterDate === 'selected' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Select Date</CardTitle>
-            <CardDescription>Choose a date to view appointments</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={(date) => date && setSelectedDate(date)}
-              className="rounded-md border w-fit"
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Appointments List */}
-      <div className="space-y-4">
-        {filteredAppointments.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <CalendarIcon className="h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-lg font-medium text-muted-foreground">No appointments found</p>
-              <p className="text-sm text-muted-foreground">
-                {searchTerm ? 'Try adjusting your search criteria' : 'Schedule your first appointment'}
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-4">
-            {filteredAppointments.map((appointment) => (
-              <Card key={appointment.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center">
-                        <User className="w-6 h-6" />
-                      </div>
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-lg font-semibold">{appointment.patientName}</h3>
-                          <Badge variant="outline">{appointment.id}</Badge>
-                          {getStatusBadge(appointment.status)}
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-sm text-muted-foreground">
-                            <strong>Doctor:</strong> {appointment.doctor}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            <strong>Type:</strong> {appointment.type}
-                          </p>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <CalendarIcon className="w-3 h-3" />
-                              {new Date(appointment.date).toLocaleDateString()}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {appointment.time}
-                            </span>
-                          </div>
-                          {appointment.notes && (
-                            <p className="text-sm text-muted-foreground">
-                              <strong>Notes:</strong> {appointment.notes}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      {appointment.status === 'scheduled' && (
-                        <>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateAppointmentStatus(appointment.id, 'in-progress')}
-                          >
-                            Start
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateAppointmentStatus(appointment.id, 'cancelled')}
-                          >
-                            Cancel
-                          </Button>
-                        </>
+                        <Badge var
+                          Cancell
                       )}
-                      {appointment.status === 'in-progress' && (
-                        <Button
-                          variant="default"
-                          size="sm"
-                          onClick={() => updateAppointmentStatus(appointment.id, 'completed')}
-                        >
-                          <CheckCircle className="w-4 h-4 mr-1" />
-                          Complete
-                        </Button>
-                      )}
-                      {appointment.status === 'completed' && (
-                        <>
-                          <Badge variant="default" className="bg-green-500">
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                            Completed
-                          </Badge>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              // Navigate to billing with pre-filled patient info
-                              const patient = patients.find(p => p.id === appointment.patientId)
-                              if (patient) {
-                                // Store billing context in localStorage for cross-component communication
-                                localStorage.setItem('billing-context', JSON.stringify({
-                                  patientId: patient.id,
-                                  patientName: patient.name,
-                                  appointmentId: appointment.id,
-                                  appointmentType: appointment.type,
-                                  doctor: appointment.doctor
-                                }))
-                                // This would trigger navigation to billing tab in a real app
-                                // For now, just show a toast with instruction
-                                toast.success('Patient info saved. Please go to Billing tab to create bill.')
-                              }
-                            }}
-                          >
-                            <Receipt className="w-4 h-4 mr-1" />
-                            Create Bill
-                          </Button>
-                        </>
-                      )}
-                      {appointment.status === 'cancelled' && (
-                        <Badge variant="destructive">
-                          <XCircle className="w-3 h-3 mr-1" />
-                          Cancelled
-                        </Badge>
-                      )}
-                    </div>
                   </div>
-                </CardContent>
               </Card>
-            ))}
           </div>
-        )}
+      </div>
+      {/* Today's Summary */}
+        <Card>
+            <CardTit
+
+              <div className="text-center">
+                  {appointments.filter(apt 
+                <p className="text-sm text-muted-foreground">Tota
+              <div className="text-center">
+                  {appointments.fil
+                <p className="text-sm text-muted-foreground">Comple
+              <div className="text-c
+                  {appointments.fil
+                <p className="text-sm text-muted
+              <div className="text-center">
+                  {appointments.fi
+                <p className="text-sm
+            </div>
+        </Card>
+    </div>
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                      )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                  </div>
+
+              </Card>
+
+          </div>
+
       </div>
 
       {/* Today's Summary */}
-      {filterDate === 'today' && (
+
         <Card>
-          <CardHeader>
-            <CardTitle>Today's Summary</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+
+
+
+
               <div className="text-center">
-                <p className="text-2xl font-bold text-primary">
-                  {appointments.filter(apt => apt.date === today).length}
-                </p>
-                <p className="text-sm text-muted-foreground">Total Appointments</p>
-              </div>
+
+
+
+
+
               <div className="text-center">
-                <p className="text-2xl font-bold text-green-600">
-                  {appointments.filter(apt => apt.date === today && apt.status === 'completed').length}
-                </p>
-                <p className="text-sm text-muted-foreground">Completed</p>
-              </div>
+
+
+
+
+
               <div className="text-center">
-                <p className="text-2xl font-bold text-yellow-600">
-                  {appointments.filter(apt => apt.date === today && apt.status === 'in-progress').length}
-                </p>
-                <p className="text-sm text-muted-foreground">In Progress</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-blue-600">
-                  {appointments.filter(apt => apt.date === today && apt.status === 'scheduled').length}
-                </p>
-                <p className="text-sm text-muted-foreground">Pending</p>
-              </div>
+
+
+
+
+
+
+
+
+
+
+
             </div>
-          </CardContent>
+
         </Card>
-      )}
+
     </div>
-  )
+
 }
