@@ -50,7 +50,6 @@ export default function AppointmentScheduling() {
   const { sendAppointmentReminder, isLoading: isNotificationLoading } = useNotifications()
   const [todayAppointments, setTodayAppointments] = useKV<Appointment[]>('today-appointments', [])
   
-  const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterDate, setFilterDate] = useState('all')
   const [selectedDate, setSelectedDate] = useState(new Date())

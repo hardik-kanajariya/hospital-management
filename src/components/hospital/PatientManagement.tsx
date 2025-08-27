@@ -928,7 +928,7 @@ export default function PatientManagement() {
                     </Button>
                   </div>
                 </div>
-              )}))
+              ))
             )}
           </div>
         </CardContent>
