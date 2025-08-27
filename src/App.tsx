@@ -17,12 +17,13 @@ import {
   Stethoscope
 } from '@phosphor-icons/react'
 
+// Hospital components
+import Dashboard from '@/components/hospital/Dashboard'
 import PatientManagement from '@/components/hospital/PatientManagement'
 import AppointmentScheduling from '@/components/hospital/AppointmentScheduling'
 import MedicalRecords from '@/components/hospital/MedicalRecords'
 import BillingSystem from '@/components/hospital/BillingSystem'
 import InventoryManagement from '@/components/hospital/InventoryManagement'
-import Dashboard from '@/components/hospital/Dashboard'
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard')
