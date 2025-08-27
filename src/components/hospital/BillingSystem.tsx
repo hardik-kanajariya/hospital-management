@@ -8,44 +8,13 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Receipt, Plus, Search, CreditCard, Eye, Printer, DollarSign, TrendingUp } from '@phosphor-icons/react'
+import { Separator } from '@/components/ui/separator'
+import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
+import { Receipt, Plus, Search, CreditCard, Eye, Printer, DollarSign, TrendingUp, FileText, Download, Bell } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-
-interface BillItem {
-  id: string
-  description: string
-  quantity: number
-  rate: number
-  amount: number
-}
-
-interface Bill {
-  id: string
-  patientId: string
-  patientName: string
-  date: string
-  items: BillItem[]
-  subtotal: number
-  discount: number
-  tax: number
-  total: number
-  paymentStatus: 'pending' | 'partial' | 'paid'
-  paymentMethod?: string
-  paidAmount: number
-  dueAmount: number
-  notes?: string
-  insuranceClaim?: {
-    provider: string
-    policyNumber: string
-    claimAmount: number
-    claimStatus: 'pending' | 'approved' | 'rejected' | 'processing'
-    claimId?: string
-    submittedDate?: string
-    approvedDate?: string
-    rejectionReason?: string
-  }
-  createdAt: string
-}
+import { useNotifications } from '@/hooks/useNotifications'
+import { Bill, Patient, BillItem, InsuranceClaim } from '@/types/hospital'
 
 const serviceItems = [
   { description: 'General Consultation', rate: 500 },

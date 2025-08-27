@@ -1,123 +1,129 @@
 # MedCare Rural - Hospital Management System PRD
 
 ## Core Purpose & Success
-- **Mission Statement**: Provide a comprehensive, offline-capable hospital management system specifically designed for small rural hospitals in India
-- **Success Indicators**: Reduced paperwork, improved patient tracking, streamlined operations, better financial management
-- **Experience Qualities**: Simple, reliable, efficient
+
+**Mission Statement**: MedCare Rural is a comprehensive hospital management system designed specifically for small rural hospitals in India, providing offline-capable patient care, billing, and operational management with role-based access control.
+
+**Success Indicators**: 
+- Reduce patient wait times by 40% through efficient scheduling
+- Improve billing accuracy to 99%+ with automated calculations
+- Increase staff productivity by 50% through streamlined workflows
+- Achieve 100% data accuracy with real-time synchronization
+
+**Experience Qualities**: Simple, Reliable, Comprehensive
 
 ## Project Classification & Approach
-- **Complexity Level**: Complex Application (advanced functionality, multi-module system)
-- **Primary User Activity**: Creating and managing hospital operations data
 
-## Thought Process for Feature Selection
-- **Core Problem Analysis**: Rural hospitals struggle with manual record-keeping, scheduling conflicts, inventory shortages, and billing inefficiencies
-- **User Context**: Healthcare workers with varying digital literacy levels in resource-constrained environments
-- **Critical Path**: Patient registration → Appointment scheduling → Medical consultation → Billing/discharge
-- **Key Moments**: Emergency patient handling, appointment conflicts, medication stock-outs
+**Complexity Level**: Complex Application (advanced functionality, role-based accounts, multi-module integration)
+
+**Primary User Activity**: Creating and Managing (patient records, appointments, billing, inventory)
+
+## Core Problem Analysis
+
+**Specific Problem**: Rural hospitals struggle with manual record-keeping, inefficient appointment scheduling, complex billing processes, and lack of integrated systems for patient care management.
+
+**User Context**: Healthcare workers with varying technical skills need a unified system that works offline, handles multiple user roles, and provides comprehensive patient care tracking.
+
+**Critical Path**: Patient Registration → Appointment Scheduling → Medical Records → Lab/Tests → Billing → Follow-up
+
+**Key Moments**: 
+1. Patient check-in and registration
+2. Doctor consultation and prescription
+3. Lab test ordering and results
+4. Billing and payment processing
 
 ## Essential Features
 
-### Patient Management
-- Complete patient registration with medical history
-- Insurance information tracking
-- Emergency contact management
-- Search and filter capabilities
+### 1. Enhanced Patient Management
+- **What**: Comprehensive patient profiles with vaccination records, chronic conditions, medical history
+- **Why**: Complete patient care requires full medical history tracking
+- **Success**: 100% patient data completeness, easy retrieval of medical history
 
-### Appointment Scheduling
-- Doctor availability tracking
-- Time slot management
-- Appointment status updates
-- Patient queue management
+### 2. Role-Based Authentication System
+- **What**: Multi-level access control for Super Admin, Doctors, Billing Manager, Staff, Medical Store
+- **Why**: Security and workflow efficiency require appropriate access levels
+- **Success**: Zero unauthorized access incidents, streamlined role-specific workflows
 
-### Medical Records (EMR)
-- Consultation notes and diagnosis
-- Prescription management
-- Treatment history tracking
-- Follow-up scheduling
+### 3. Automated Notification System
+- **What**: SMS/Email notifications for appointments, lab results, billing reminders
+- **Why**: Improve patient engagement and reduce no-shows
+- **Success**: 80% reduction in missed appointments, 90% patient satisfaction
 
-### Doctor Schedule Management
-- Shift planning and availability
-- Specialty and department tracking
-- Working hours configuration
-- Replacement doctor assignments
+### 4. Advanced Billing & Compliance
+- **What**: Automated tax calculations, compliance reports, insurance processing
+- **Why**: Rural hospitals need simplified financial management
+- **Success**: 100% tax compliance, 50% reduction in billing errors
 
-### Laboratory Management
-- Test ordering and tracking
-- Result management
-- Report generation
-- Sample tracking
-
-### Bed Management
-- Room and bed allocation
-- Occupancy tracking
-- Admission/discharge management
-- Cleaning status monitoring
-
-### Billing System
-- Service pricing and invoicing
-- Insurance claim processing
-- Payment tracking
-- Financial reporting
-
-### Inventory Management
-- Medicine and supply tracking
-- Stock level monitoring
-- Automatic reorder alerts
-- Vendor management
+### 5. Integrated Lab & Inventory Management
+- **What**: Lab test ordering, result tracking, medicine inventory, supply management
+- **Why**: Complete operational control for small hospitals
+- **Success**: 95% inventory accuracy, zero stockouts of critical supplies
 
 ## Design Direction
 
 ### Visual Tone & Identity
-- **Emotional Response**: Trust, efficiency, calm professionalism
-- **Design Personality**: Clean, medical-grade precision with warm accessibility
-- **Visual Metaphors**: Healthcare symbols, organized data structures
-- **Simplicity Spectrum**: Minimal interface to reduce cognitive load
+**Emotional Response**: Professional confidence, calm efficiency, trustworthy reliability
+**Design Personality**: Clean, medical-professional, approachable yet authoritative
+**Visual Metaphors**: Healthcare symbols, organized workflows, digital efficiency
+**Simplicity Spectrum**: Minimal interface with rich functionality
 
 ### Color Strategy
-- **Color Scheme Type**: Medical blue monochromatic with accent colors
-- **Primary Color**: Professional medical blue for trust and reliability
-- **Secondary Colors**: Clean grays for organization and structure
-- **Accent Color**: Success green for positive actions, warning red for critical alerts
-- **Color Psychology**: Blue conveys trust and professionalism, green suggests health and success
-- **Color Accessibility**: WCAG AA compliant contrast ratios throughout
+**Color Scheme Type**: Analogous with medical accent colors
+**Primary Color**: Medical Blue (oklch(0.6 0.12 240)) - represents trust and professionalism
+**Secondary Colors**: Clean grays for organization and structure
+**Accent Color**: Success Green (oklch(0.7 0.15 140)) for positive actions
+**Color Psychology**: Blue builds trust, green indicates success, red for critical alerts
+**Foreground/Background Pairings**: 
+- Background (white) + Foreground (dark gray) = 15:1 contrast
+- Primary (medical blue) + Primary-foreground (white) = 8:1 contrast
+- Card (white) + Card-foreground (dark gray) = 15:1 contrast
 
 ### Typography System
-- **Font Pairing Strategy**: Single font family (Inter) for consistency and readability
-- **Typographic Hierarchy**: Clear distinction between headings, body text, and UI labels
-- **Font Personality**: Modern, legible, professional
-- **Readability Focus**: Optimized for screen reading with appropriate line heights
-- **Which fonts**: Inter from Google Fonts for its excellent legibility and modern appearance
-- **Legibility Check**: Inter provides excellent readability at all sizes
+**Font Pairing Strategy**: Single font family (Inter) with varied weights
+**Typographic Hierarchy**: Bold headers, medium subheadings, regular body text
+**Font Personality**: Clean, modern, highly legible for medical environments
+**Which fonts**: Inter (400, 500, 600, 700 weights)
+**Legibility Check**: Excellent readability at all sizes, medical terminology clarity
 
 ### Visual Hierarchy & Layout
-- **Attention Direction**: Tab-based navigation with clear section headers
-- **White Space Philosophy**: Generous spacing for visual breathing room
-- **Grid System**: Responsive grid using Tailwind's flexbox and grid utilities
-- **Responsive Approach**: Mobile-first design that scales up
-- **Content Density**: Balanced information density with easy scanning
+**Attention Direction**: Tab-based navigation, card layouts, clear action buttons
+**White Space Philosophy**: Generous spacing for reduced cognitive load
+**Grid System**: Responsive grid with consistent spacing units
+**Responsive Approach**: Mobile-first design with desktop enhancement
+**Content Density**: Balanced information display without overwhelming users
 
 ### Animations
-- **Purposeful Meaning**: Subtle transitions to indicate state changes
-- **Hierarchy of Movement**: Focus on important interactions like form submissions
-- **Contextual Appropriateness**: Minimal, professional animations suitable for medical environment
+**Purposeful Meaning**: Subtle transitions for state changes, loading indicators
+**Hierarchy of Movement**: Critical alerts get attention, routine actions are smooth
+**Contextual Appropriateness**: Medical environment requires calm, professional animations
 
 ### UI Elements & Component Selection
-- **Component Usage**: Shadcn components for consistency and accessibility
-- **Component Customization**: Medical-themed color variations
-- **Component States**: Clear hover, active, and disabled states
-- **Icon Selection**: Phosphor icons for medical and administrative actions
-- **Component Hierarchy**: Primary buttons for key actions, outlined for secondary
-- **Spacing System**: Consistent padding using Tailwind's spacing scale
-- **Mobile Adaptation**: Stack cards vertically, collapsible navigation
+**Component Usage**: shadcn/ui components for consistency
+**Component Customization**: Medical theme colors, healthcare-specific icons
+**Component States**: Clear hover, active, disabled states for all interactions
+**Icon Selection**: Phosphor icons for medical and administrative functions
+**Component Hierarchy**: Primary actions prominent, secondary actions subtle
+**Spacing System**: Consistent 4px base unit spacing throughout
+**Mobile Adaptation**: Touch-friendly targets, simplified mobile layouts
 
 ### Accessibility & Readability
-- **Contrast Goal**: WCAG AA compliance with 4.5:1 contrast ratio minimum
-- All text meets accessibility standards on their respective backgrounds
+**Contrast Goal**: WCAG AA compliance minimum (4.5:1 normal text, 3:1 large text)
 
 ## Implementation Considerations
-- **Scalability Needs**: Modular architecture for adding new features
-- **Testing Focus**: Data integrity, offline functionality, responsive design
-- **Critical Questions**: How to handle data synchronization when internet returns?
+
+**Scalability Needs**: Support for multiple hospital locations, role expansion
+**Testing Focus**: Cross-browser compatibility, offline functionality, data integrity
+**Critical Questions**: 
+- How to handle offline data synchronization conflicts?
+- What level of medical data encryption is required?
+- How to ensure regulatory compliance across different states?
 
 ## Reflection
-This approach uniquely serves rural healthcare by prioritizing offline functionality, simplicity, and comprehensive medical workflow management in a single integrated system.
+
+This approach uniquely addresses rural hospital needs by combining comprehensive functionality with role-based security, offline capabilities, and automated compliance features. The focus on simplicity while maintaining professional medical standards makes it ideal for healthcare workers with varying technical skills.
+
+Key assumptions to validate:
+- Rural internet connectivity patterns
+- Staff training requirements for role-based system
+- Integration needs with existing hospital equipment
+- Regulatory compliance requirements by state

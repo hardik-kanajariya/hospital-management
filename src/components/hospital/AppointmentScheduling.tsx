@@ -7,21 +7,12 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Calendar, CalendarPlus, Search, Clock, User, FileText } from '@phosphor-icons/react'
+import { Textarea } from '@/components/ui/textarea'
+import { Switch } from '@/components/ui/switch'
+import { Calendar, CalendarPlus, Search, Clock, User, FileText, Bell, Phone, Mail } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-
-interface Appointment {
-  id: string
-  patientId: string
-  patientName: string
-  doctor: string
-  type: string
-  date: string
-  time: string
-  status: 'scheduled' | 'in-progress' | 'completed' | 'cancelled'
-  notes?: string
-  createdAt: string
-}
+import { useNotifications } from '@/hooks/useNotifications'
+import { Appointment, Patient } from '@/types/hospital'
 
 const doctors = [
   'Dr. Priya Sharma - Pediatrician',
@@ -48,6 +39,15 @@ const timeSlots = [
 
 export default function AppointmentScheduling() {
   const [appointments, setAppointments] = useKV<Appointment[]>('hospital-appointments', [])
+  const [patients] = useKV<Patient[]>('hospital-patients', [])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [formData, setFormData] = useState<Partial<Appointment>>({
+    status: 'scheduled',
+    type: 'consultation'
+  })
+  const [sendReminder, setSendReminder] = useState(true)
+  const { sendAppointmentReminder, isLoading: isNotificationLoading } = useNotifications()
   const [todayAppointments, setTodayAppointments] = useKV<Appointment[]>('today-appointments', [])
   const [patients] = useKV('hospital-patients', [])
   
@@ -72,74 +72,94 @@ export default function AppointmentScheduling() {
 
   // Filter appointments based on search and filters
   const filteredAppointments = appointments.filter(appointment => {
-    const matchesSearch = appointment.patientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         appointment.doctor?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const patient = patients.find(p => p.id === appointment.patientId);
+    const patientName = patient ? `${patient.firstName} ${patient.lastName}` : '';
+    
+    const matchesSearch = patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         appointment.doctorId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          appointment.id?.toLowerCase().includes(searchTerm.toLowerCase())
     
-    const matchesStatus = filterStatus === 'all' || appointment.status === filterStatus
-    
-    let matchesDate = true
-    if (filterDate === 'today') {
-      matchesDate = appointment.date === today
-    } else if (filterDate === 'selected') {
-      matchesDate = appointment.date === selectedDateString
-    }
-    
-    return matchesSearch && matchesStatus && matchesDate
+    return matchesSearch
   })
 
-  // Get booked time slots for selected date and doctor
-  const getBookedSlots = (date: string, doctor: string) => {
-    return appointments
-      .filter(apt => apt.date === date && apt.doctor === doctor && apt.status !== 'cancelled')
-      .map(apt => apt.time)
+  // Get available time slots for a specific date and doctor
+  const getAvailableSlots = (date: string, doctorId: string) => {
+    const bookedSlots = appointments
+      .filter(apt => apt.appointmentDate === date && apt.doctorId === doctorId && apt.status !== 'cancelled')
+      .map(apt => apt.appointmentTime)
+    
+    return timeSlots.filter(slot => !bookedSlots.includes(slot))
   }
 
-  const handleScheduleAppointment = () => {
-    if (!newAppointment.patientId || !newAppointment.doctor || !newAppointment.type || 
-        !newAppointment.date || !newAppointment.time) {
+  const handleScheduleAppointment = async () => {
+    if (!formData.patientId || !formData.doctorId || !formData.type || 
+        !formData.appointmentDate || !formData.appointmentTime) {
       toast.error('Please fill in all required fields')
       return
     }
 
+    const patient = patients.find(p => p.id === formData.patientId);
+    if (!patient) {
+      toast.error('Patient not found')
+      return
+    }
+
     // Check if time slot is already booked
-    const bookedSlots = getBookedSlots(newAppointment.date, newAppointment.doctor)
-    if (bookedSlots.includes(newAppointment.time)) {
+    const bookedSlots = appointments
+      .filter(apt => apt.appointmentDate === formData.appointmentDate && 
+                     apt.doctorId === formData.doctorId && 
+                     apt.status !== 'cancelled')
+      .map(apt => apt.appointmentTime)
+    
+    if (bookedSlots.includes(formData.appointmentTime)) {
       toast.error('This time slot is already booked. Please choose a different time.')
       return
     }
 
     const appointment: Appointment = {
-      id: `APT${Date.now()}`,
-      patientId: newAppointment.patientId,
-      patientName: newAppointment.patientName,
-      doctor: newAppointment.doctor,
-      type: newAppointment.type,
-      date: newAppointment.date,
-      time: newAppointment.time,
+      id: crypto.randomUUID(),
+      patientId: formData.patientId,
+      doctorId: formData.doctorId,
+      appointmentDate: formData.appointmentDate,
+      appointmentTime: formData.appointmentTime,
+      duration: formData.duration || 30,
+      type: formData.type as any,
       status: 'scheduled',
-      notes: newAppointment.notes,
-      createdAt: new Date().toISOString()
+      reason: formData.reason || '',
+      notes: formData.notes,
+      reminderSent: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     }
 
     setAppointments(currentAppointments => [...currentAppointments, appointment])
-    
-    // Update today's appointments if it's for today
-    if (newAppointment.date === today) {
-      setTodayAppointments(current => [...current, appointment])
+
+    // Send appointment reminder if enabled
+    if (sendReminder) {
+      const doctorName = formData.doctorId; // In a real app, you'd look up the doctor name
+      await sendAppointmentReminder(
+        patient.phoneNumber,
+        patient.email,
+        {
+          doctorName,
+          date: new Date(formData.appointmentDate).toLocaleDateString(),
+          time: formData.appointmentTime,
+          patientName: `${patient.firstName} ${patient.lastName}`
+        }
+      );
     }
 
-    setNewAppointment({
-      patientId: '',
-      patientName: '',
-      doctor: '',
-      type: '',
-      date: '',
-      time: '',
-      notes: ''
-    })
+    resetForm()
     setIsDialogOpen(false)
-    toast.success(`Appointment scheduled for ${newAppointment.patientName} on ${newAppointment.date} at ${newAppointment.time}`)
+    toast.success(`Appointment scheduled successfully`)
+  }
+
+  const resetForm = () => {
+    setFormData({
+      status: 'scheduled',
+      type: 'consultation'
+    })
+    setSendReminder(true)
   }
 
   const updateAppointmentStatus = (appointmentId: string, newStatus: Appointment['status']) => {

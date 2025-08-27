@@ -4,6 +4,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { useAuth } from '@/hooks/useAuth'
+import LoginForm from '@/components/auth/LoginForm'
 import { 
   Users, 
   Calendar, 
@@ -17,7 +19,8 @@ import {
   Stethoscope,
   UserCircle,
   TestTube,
-  Bed
+  Bed,
+  SignOut
 } from '@phosphor-icons/react'
 
 // Hospital components
@@ -25,7 +28,7 @@ import Dashboard from '@/components/hospital/Dashboard'
 import PatientManagement from '@/components/hospital/PatientManagement'
 import AppointmentScheduling from '@/components/hospital/AppointmentScheduling'
 import MedicalRecords from '@/components/hospital/MedicalRecords'
-import BillingSystem from '@/components/hospital/BillingSystem'
+import EnhancedBillingSystem from '@/components/hospital/EnhancedBillingSystem'
 import InventoryManagement from '@/components/hospital/InventoryManagement'
 import DoctorSchedule from '@/components/hospital/DoctorSchedule'
 import LabManagement from '@/components/hospital/LabManagement'
@@ -36,6 +39,12 @@ function App() {
   const [patients] = useKV('hospital-patients', [])
   const [appointments] = useKV('hospital-appointments', [])
   const [todayAppointments] = useKV('today-appointments', [])
+  const { user, isAuthenticated, logout, canAccessModule } = useAuth()
+
+  // If not authenticated, show login form
+  if (!isAuthenticated) {
+    return <LoginForm onLogin={() => {}} />
+  }
 
   const stats = {
     totalPatients: patients.length,
@@ -43,6 +52,19 @@ function App() {
     pendingAppointments: appointments.filter(apt => apt.status === 'scheduled').length,
     activeConsultations: appointments.filter(apt => apt.status === 'in-progress').length
   }
+
+  // Filter tabs based on user permissions
+  const availableTabs = [
+    { id: 'dashboard', label: 'Dashboard', icon: Activity, module: 'dashboard' },
+    { id: 'patients', label: 'Patients', icon: Users, module: 'patients' },
+    { id: 'appointments', label: 'Appointments', icon: Calendar, module: 'appointments' },
+    { id: 'doctors', label: 'Doctors', icon: UserCircle, module: 'doctors' },
+    { id: 'records', label: 'Records', icon: FileText, module: 'medical_records' },
+    { id: 'lab', label: 'Lab', icon: TestTube, module: 'lab_tests' },
+    { id: 'beds', label: 'Beds', icon: Bed, module: 'beds' },
+    { id: 'billing', label: 'Billing', icon: CreditCard, module: 'billing' },
+    { id: 'inventory', label: 'Inventory', icon: Package, module: 'inventory' }
+  ].filter(tab => canAccessModule(tab.module))
 
   return (
     <div className="min-h-screen bg-background">
@@ -62,12 +84,15 @@ function App() {
             
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-sm font-medium">Dr. Sarah Patel</p>
-                <p className="text-xs text-muted-foreground">Administrator</p>
+                <p className="text-sm font-medium">{user?.name}</p>
+                <p className="text-xs text-muted-foreground">{user?.role.replace('_', ' ')}</p>
               </div>
               <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
-                SP
+                {user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2)}
               </div>
+              <Button variant="outline" size="sm" onClick={logout}>
+                <SignOut className="w-4 h-4" />
+              </Button>
             </div>
           </div>
         </div>
@@ -100,42 +125,15 @@ function App() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 lg:grid-cols-9 lg:w-fit">
-            <TabsTrigger value="dashboard" className="flex items-center gap-2">
-              <Activity className="w-4 h-4" />
-              <span className="hidden sm:inline">Dashboard</span>
-            </TabsTrigger>
-            <TabsTrigger value="patients" className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              <span className="hidden sm:inline">Patients</span>
-            </TabsTrigger>
-            <TabsTrigger value="appointments" className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              <span className="hidden sm:inline">Appointments</span>
-            </TabsTrigger>
-            <TabsTrigger value="doctors" className="flex items-center gap-2">
-              <UserCircle className="w-4 h-4" />
-              <span className="hidden sm:inline">Doctors</span>
-            </TabsTrigger>
-            <TabsTrigger value="records" className="flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              <span className="hidden sm:inline">Records</span>
-            </TabsTrigger>
-            <TabsTrigger value="lab" className="flex items-center gap-2">
-              <TestTube className="w-4 h-4" />
-              <span className="hidden sm:inline">Lab</span>
-            </TabsTrigger>
-            <TabsTrigger value="beds" className="flex items-center gap-2">
-              <Bed className="w-4 h-4" />
-              <span className="hidden sm:inline">Beds</span>
-            </TabsTrigger>
-            <TabsTrigger value="billing" className="flex items-center gap-2">
-              <CreditCard className="w-4 h-4" />
-              <span className="hidden sm:inline">Billing</span>
-            </TabsTrigger>
-            <TabsTrigger value="inventory" className="flex items-center gap-2">
-              <Package className="w-4 h-4" />
-              <span className="hidden sm:inline">Inventory</span>
-            </TabsTrigger>
+            {availableTabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                  <Icon className="w-4 h-4" />
+                  <span className="hidden sm:inline">{tab.label}</span>
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6">
@@ -209,7 +207,7 @@ function App() {
                 <p className="text-muted-foreground">Manage billing, payments and financial records</p>
               </div>
             </div>
-            <BillingSystem />
+            <EnhancedBillingSystem />
           </TabsContent>
 
           <TabsContent value="inventory" className="space-y-6">
