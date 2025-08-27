@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Toaster } from '@/components/ui/sonner'
 import { useAuth } from '@/hooks/useAuth'
 import LoginForm from '@/components/auth/LoginForm'
 import { 
@@ -12,11 +11,8 @@ import {
   FileText, 
   CreditCard, 
   Package, 
-  UserPlus, 
-  CalendarPlus,
   Activity,
   Heart,
-  Stethoscope,
   UserCircle,
   TestTube,
   Bed,
@@ -47,10 +43,10 @@ function App() {
   }
 
   const stats = {
-    totalPatients: patients.length,
-    todayAppointments: todayAppointments.length,
-    pendingAppointments: appointments.filter(apt => apt.status === 'scheduled').length,
-    activeConsultations: appointments.filter(apt => apt.status === 'in-progress').length
+    totalPatients: Array.isArray(patients) ? patients.length : 0,
+    todayAppointments: Array.isArray(todayAppointments) ? todayAppointments.length : 0,
+    pendingAppointments: Array.isArray(appointments) ? appointments.filter(apt => apt?.status === 'scheduled').length : 0,
+    activeConsultations: Array.isArray(appointments) ? appointments.filter(apt => apt?.status === 'in-progress').length : 0
   }
 
   // Filter tabs based on user permissions
@@ -84,11 +80,13 @@ function App() {
             
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-sm font-medium">{user?.name}</p>
-                <p className="text-xs text-muted-foreground">{user?.role.replace('_', ' ')}</p>
+                <p className="text-sm font-medium">{user?.name || 'User'}</p>
+                <p className="text-xs text-muted-foreground">
+                  {user?.role ? user.role.replace('_', ' ').toUpperCase() : 'USER'}
+                </p>
               </div>
               <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
-                {user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                {user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U'}
               </div>
               <Button variant="outline" size="sm" onClick={logout}>
                 <SignOut className="w-4 h-4" />
@@ -137,6 +135,12 @@ function App() {
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
+                <p className="text-muted-foreground">Overview of hospital operations</p>
+              </div>
+            </div>
             <Dashboard />
           </TabsContent>
 
@@ -221,6 +225,9 @@ function App() {
           </TabsContent>
         </Tabs>
       </main>
+      
+      {/* Toast notifications */}
+      <Toaster />
     </div>
   )
 }

@@ -48,11 +48,14 @@ export const ROLE_CONFIGS: RoleConfig[] = [
     displayName: 'Doctor',
     accessLevel: 8,
     permissions: [
+      { module: 'dashboard', actions: ['read'] },
       { module: 'patients', actions: ['create', 'read', 'update'] },
       { module: 'appointments', actions: ['create', 'read', 'update'] },
       { module: 'medical_records', actions: ['create', 'read', 'update'] },
+      { module: 'doctors', actions: ['read', 'update'] },
       { module: 'prescriptions', actions: ['create', 'read', 'update'] },
       { module: 'lab_tests', actions: ['create', 'read'] },
+      { module: 'beds', actions: ['read', 'update'] },
       { module: 'billing', actions: ['read'] }
     ]
   },
@@ -61,6 +64,7 @@ export const ROLE_CONFIGS: RoleConfig[] = [
     displayName: 'Billing Manager',
     accessLevel: 6,
     permissions: [
+      { module: 'dashboard', actions: ['read'] },
       { module: 'billing', actions: ['create', 'read', 'update', 'delete'] },
       { module: 'patients', actions: ['read', 'update'] },
       { module: 'appointments', actions: ['read'] },
@@ -73,6 +77,7 @@ export const ROLE_CONFIGS: RoleConfig[] = [
     displayName: 'Nurse',
     accessLevel: 5,
     permissions: [
+      { module: 'dashboard', actions: ['read'] },
       { module: 'patients', actions: ['create', 'read', 'update'] },
       { module: 'appointments', actions: ['read', 'update'] },
       { module: 'medical_records', actions: ['read', 'update'] },
@@ -85,6 +90,7 @@ export const ROLE_CONFIGS: RoleConfig[] = [
     displayName: 'Lab Technician',
     accessLevel: 4,
     permissions: [
+      { module: 'dashboard', actions: ['read'] },
       { module: 'lab_tests', actions: ['create', 'read', 'update'] },
       { module: 'patients', actions: ['read'] },
       { module: 'lab_results', actions: ['create', 'read', 'update'] }
@@ -95,6 +101,7 @@ export const ROLE_CONFIGS: RoleConfig[] = [
     displayName: 'Pharmacist',
     accessLevel: 4,
     permissions: [
+      { module: 'dashboard', actions: ['read'] },
       { module: 'inventory', actions: ['create', 'read', 'update'] },
       { module: 'prescriptions', actions: ['read', 'update'] },
       { module: 'patients', actions: ['read'] },
@@ -106,6 +113,7 @@ export const ROLE_CONFIGS: RoleConfig[] = [
     displayName: 'Medical Store Manager',
     accessLevel: 5,
     permissions: [
+      { module: 'dashboard', actions: ['read'] },
       { module: 'inventory', actions: ['create', 'read', 'update', 'delete'] },
       { module: 'medical_store', actions: ['create', 'read', 'update', 'delete'] },
       { module: 'suppliers', actions: ['create', 'read', 'update'] },
@@ -117,6 +125,7 @@ export const ROLE_CONFIGS: RoleConfig[] = [
     displayName: 'Receptionist',
     accessLevel: 3,
     permissions: [
+      { module: 'dashboard', actions: ['read'] },
       { module: 'patients', actions: ['create', 'read', 'update'] },
       { module: 'appointments', actions: ['create', 'read', 'update'] },
       { module: 'billing', actions: ['read'] }
