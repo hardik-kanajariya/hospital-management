@@ -56,7 +56,8 @@ export const ROLE_CONFIGS: RoleConfig[] = [
       { module: 'prescriptions', actions: ['create', 'read', 'update'] },
       { module: 'lab_tests', actions: ['create', 'read'] },
       { module: 'beds', actions: ['read', 'update'] },
-      { module: 'billing', actions: ['read'] }
+      { module: 'billing', actions: ['read'] },
+      { module: 'notifications', actions: ['create', 'read'] }
     ]
   },
   {
@@ -69,7 +70,8 @@ export const ROLE_CONFIGS: RoleConfig[] = [
       { module: 'patients', actions: ['read', 'update'] },
       { module: 'appointments', actions: ['read'] },
       { module: 'insurance', actions: ['create', 'read', 'update'] },
-      { module: 'reports', actions: ['read'] }
+      { module: 'reports', actions: ['read'] },
+      { module: 'notifications', actions: ['create', 'read'] }
     ]
   },
   {
@@ -82,7 +84,8 @@ export const ROLE_CONFIGS: RoleConfig[] = [
       { module: 'appointments', actions: ['read', 'update'] },
       { module: 'medical_records', actions: ['read', 'update'] },
       { module: 'beds', actions: ['read', 'update'] },
-      { module: 'vital_signs', actions: ['create', 'read', 'update'] }
+      { module: 'vital_signs', actions: ['create', 'read', 'update'] },
+      { module: 'notifications', actions: ['read'] }
     ]
   },
   {
@@ -93,7 +96,8 @@ export const ROLE_CONFIGS: RoleConfig[] = [
       { module: 'dashboard', actions: ['read'] },
       { module: 'lab_tests', actions: ['create', 'read', 'update'] },
       { module: 'patients', actions: ['read'] },
-      { module: 'lab_results', actions: ['create', 'read', 'update'] }
+      { module: 'lab_results', actions: ['create', 'read', 'update'] },
+      { module: 'notifications', actions: ['create', 'read'] }
     ]
   },
   {
@@ -105,7 +109,8 @@ export const ROLE_CONFIGS: RoleConfig[] = [
       { module: 'inventory', actions: ['create', 'read', 'update'] },
       { module: 'prescriptions', actions: ['read', 'update'] },
       { module: 'patients', actions: ['read'] },
-      { module: 'medical_store', actions: ['create', 'read', 'update', 'delete'] }
+      { module: 'medical_store', actions: ['create', 'read', 'update', 'delete'] },
+      { module: 'notifications', actions: ['read'] }
     ]
   },
   {
@@ -117,7 +122,8 @@ export const ROLE_CONFIGS: RoleConfig[] = [
       { module: 'inventory', actions: ['create', 'read', 'update', 'delete'] },
       { module: 'medical_store', actions: ['create', 'read', 'update', 'delete'] },
       { module: 'suppliers', actions: ['create', 'read', 'update'] },
-      { module: 'purchases', actions: ['create', 'read', 'update'] }
+      { module: 'purchases', actions: ['create', 'read', 'update'] },
+      { module: 'notifications', actions: ['read'] }
     ]
   },
   {
@@ -128,7 +134,8 @@ export const ROLE_CONFIGS: RoleConfig[] = [
       { module: 'dashboard', actions: ['read'] },
       { module: 'patients', actions: ['create', 'read', 'update'] },
       { module: 'appointments', actions: ['create', 'read', 'update'] },
-      { module: 'billing', actions: ['read'] }
+      { module: 'billing', actions: ['read'] },
+      { module: 'notifications', actions: ['create', 'read'] }
     ]
   }
 ];

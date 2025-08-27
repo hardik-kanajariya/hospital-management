@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
 import { useAuth } from '@/hooks/useAuth'
 import LoginForm from '@/components/auth/LoginForm'
+import RoleBasedAccess from '@/components/auth/RoleBasedAccess'
 import { 
   Users, 
   Calendar, 
@@ -16,7 +17,10 @@ import {
   UserCircle,
   TestTube,
   Bed,
-  SignOut
+  SignOut,
+  Shield,
+  Settings,
+  Bell
 } from '@phosphor-icons/react'
 
 // Hospital components
@@ -29,6 +33,8 @@ import InventoryManagement from '@/components/hospital/InventoryManagement'
 import DoctorSchedule from '@/components/hospital/DoctorSchedule'
 import LabManagement from '@/components/hospital/LabManagement'
 import BedManagement from '@/components/hospital/BedManagement'
+import UserManagement from '@/components/auth/UserManagement'
+import NotificationCenter from '@/components/hospital/NotificationCenter'
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard')
@@ -59,8 +65,18 @@ function App() {
     { id: 'lab', label: 'Lab', icon: TestTube, module: 'lab_tests' },
     { id: 'beds', label: 'Beds', icon: Bed, module: 'beds' },
     { id: 'billing', label: 'Billing', icon: CreditCard, module: 'billing' },
-    { id: 'inventory', label: 'Inventory', icon: Package, module: 'inventory' }
-  ].filter(tab => canAccessModule(tab.module))
+    { id: 'inventory', label: 'Inventory', icon: Package, module: 'inventory' },
+    { id: 'notifications', label: 'Notifications', icon: Bell, module: 'notifications' },
+    { id: 'users', label: 'Users', icon: Shield, module: 'user_management', requiresRole: 'super_admin' }
+  ].filter(tab => {
+    // Check module permission
+    if (!canAccessModule(tab.module)) return false;
+    
+    // Check role requirement if specified
+    if (tab.requiresRole && user?.role !== tab.requiresRole) return false;
+    
+    return true;
+  })
 
   return (
     <div className="min-h-screen bg-background">
@@ -122,7 +138,7 @@ function App() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-9 lg:w-fit">
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-11 lg:w-fit">
             {availableTabs.map((tab) => {
               const Icon = tab.icon;
               return (
@@ -151,7 +167,9 @@ function App() {
                 <p className="text-muted-foreground">Manage patient records and information</p>
               </div>
             </div>
-            <PatientManagement />
+            <RoleBasedAccess requiredModule="patients">
+              <PatientManagement />
+            </RoleBasedAccess>
           </TabsContent>
 
           <TabsContent value="appointments" className="space-y-6">
@@ -161,7 +179,9 @@ function App() {
                 <p className="text-muted-foreground">Schedule and manage patient appointments</p>
               </div>
             </div>
-            <AppointmentScheduling />
+            <RoleBasedAccess requiredModule="appointments">
+              <AppointmentScheduling />
+            </RoleBasedAccess>
           </TabsContent>
 
           <TabsContent value="records" className="space-y-6">
@@ -171,7 +191,9 @@ function App() {
                 <p className="text-muted-foreground">Electronic medical records and consultation notes</p>
               </div>
             </div>
-            <MedicalRecords />
+            <RoleBasedAccess requiredModule="medical_records">
+              <MedicalRecords />
+            </RoleBasedAccess>
           </TabsContent>
 
           <TabsContent value="doctors" className="space-y-6">
@@ -181,7 +203,9 @@ function App() {
                 <p className="text-muted-foreground">Manage doctor schedules, availability and shifts</p>
               </div>
             </div>
-            <DoctorSchedule />
+            <RoleBasedAccess requiredModule="doctors">
+              <DoctorSchedule />
+            </RoleBasedAccess>
           </TabsContent>
 
           <TabsContent value="lab" className="space-y-6">
@@ -191,7 +215,9 @@ function App() {
                 <p className="text-muted-foreground">Order tests, track results and generate reports</p>
               </div>
             </div>
-            <LabManagement />
+            <RoleBasedAccess requiredModule="lab_tests">
+              <LabManagement />
+            </RoleBasedAccess>
           </TabsContent>
 
           <TabsContent value="beds" className="space-y-6">
@@ -201,7 +227,9 @@ function App() {
                 <p className="text-muted-foreground">Track bed occupancy and room assignments</p>
               </div>
             </div>
-            <BedManagement />
+            <RoleBasedAccess requiredModule="beds">
+              <BedManagement />
+            </RoleBasedAccess>
           </TabsContent>
 
           <TabsContent value="billing" className="space-y-6">
@@ -211,7 +239,9 @@ function App() {
                 <p className="text-muted-foreground">Manage billing, payments and financial records</p>
               </div>
             </div>
-            <EnhancedBillingSystem />
+            <RoleBasedAccess requiredModule="billing">
+              <EnhancedBillingSystem />
+            </RoleBasedAccess>
           </TabsContent>
 
           <TabsContent value="inventory" className="space-y-6">
@@ -221,7 +251,23 @@ function App() {
                 <p className="text-muted-foreground">Track medical supplies and medications</p>
               </div>
             </div>
-            <InventoryManagement />
+            <RoleBasedAccess requiredModule="inventory">
+              <InventoryManagement />
+            </RoleBasedAccess>
+          </TabsContent>
+
+          <TabsContent value="notifications" className="space-y-6">
+            <NotificationCenter />
+          </TabsContent>
+
+          <TabsContent value="users" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight">User Management</h2>
+                <p className="text-muted-foreground">Manage hospital staff access and permissions</p>
+              </div>
+            </div>
+            <UserManagement />
           </TabsContent>
         </Tabs>
       </main>
