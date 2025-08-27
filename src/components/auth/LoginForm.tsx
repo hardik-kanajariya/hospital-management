@@ -54,4 +54,132 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
   };
 
   return (
-    <div className=\"min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4\">\n      <div className=\"w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center\">\n        {/* Login Form */}\n        <Card className=\"w-full max-w-md mx-auto shadow-xl\">\n          <CardHeader className=\"space-y-4 text-center\">\n            <div className=\"flex items-center justify-center w-16 h-16 bg-primary text-primary-foreground rounded-2xl mx-auto\">\n              <Hospital className=\"w-8 h-8\" weight=\"fill\" />\n            </div>\n            <div>\n              <CardTitle className=\"text-2xl font-bold\">MedCare Rural</CardTitle>\n              <p className=\"text-muted-foreground\">Hospital Management System</p>\n            </div>\n          </CardHeader>\n          \n          <CardContent className=\"space-y-6\">\n            <form onSubmit={handleSubmit} className=\"space-y-4\">\n              <div className=\"space-y-2\">\n                <Label htmlFor=\"email\">Email Address</Label>\n                <Input\n                  id=\"email\"\n                  type=\"email\"\n                  placeholder=\"Enter your email\"\n                  value={email}\n                  onChange={(e) => setEmail(e.target.value)}\n                  className=\"h-11\"\n                  required\n                />\n              </div>\n              \n              <div className=\"space-y-2\">\n                <Label htmlFor=\"password\">Password</Label>\n                <div className=\"relative\">\n                  <Input\n                    id=\"password\"\n                    type={showPassword ? 'text' : 'password'}\n                    placeholder=\"Enter your password\"\n                    value={password}\n                    onChange={(e) => setPassword(e.target.value)}\n                    className=\"h-11 pr-10\"\n                    required\n                  />\n                  <Button\n                    type=\"button\"\n                    variant=\"ghost\"\n                    size=\"sm\"\n                    className=\"absolute right-0 top-0 h-11 px-3\"\n                    onClick={() => setShowPassword(!showPassword)}\n                  >\n                    {showPassword ? <EyeSlash className=\"w-4 h-4\" /> : <Eye className=\"w-4 h-4\" />}\n                  </Button>\n                </div>\n              </div>\n              \n              <Button \n                type=\"submit\" \n                className=\"w-full h-11\" \n                disabled={isLoading}\n              >\n                {isLoading ? (\n                  <div className=\"flex items-center gap-2\">\n                    <div className=\"animate-spin rounded-full h-4 w-4 border-b-2 border-white\"></div>\n                    Signing in...\n                  </div>\n                ) : (\n                  <div className=\"flex items-center gap-2\">\n                    <SignIn className=\"w-4 h-4\" />\n                    Sign In\n                  </div>\n                )}\n              </Button>\n            </form>\n          </CardContent>\n        </Card>\n\n        {/* Demo Accounts */}\n        <Card className=\"shadow-xl\">\n          <CardHeader>\n            <CardTitle className=\"text-xl\">Demo Accounts</CardTitle>\n            <p className=\"text-muted-foreground\">\n              Try different user roles to explore the system features\n            </p>\n          </CardHeader>\n          \n          <CardContent className=\"space-y-4\">\n            <div className=\"grid gap-3\">\n              {demoAccounts.map((account) => {\n                const roleConfig = ROLE_CONFIGS.find(r => r.role === account.role);\n                return (\n                  <div\n                    key={account.email}\n                    className=\"flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors\"\n                  >\n                    <div className=\"flex items-center gap-3\">\n                      <Badge \n                        variant={account.role === 'super_admin' ? 'destructive' : 'secondary'}\n                        className=\"min-w-fit\"\n                      >\n                        {account.label}\n                      </Badge>\n                      <div>\n                        <p className=\"text-sm font-medium\">{account.email}</p>\n                        <p className=\"text-xs text-muted-foreground\">\n                          Access Level: {roleConfig?.accessLevel}/10\n                        </p>\n                      </div>\n                    </div>\n                    <Button\n                      variant=\"outline\"\n                      size=\"sm\"\n                      onClick={() => fillDemoCredentials(account.email)}\n                    >\n                      Use Account\n                    </Button>\n                  </div>\n                );\n              })}\n            </div>\n            \n            <div className=\"pt-4 border-t\">\n              <p className=\"text-xs text-muted-foreground text-center\">\n                All demo accounts use password: <span className=\"font-mono font-semibold\">demo123</span>\n              </p>\n            </div>\n          </CardContent>\n        </Card>\n      </div>\n    </div>\n  );\n}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
+        {/* Login Form */}
+        <Card className="w-full max-w-md mx-auto shadow-xl">
+          <CardHeader className="space-y-4 text-center">
+            <div className="flex items-center justify-center w-16 h-16 bg-primary text-primary-foreground rounded-2xl mx-auto">
+              <Hospital className="w-8 h-8" weight="fill" />
+            </div>
+            <div>
+              <CardTitle className="text-2xl font-bold">MedCare Rural</CardTitle>
+              <p className="text-muted-foreground">Hospital Management System</p>
+            </div>
+          </CardHeader>
+          
+          <CardContent className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="h-11"
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="h-11 pr-10"
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-11 px-3"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeSlash className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </Button>
+                </div>
+              </div>
+              
+              <Button 
+                type="submit" 
+                className="w-full h-11" 
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Signing in...
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <SignIn className="w-4 h-4" />
+                    Sign In
+                  </div>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Demo Accounts */}
+        <Card className="shadow-xl">
+          <CardHeader>
+            <CardTitle className="text-xl">Demo Accounts</CardTitle>
+            <p className="text-muted-foreground">
+              Try different user roles to explore the system features
+            </p>
+          </CardHeader>
+          
+          <CardContent className="space-y-4">
+            <div className="grid gap-3">
+              {demoAccounts.map((account) => {
+                const roleConfig = ROLE_CONFIGS.find(r => r.role === account.role);
+                return (
+                  <div
+                    key={account.email}
+                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Badge 
+                        variant={account.role === 'super_admin' ? 'destructive' : 'secondary'}
+                        className="min-w-fit"
+                      >
+                        {account.label}
+                      </Badge>
+                      <div>
+                        <p className="text-sm font-medium">{account.email}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Access Level: {roleConfig?.accessLevel}/10
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fillDemoCredentials(account.email)}
+                    >
+                      Use Account
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+            
+            <div className="pt-4 border-t">
+              <p className="text-xs text-muted-foreground text-center">
+                All demo accounts use password: <span className="font-mono font-semibold">demo123</span>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
