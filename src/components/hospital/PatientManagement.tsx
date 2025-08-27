@@ -1,396 +1,434 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Separator } from '@/components/ui/separator'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
-import {
-  Search,
-  Plus,
-  Eye,
-  Edit,
-  Users,
+import { 
+  Users, 
+  Plus, 
+  Search, 
+  Edit, 
+  Eye, 
   Calendar,
-  AlertTriangle,
-  Heart,
   Phone,
   Mail,
   MapPin,
-  UserCircle,
-  X,
-  Warning,
-  Syringe
+  Heart,
+  Shield,
+  FileText,
+  Activity,
+  Pill,
+  Warning
 } from '@phosphor-icons/react'
 
-// Types
 interface Patient {
   id: string
-  mrNumber: string
-  firstName: string
-  lastName: string
+  name: string
+  email: string
+  phone: string
   dateOfBirth: string
   gender: 'male' | 'female' | 'other'
-  phoneNumber: string
-  email?: string
-  bloodGroup?: string
-  address: {
-    street: string
-    city: string
-    state: string
-    pinCode: string
-  }
-  emergencyContact?: {
+  address: string
+  emergencyContact: {
     name: string
     relationship: string
-    phoneNumber: string
+    phone: string
   }
-  insuranceInfo?: {
+  medicalHistory: string[]
+  allergies: string[]
+  vaccinations: Array<{
+    vaccine: string
+    date: string
+    nextDue?: string
+  }>
+  chronicConditions: string[]
+  bloodType: string
+  insuranceInfo: {
     provider: string
     policyNumber: string
-    expiryDate: string
-    coverageAmount?: number
-    copayAmount?: number
+    groupNumber: string
   }
-  allergies: string[]
-  chronicConditions: ChronicCondition[]
-  vaccinationRecords: VaccinationRecord[]
   createdAt: string
   updatedAt: string
 }
 
-interface ChronicCondition {
-  id: string
-  condition: string
-  diagnosedDate: string
-  severity: 'mild' | 'moderate' | 'severe'
-  medications?: string[]
-  lastReviewDate: string
-  notes?: string
-}
-
-interface VaccinationRecord {
-  id: string
-  vaccineName: string
-  dateAdministered: string
-  batchNumber?: string
-  administeredBy: string
-  nextDueDate?: string
-  notes?: string
-}
-
-export default function PatientManagement() {
+const PatientManagement = () => {
   const [patients, setPatients] = useKV<Patient[]>('hospital-patients', [])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
-  const [formData, setFormData] = useState<Partial<Patient>>({
-    gender: 'male',
-    allergies: [],
-    chronicConditions: [],
-    vaccinationRecords: [],
-    address: { street: '', city: '', state: '', pinCode: '' }
-  })
-  
-  // State for chronic conditions and vaccinations
-  const [newCondition, setNewCondition] = useState<Partial<ChronicCondition>>({})
-  const [newVaccination, setNewVaccination] = useState<Partial<VaccinationRecord>>({})
-  const [newAllergy, setNewAllergy] = useState('')
+  const [editingPatient, setEditingPatient] = useState<Patient | null>(null)
 
-  // Filter patients based on search
+  // Form state for new/edit patient
+  const [formData, setFormData] = useState<Partial<Patient>>({
+    name: '',
+    email: '',
+    phone: '',
+    dateOfBirth: '',
+    gender: 'male',
+    address: '',
+    emergencyContact: {
+      name: '',
+      relationship: '',
+      phone: ''
+    },
+    medicalHistory: [],
+    allergies: [],
+    vaccinations: [],
+    chronicConditions: [],
+    bloodType: '',
+    insuranceInfo: {
+      provider: '',
+      policyNumber: '',
+      groupNumber: ''
+    }
+  })
+
+  // Filter patients based on search term
   const filteredPatients = patients.filter(patient =>
-    patient.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.phoneNumber?.includes(searchTerm) ||
-    patient.mrNumber?.toLowerCase().includes(searchTerm.toLowerCase())
+    patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.phone.includes(searchTerm)
   )
 
-  // Generate MR Number
-  const generateMRNumber = () => {
-    const prefix = 'MR'
-    const date = new Date().toISOString().split('T')[0].replace(/-/g, '')
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
-    return `${prefix}${date}${random}`
-  }
-
-  // Reset form
-  const resetForm = () => {
-    setFormData({
-      gender: 'male',
-      allergies: [],
-      chronicConditions: [],
-      vaccinationRecords: [],
-      address: { street: '', city: '', state: '', pinCode: '' }
-    })
-    setNewCondition({})
-    setNewVaccination({})
-    setNewAllergy('')
-    setSelectedPatient(null)
-  }
-
-  // Handle add/edit patient
   const handleAddPatient = () => {
-    if (!formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.phoneNumber || !formData.address?.street) {
-      toast.error('Please fill in all required fields')
+    if (!formData.name || !formData.phone || !formData.dateOfBirth) {
+      toast.error('Please fill in required fields (Name, Phone, Date of Birth)')
       return
     }
 
-    const now = new Date().toISOString()
     const newPatient: Patient = {
-      id: selectedPatient?.id || crypto.randomUUID(),
-      mrNumber: selectedPatient?.mrNumber || generateMRNumber(),
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      dateOfBirth: formData.dateOfBirth,
-      gender: formData.gender as any,
-      phoneNumber: formData.phoneNumber,
-      email: formData.email,
-      bloodGroup: formData.bloodGroup,
-      address: formData.address as any,
-      emergencyContact: formData.emergencyContact,
-      insuranceInfo: formData.insuranceInfo,
-      allergies: formData.allergies || [],
-      chronicConditions: formData.chronicConditions || [],
-      vaccinationRecords: formData.vaccinationRecords || [],
-      createdAt: selectedPatient?.createdAt || now,
-      updatedAt: now
+      id: Date.now().toString(),
+      ...formData as Patient,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     }
 
-    if (selectedPatient) {
-      setPatients(currentPatients => 
-        currentPatients.map(p => p.id === selectedPatient.id ? newPatient : p)
-      )
-      toast.success('Patient updated successfully')
-    } else {
-      setPatients(currentPatients => [...currentPatients, newPatient])
-      toast.success('Patient registered successfully')
-    }
-
+    setPatients(currentPatients => [...currentPatients, newPatient])
     setIsAddDialogOpen(false)
     resetForm()
+    toast.success('Patient added successfully')
   }
 
-  // Handle view patient
-  const handleViewPatient = (patient: Patient) => {
-    setSelectedPatient(patient)
-    setIsViewDialogOpen(true)
+  const handleEditPatient = () => {
+    if (!editingPatient || !formData.name || !formData.phone || !formData.dateOfBirth) {
+      toast.error('Please fill in required fields')
+      return
+    }
+
+    setPatients(currentPatients =>
+      currentPatients.map(patient =>
+        patient.id === editingPatient.id
+          ? { ...patient, ...formData, updatedAt: new Date().toISOString() }
+          : patient
+      )
+    )
+
+    setEditingPatient(null)
+    resetForm()
+    toast.success('Patient updated successfully')
   }
 
-  // Handle edit patient
-  const handleEditPatient = (patient: Patient) => {
-    setSelectedPatient(patient)
-    setFormData({ ...patient })
-    setIsAddDialogOpen(true)
+  const handleDeletePatient = (patientId: string) => {
+    setPatients(currentPatients => currentPatients.filter(p => p.id !== patientId))
+    toast.success('Patient deleted successfully')
   }
 
-  // Add allergy
-  const addAllergy = () => {
-    if (!newAllergy.trim()) return
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      dateOfBirth: '',
+      gender: 'male',
+      address: '',
+      emergencyContact: {
+        name: '',
+        relationship: '',
+        phone: ''
+      },
+      medicalHistory: [],
+      allergies: [],
+      vaccinations: [],
+      chronicConditions: [],
+      bloodType: '',
+      insuranceInfo: {
+        provider: '',
+        policyNumber: '',
+        groupNumber: ''
+      }
+    })
+  }
+
+  const openEditDialog = (patient: Patient) => {
+    setEditingPatient(patient)
+    setFormData(patient)
+  }
+
+  const calculateAge = (dateOfBirth: string) => {
+    const today = new Date()
+    const birthDate = new Date(dateOfBirth)
+    let age = today.getFullYear() - birthDate.getFullYear()
+    const monthDiff = today.getMonth() - birthDate.getMonth()
     
-    const allergies = formData.allergies || []
-    if (!allergies.includes(newAllergy.trim())) {
-      setFormData({
-        ...formData,
-        allergies: [...allergies, newAllergy.trim()]
-      })
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--
     }
-    setNewAllergy('')
+    
+    return age
   }
 
-  // Remove allergy
-  const removeAllergy = (allergy: string) => {
-    setFormData({
-      ...formData,
-      allergies: (formData.allergies || []).filter(a => a !== allergy)
-    })
+  const addToList = (listName: keyof Pick<Patient, 'medicalHistory' | 'allergies' | 'chronicConditions'>, value: string) => {
+    if (!value.trim()) return
+    
+    setFormData(prev => ({
+      ...prev,
+      [listName]: [...(prev[listName] || []), value.trim()]
+    }))
   }
 
-  // Add chronic condition
-  const addChronicCondition = () => {
-    if (!newCondition.condition || !newCondition.diagnosedDate || !newCondition.severity) {
-      toast.error('Please fill in all condition fields')
-      return
-    }
-
-    const condition: ChronicCondition = {
-      id: crypto.randomUUID(),
-      condition: newCondition.condition,
-      diagnosedDate: newCondition.diagnosedDate,
-      severity: newCondition.severity,
-      medications: newCondition.medications || [],
-      lastReviewDate: newCondition.lastReviewDate || new Date().toISOString().split('T')[0],
-      notes: newCondition.notes
-    }
-
-    setFormData({
-      ...formData,
-      chronicConditions: [...(formData.chronicConditions || []), condition]
-    })
-
-    setNewCondition({})
+  const removeFromList = (listName: keyof Pick<Patient, 'medicalHistory' | 'allergies' | 'chronicConditions'>, index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      [listName]: (prev[listName] || []).filter((_, i) => i !== index)
+    }))
   }
 
-  // Remove chronic condition
-  const removeChronicCondition = (conditionId: string) => {
-    setFormData({
-      ...formData,
-      chronicConditions: (formData.chronicConditions || []).filter(c => c.id !== conditionId)
-    })
-  }
-
-  // Add vaccination record
-  const addVaccinationRecord = () => {
-    if (!newVaccination.vaccineName || !newVaccination.dateAdministered || !newVaccination.administeredBy) {
-      toast.error('Please fill in all vaccination fields')
-      return
-    }
-
-    const vaccination: VaccinationRecord = {
-      id: crypto.randomUUID(),
-      vaccineName: newVaccination.vaccineName,
-      dateAdministered: newVaccination.dateAdministered,
-      batchNumber: newVaccination.batchNumber || '',
-      administeredBy: newVaccination.administeredBy,
-      nextDueDate: newVaccination.nextDueDate,
-      notes: newVaccination.notes
-    }
-
-    setFormData({
-      ...formData,
-      vaccinationRecords: [...(formData.vaccinationRecords || []), vaccination]
-    })
-    setNewVaccination({})
-  }
-
-  // Remove vaccination record
-  const removeVaccinationRecord = (vaccinationId: string) => {
-    setFormData({
-      ...formData,
-      vaccinationRecords: (formData.vaccinationRecords || []).filter(v => v.id !== vaccinationId)
-    })
+  const addVaccination = (vaccine: string, date: string, nextDue?: string) => {
+    if (!vaccine.trim() || !date) return
+    
+    setFormData(prev => ({
+      ...prev,
+      vaccinations: [...(prev.vaccinations || []), { vaccine: vaccine.trim(), date, nextDue }]
+    }))
   }
 
   return (
     <div className="space-y-6">
-      {/* Header with Search and Add Button */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Search patients by name, phone, or ID..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+      {/* Header and Search */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
+            <Users className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold">Patient Management</h3>
+            <p className="text-sm text-muted-foreground">
+              Manage patient records and medical information
+            </p>
+          </div>
         </div>
-        
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Add New Patient
+            <Button onClick={() => resetForm()}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Patient
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {selectedPatient ? 'Edit Patient' : 'Register New Patient'}
-              </DialogTitle>
-              <DialogDescription>
-                {selectedPatient ? 'Update patient information' : 'Enter patient details to register them in the system'}
-              </DialogDescription>
-            </DialogHeader>
+        </Dialog>
+      </div>
+
+      {/* Search and Stats */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="lg:col-span-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              placeholder="Search patients by name, email, or phone..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <Users className="w-8 h-8 text-primary" />
+              <div>
+                <div className="text-2xl font-bold">{patients.length}</div>
+                <div className="text-sm text-muted-foreground">Total Patients</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Patients List */}
+      <div className="grid gap-4">
+        {filteredPatients.length === 0 ? (
+          <Card>
+            <CardContent className="p-8 text-center">
+              <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No Patients Found</h3>
+              <p className="text-muted-foreground mb-4">
+                {searchTerm ? 'No patients match your search criteria.' : 'Get started by adding your first patient.'}
+              </p>
+              <Button onClick={() => setIsAddDialogOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add First Patient
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          filteredPatients.map((patient) => (
+            <Card key={patient.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center text-lg font-semibold">
+                      {patient.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="font-semibold text-lg">{patient.name}</h4>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          <span>Age {calculateAge(patient.dateOfBirth)}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Phone className="w-4 h-4" />
+                          <span>{patient.phone}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Mail className="w-4 h-4" />
+                          <span>{patient.email}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline">{patient.gender}</Badge>
+                        {patient.bloodType && (
+                          <Badge variant="secondary">{patient.bloodType}</Badge>
+                        )}
+                        {patient.allergies.length > 0 && (
+                          <Badge variant="destructive" className="text-xs">
+                            <Warning className="w-3 h-3 mr-1" />
+                            Allergies
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedPatient(patient)
+                        setIsViewDialogOpen(true)
+                      }}
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openEditDialog(patient)}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+
+      {/* Add/Edit Patient Dialog */}
+      <Dialog open={isAddDialogOpen || !!editingPatient} onOpenChange={(open) => {
+        if (!open) {
+          setIsAddDialogOpen(false)
+          setEditingPatient(null)
+          resetForm()
+        }
+      }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingPatient ? 'Edit Patient' : 'Add New Patient'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <Tabs defaultValue="basic" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="basic">Basic Info</TabsTrigger>
+              <TabsTrigger value="medical">Medical</TabsTrigger>
+              <TabsTrigger value="vaccinations">Vaccinations</TabsTrigger>
+              <TabsTrigger value="insurance">Insurance</TabsTrigger>
+            </TabsList>
             
-            <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="basic">Basic Info</TabsTrigger>
-                <TabsTrigger value="medical">Medical History</TabsTrigger>
-                <TabsTrigger value="allergies">Allergies</TabsTrigger>
-                <TabsTrigger value="vaccinations">Vaccinations</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="basic" className="space-y-4">
-                {/* Basic Information */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name *</Label>
-                    <Input
-                      id="firstName"
-                      value={formData.firstName || ''}
-                      onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                      placeholder="Enter first name"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name *</Label>
-                    <Input
-                      id="lastName"
-                      value={formData.lastName || ''}
-                      onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                      placeholder="Enter last name"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="dateOfBirth">Date of Birth *</Label>
-                    <Input
-                      id="dateOfBirth"
-                      type="date"
-                      value={formData.dateOfBirth || ''}
-                      onChange={(e) => setFormData({...formData, dateOfBirth: e.target.value})}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="gender">Gender *</Label>
-                    <Select value={formData.gender} onValueChange={(value) => setFormData({...formData, gender: value as any})}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select gender" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="male">Male</SelectItem>
-                        <SelectItem value="female">Female</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="phoneNumber">Phone Number *</Label>
-                    <Input
-                      id="phoneNumber"
-                      value={formData.phoneNumber || ''}
-                      onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
-                      placeholder="Enter phone number"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email || ''}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      placeholder="Enter email address"
-                    />
-                  </div>
-                </div>
-
+            <TabsContent value="basic" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="bloodGroup">Blood Group</Label>
-                  <Select value={formData.bloodGroup} onValueChange={(value) => setFormData({...formData, bloodGroup: value})}>
+                  <Label htmlFor="name">Full Name *</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="Patient full name"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="patient@email.com"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number *</Label>
+                  <Input
+                    id="phone"
+                    value={formData.phone}
+                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="+1234567890"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="dateOfBirth">Date of Birth *</Label>
+                  <Input
+                    id="dateOfBirth"
+                    type="date"
+                    value={formData.dateOfBirth}
+                    onChange={(e) => setFormData(prev => ({ ...prev, dateOfBirth: e.target.value }))}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="gender">Gender</Label>
+                  <Select value={formData.gender} onValueChange={(value) => setFormData(prev => ({ ...prev, gender: value as 'male' | 'female' | 'other' }))}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select blood group" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="bloodType">Blood Type</Label>
+                  <Select value={formData.bloodType} onValueChange={(value) => setFormData(prev => ({ ...prev, bloodType: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select blood type" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="A+">A+</SelectItem>
@@ -404,819 +442,544 @@ export default function PatientManagement() {
                     </SelectContent>
                   </Select>
                 </div>
-
-                {/* Address */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold">Address Information</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="street">Street Address *</Label>
-                      <Input
-                        id="street"
-                        value={formData.address?.street || ''}
-                        onChange={(e) => setFormData({
-                          ...formData, 
-                          address: { ...formData.address, street: e.target.value } as any
-                        })}
-                        placeholder="Enter street address"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="city">City *</Label>
-                      <Input
-                        id="city"
-                        value={formData.address?.city || ''}
-                        onChange={(e) => setFormData({
-                          ...formData, 
-                          address: { ...formData.address, city: e.target.value } as any
-                        })}
-                        placeholder="Enter city"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="state">State *</Label>
-                      <Input
-                        id="state"
-                        value={formData.address?.state || ''}
-                        onChange={(e) => setFormData({
-                          ...formData, 
-                          address: { ...formData.address, state: e.target.value } as any
-                        })}
-                        placeholder="Enter state"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="pinCode">PIN Code *</Label>
-                      <Input
-                        id="pinCode"
-                        value={formData.address?.pinCode || ''}
-                        onChange={(e) => setFormData({
-                          ...formData, 
-                          address: { ...formData.address, pinCode: e.target.value } as any
-                        })}
-                        placeholder="Enter PIN code"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Emergency Contact */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold">Emergency Contact</h3>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="emergencyName">Contact Name</Label>
-                      <Input
-                        id="emergencyName"
-                        value={formData.emergencyContact?.name || ''}
-                        onChange={(e) => setFormData({
-                          ...formData, 
-                          emergencyContact: { ...formData.emergencyContact, name: e.target.value } as any
-                        })}
-                        placeholder="Emergency contact name"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="emergencyRelationship">Relationship</Label>
-                      <Input
-                        id="emergencyRelationship"
-                        value={formData.emergencyContact?.relationship || ''}
-                        onChange={(e) => setFormData({
-                          ...formData, 
-                          emergencyContact: { ...formData.emergencyContact, relationship: e.target.value } as any
-                        })}
-                        placeholder="Relationship"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="emergencyPhone">Phone Number</Label>
-                      <Input
-                        id="emergencyPhone"
-                        value={formData.emergencyContact?.phoneNumber || ''}
-                        onChange={(e) => setFormData({
-                          ...formData, 
-                          emergencyContact: { ...formData.emergencyContact, phoneNumber: e.target.value } as any
-                        })}
-                        placeholder="Emergency phone number"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Insurance Information */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold">Insurance Information</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="insuranceProvider">Insurance Provider</Label>
-                      <Input
-                        id="insuranceProvider"
-                        value={formData.insuranceInfo?.provider || ''}
-                        onChange={(e) => setFormData({
-                          ...formData, 
-                          insuranceInfo: { ...formData.insuranceInfo, provider: e.target.value } as any
-                        })}
-                        placeholder="Insurance provider name"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="policyNumber">Policy Number</Label>
-                      <Input
-                        id="policyNumber"
-                        value={formData.insuranceInfo?.policyNumber || ''}
-                        onChange={(e) => setFormData({
-                          ...formData, 
-                          insuranceInfo: { ...formData.insuranceInfo, policyNumber: e.target.value } as any
-                        })}
-                        placeholder="Policy number"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="expiryDate">Expiry Date</Label>
-                      <Input
-                        id="expiryDate"
-                        type="date"
-                        value={formData.insuranceInfo?.expiryDate || ''}
-                        onChange={(e) => setFormData({
-                          ...formData, 
-                          insuranceInfo: { ...formData.insuranceInfo, expiryDate: e.target.value } as any
-                        })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="coverageAmount">Coverage Amount</Label>
-                      <Input
-                        id="coverageAmount"
-                        type="number"
-                        value={formData.insuranceInfo?.coverageAmount || ''}
-                        onChange={(e) => setFormData({
-                          ...formData, 
-                          insuranceInfo: { ...formData.insuranceInfo, coverageAmount: Number(e.target.value) } as any
-                        })}
-                        placeholder="Coverage amount"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="copayAmount">Copay Amount</Label>
-                      <Input
-                        id="copayAmount"
-                        type="number"
-                        value={formData.insuranceInfo?.copayAmount || ''}
-                        onChange={(e) => setFormData({
-                          ...formData, 
-                          insuranceInfo: { ...formData.insuranceInfo, copayAmount: Number(e.target.value) } as any
-                        })}
-                        placeholder="Copay amount"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="medical" className="space-y-4">
-                <div className="space-y-4">
-                  <h3 className="font-semibold">Chronic Conditions</h3>
-                  
-                  {/* Add Chronic Condition Form */}
-                  <div className="p-4 border rounded-lg bg-muted/20">
-                    <h4 className="font-medium mb-3">Add New Condition</h4>
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="space-y-2">
-                        <Label>Condition Name</Label>
-                        <Input
-                          value={newCondition.condition || ''}
-                          onChange={(e) => setNewCondition({...newCondition, condition: e.target.value})}
-                          placeholder="e.g., Diabetes, Hypertension"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Diagnosed Date</Label>
-                        <Input
-                          type="date"
-                          value={newCondition.diagnosedDate || ''}
-                          onChange={(e) => setNewCondition({...newCondition, diagnosedDate: e.target.value})}
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="space-y-2">
-                        <Label>Severity</Label>
-                        <Select 
-                          value={newCondition.severity} 
-                          onValueChange={(value) => setNewCondition({...newCondition, severity: value as any})}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select severity" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="mild">Mild</SelectItem>
-                            <SelectItem value="moderate">Moderate</SelectItem>
-                            <SelectItem value="severe">Severe</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Last Review Date</Label>
-                        <Input
-                          type="date"
-                          value={newCondition.lastReviewDate || ''}
-                          onChange={(e) => setNewCondition({...newCondition, lastReviewDate: e.target.value})}
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2 mb-4">
-                      <Label>Notes</Label>
-                      <Textarea
-                        value={newCondition.notes || ''}
-                        onChange={(e) => setNewCondition({...newCondition, notes: e.target.value})}
-                        placeholder="Additional notes about the condition"
-                      />
-                    </div>
-                    <Button onClick={addChronicCondition} size="sm">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Condition
-                    </Button>
-                  </div>
-
-                  {/* Existing Chronic Conditions */}
-                  {formData.chronicConditions && formData.chronicConditions.length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="font-medium">Current Conditions</h4>
-                      {formData.chronicConditions.map((condition) => (
-                        <div key={condition.id} className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">{condition.condition}</span>
-                              <Badge variant={
-                                condition.severity === 'severe' ? 'destructive' : 
-                                condition.severity === 'moderate' ? 'default' : 'secondary'
-                              }>
-                                {condition.severity}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              Diagnosed: {new Date(condition.diagnosedDate).toLocaleDateString()}
-                            </p>
-                            {condition.notes && (
-                              <p className="text-sm text-muted-foreground mt-1">{condition.notes}</p>
-                            )}
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeChronicCondition(condition.id)}
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="allergies" className="space-y-4">
-                <div className="space-y-4">
-                  <h3 className="font-semibold">Allergies</h3>
-                  
-                  <div className="flex gap-2">
-                    <Input
-                      value={newAllergy}
-                      onChange={(e) => setNewAllergy(e.target.value)}
-                      placeholder="Enter allergy (e.g., Penicillin, Peanuts)"
-                      className="flex-1"
-                    />
-                    <Button onClick={addAllergy} size="sm">
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-
-                  {/* Current Allergies */}
-                  {formData.allergies && formData.allergies.length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="font-medium">Current Allergies</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {formData.allergies.map((allergy, index) => (
-                          <Badge key={index} variant="destructive" className="flex items-center gap-1">
-                            <Warning className="w-3 h-3" />
-                            {allergy}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-4 w-4 p-0 hover:bg-transparent"
-                              onClick={() => removeAllergy(allergy)}
-                            >
-                              <X className="w-3 h-3" />
-                            </Button>
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {(!formData.allergies || formData.allergies.length === 0) && (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <AlertTriangle className="mx-auto h-12 w-12 mb-2" />
-                      <p>No allergies recorded</p>
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="vaccinations" className="space-y-4">
-                <div className="space-y-4">
-                  <h3 className="font-semibold">Vaccination Records</h3>
-
-                  {/* Add Vaccination Form */}
-                  <div className="p-4 border rounded-lg bg-muted/20">
-                    <h4 className="font-medium mb-3">Add New Vaccination</h4>
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="space-y-2">
-                        <Label>Vaccine Name</Label>
-                        <Input
-                          value={newVaccination.vaccineName || ''}
-                          onChange={(e) => setNewVaccination({...newVaccination, vaccineName: e.target.value})}
-                          placeholder="e.g., COVID-19, Hepatitis B"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Date Administered</Label>
-                        <Input
-                          type="date"
-                          value={newVaccination.dateAdministered || ''}
-                          onChange={(e) => setNewVaccination({...newVaccination, dateAdministered: e.target.value})}
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="space-y-2">
-                        <Label>Batch Number</Label>
-                        <Input
-                          value={newVaccination.batchNumber || ''}
-                          onChange={(e) => setNewVaccination({...newVaccination, batchNumber: e.target.value})}
-                          placeholder="Vaccine batch number"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Administered By</Label>
-                        <Input
-                          value={newVaccination.administeredBy || ''}
-                          onChange={(e) => setNewVaccination({...newVaccination, administeredBy: e.target.value})}
-                          placeholder="Doctor/Nurse name"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="space-y-2">
-                        <Label>Next Due Date</Label>
-                        <Input
-                          type="date"
-                          value={newVaccination.nextDueDate || ''}
-                          onChange={(e) => setNewVaccination({...newVaccination, nextDueDate: e.target.value})}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Notes</Label>
-                        <Input
-                          value={newVaccination.notes || ''}
-                          onChange={(e) => setNewVaccination({...newVaccination, notes: e.target.value})}
-                          placeholder="Additional notes"
-                        />
-                      </div>
-                    </div>
-                    <Button onClick={addVaccinationRecord} size="sm">
-                      <Syringe className="w-4 h-4 mr-2" />
-                      Add Vaccination
-                    </Button>
-                  </div>
-
-                  {/* Existing Vaccination Records */}
-                  {formData.vaccinationRecords && formData.vaccinationRecords.length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="font-medium">Vaccination History</h4>
-                      {formData.vaccinationRecords.map((vaccination) => (
-                        <div key={vaccination.id} className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <Syringe className="w-4 h-4 text-primary" />
-                              <span className="font-medium">{vaccination.vaccineName}</span>
-                              {vaccination.nextDueDate && new Date(vaccination.nextDueDate) > new Date() && (
-                                <Badge variant="outline">Due: {new Date(vaccination.nextDueDate).toLocaleDateString()}</Badge>
-                              )}
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              Administered: {new Date(vaccination.dateAdministered).toLocaleDateString()} by {vaccination.administeredBy}
-                            </p>
-                            {vaccination.batchNumber && (
-                              <p className="text-sm text-muted-foreground">Batch: {vaccination.batchNumber}</p>
-                            )}
-                            {vaccination.notes && (
-                              <p className="text-sm text-muted-foreground mt-1">{vaccination.notes}</p>
-                            )}
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeVaccinationRecord(vaccination.id)}
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {(!formData.vaccinationRecords || formData.vaccinationRecords.length === 0) && (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Syringe className="mx-auto h-12 w-12 mb-2" />
-                      <p>No vaccination records found</p>
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-            </Tabs>
-
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button variant="outline" onClick={() => {
-                setIsAddDialogOpen(false)
-                resetForm()
-              }}>
-                Cancel
-              </Button>
-              <Button onClick={handleAddPatient}>
-                {selectedPatient ? 'Update Patient' : 'Register Patient'}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Patients</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{patients.length}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Registrations</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {patients.filter(p => p.createdAt.split('T')[0] === new Date().toISOString().split('T')[0]).length}
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">With Allergies</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {patients.filter(p => p.allergies && p.allergies.length > 0).length}
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Chronic Conditions</CardTitle>
-            <Heart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {patients.filter(p => p.chronicConditions && p.chronicConditions.length > 0).length}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Patients List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Patient Registry</CardTitle>
-          <CardDescription>
-            Comprehensive patient database with medical history and records
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {filteredPatients.length === 0 ? (
-              <div className="text-center py-8">
-                <Users className="mx-auto h-12 w-12 text-muted-foreground" />
-                <h3 className="mt-4 text-lg font-semibold">No patients found</h3>
-                <p className="text-muted-foreground">
-                  {searchTerm ? 'Try adjusting your search terms' : 'Start by registering your first patient'}
-                </p>
               </div>
-            ) : (
-              filteredPatients.map((patient) => {
-                const fullName = `${patient.firstName} ${patient.lastName}`;
-                const age = new Date().getFullYear() - new Date(patient.dateOfBirth).getFullYear();
-                
-                return (
-                  <div key={patient.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-lg font-medium">
-                        {patient.firstName?.charAt(0)?.toUpperCase() || 'P'}{patient.lastName?.charAt(0)?.toUpperCase() || ''}
-                      </div>
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-3">
-                          <h3 className="font-medium">{fullName}</h3>
-                          <Badge variant="outline">{patient.mrNumber}</Badge>
-                          {patient.bloodGroup && (
-                            <Badge variant="secondary">{patient.bloodGroup}</Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span>Age {age} • {patient.gender}</span>
-                          <span className="flex items-center gap-1">
-                            <Phone className="h-3 w-3" />
-                            {patient.phoneNumber}
-                          </span>
-                          {patient.email && (
-                            <span className="flex items-center gap-1">
-                              <Mail className="h-3 w-3" />
-                              {patient.email}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-4 text-sm">
-                          {patient.allergies && patient.allergies.length > 0 && (
-                            <div className="flex items-center gap-1 text-destructive">
-                              <AlertTriangle className="h-3 w-3" />
-                              <span>Allergies: {patient.allergies.length}</span>
-                            </div>
-                          )}
-                          {patient.chronicConditions && patient.chronicConditions.length > 0 && (
-                            <div className="flex items-center gap-1 text-orange-600">
-                              <Heart className="h-3 w-3" />
-                              <span>Conditions: {patient.chronicConditions.length}</span>
-                            </div>
-                          )}
-                          {patient.insuranceInfo?.provider && (
-                            <Badge variant="outline" className="text-xs">
-                              {patient.insuranceInfo.provider}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleViewPatient(patient)}>
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={() => handleEditPatient(patient)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="address">Address</Label>
+                <Textarea
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                  placeholder="Full address"
+                  rows={3}
+                />
+              </div>
+              
+              <div className="space-y-4">
+                <h4 className="font-semibold">Emergency Contact</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>Contact Name</Label>
+                    <Input
+                      value={formData.emergencyContact?.name || ''}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        emergencyContact: { ...prev.emergencyContact!, name: e.target.value }
+                      }))}
+                      placeholder="Emergency contact name"
+                    />
                   </div>
-                );
-              })
-            )}
+                  
+                  <div className="space-y-2">
+                    <Label>Relationship</Label>
+                    <Input
+                      value={formData.emergencyContact?.relationship || ''}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        emergencyContact: { ...prev.emergencyContact!, relationship: e.target.value }
+                      }))}
+                      placeholder="e.g., Spouse, Parent"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Contact Phone</Label>
+                    <Input
+                      value={formData.emergencyContact?.phone || ''}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        emergencyContact: { ...prev.emergencyContact!, phone: e.target.value }
+                      }))}
+                      placeholder="Emergency contact phone"
+                    />
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="medical" className="space-y-4">
+              {/* Medical History */}
+              <div className="space-y-4">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  Medical History
+                </h4>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Add medical condition"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        addToList('medicalHistory', e.currentTarget.value)
+                        e.currentTarget.value = ''
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const input = document.querySelector('input[placeholder="Add medical condition"]') as HTMLInputElement
+                      if (input?.value) {
+                        addToList('medicalHistory', input.value)
+                        input.value = ''
+                      }
+                    }}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(formData.medicalHistory || []).map((condition, index) => (
+                    <Badge key={index} variant="secondary" className="cursor-pointer" onClick={() => removeFromList('medicalHistory', index)}>
+                      {condition} ×
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Allergies */}
+              <div className="space-y-4">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <Warning className="w-4 h-4 text-destructive" />
+                  Allergies
+                </h4>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Add allergy"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        addToList('allergies', e.currentTarget.value)
+                        e.currentTarget.value = ''
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const input = document.querySelector('input[placeholder="Add allergy"]') as HTMLInputElement
+                      if (input?.value) {
+                        addToList('allergies', input.value)
+                        input.value = ''
+                      }
+                    }}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(formData.allergies || []).map((allergy, index) => (
+                    <Badge key={index} variant="destructive" className="cursor-pointer" onClick={() => removeFromList('allergies', index)}>
+                      {allergy} ×
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Chronic Conditions */}
+              <div className="space-y-4">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <Activity className="w-4 h-4" />
+                  Chronic Conditions
+                </h4>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Add chronic condition"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        addToList('chronicConditions', e.currentTarget.value)
+                        e.currentTarget.value = ''
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const input = document.querySelector('input[placeholder="Add chronic condition"]') as HTMLInputElement
+                      if (input?.value) {
+                        addToList('chronicConditions', input.value)
+                        input.value = ''
+                      }
+                    }}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(formData.chronicConditions || []).map((condition, index) => (
+                    <Badge key={index} variant="outline" className="cursor-pointer" onClick={() => removeFromList('chronicConditions', index)}>
+                      {condition} ×
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="vaccinations" className="space-y-4">
+              <h4 className="font-semibold flex items-center gap-2">
+                <Shield className="w-4 h-4" />
+                Vaccination Records
+              </h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg">
+                <div className="space-y-2">
+                  <Label>Vaccine Name</Label>
+                  <Input placeholder="e.g., COVID-19, Flu" id="vaccine-name" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Date Given</Label>
+                  <Input type="date" id="vaccine-date" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Next Due (Optional)</Label>
+                  <Input type="date" id="vaccine-next" />
+                </div>
+                <div className="md:col-span-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const name = (document.getElementById('vaccine-name') as HTMLInputElement)?.value
+                      const date = (document.getElementById('vaccine-date') as HTMLInputElement)?.value
+                      const nextDue = (document.getElementById('vaccine-next') as HTMLInputElement)?.value
+                      
+                      if (name && date) {
+                        addVaccination(name, date, nextDue || undefined)
+                        ;(document.getElementById('vaccine-name') as HTMLInputElement).value = ''
+                        ;(document.getElementById('vaccine-date') as HTMLInputElement).value = ''
+                        ;(document.getElementById('vaccine-next') as HTMLInputElement).value = ''
+                      }
+                    }}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Vaccination
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                {(formData.vaccinations || []).map((vaccination, index) => (
+                  <Card key={index}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h5 className="font-medium">{vaccination.vaccine}</h5>
+                          <p className="text-sm text-muted-foreground">
+                            Given: {new Date(vaccination.date).toLocaleDateString()}
+                            {vaccination.nextDue && (
+                              <span className="ml-4">
+                                Next due: {new Date(vaccination.nextDue).toLocaleDateString()}
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setFormData(prev => ({
+                              ...prev,
+                              vaccinations: (prev.vaccinations || []).filter((_, i) => i !== index)
+                            }))
+                          }}
+                        >
+                          ×
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="insurance" className="space-y-4">
+              <h4 className="font-semibold flex items-center gap-2">
+                <Shield className="w-4 h-4" />
+                Insurance Information
+              </h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Insurance Provider</Label>
+                  <Input
+                    value={formData.insuranceInfo?.provider || ''}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      insuranceInfo: { ...prev.insuranceInfo!, provider: e.target.value }
+                    }))}
+                    placeholder="Insurance company name"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Policy Number</Label>
+                  <Input
+                    value={formData.insuranceInfo?.policyNumber || ''}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      insuranceInfo: { ...prev.insuranceInfo!, policyNumber: e.target.value }
+                    }))}
+                    placeholder="Policy number"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Group Number</Label>
+                  <Input
+                    value={formData.insuranceInfo?.groupNumber || ''}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      insuranceInfo: { ...prev.insuranceInfo!, groupNumber: e.target.value }
+                    }))}
+                    placeholder="Group number"
+                  />
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+          
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsAddDialogOpen(false)
+                setEditingPatient(null)
+                resetForm()
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={editingPatient ? handleEditPatient : handleAddPatient}>
+              {editingPatient ? 'Update Patient' : 'Add Patient'}
+            </Button>
           </div>
-        </CardContent>
-      </Card>
+        </DialogContent>
+      </Dialog>
 
       {/* View Patient Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Patient Details: {selectedPatient?.firstName} {selectedPatient?.lastName}</DialogTitle>
-            <DialogDescription>Complete patient information and medical history</DialogDescription>
+            <DialogTitle>Patient Details - {selectedPatient?.name}</DialogTitle>
           </DialogHeader>
           
           {selectedPatient && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-2xl font-medium">
-                  {selectedPatient.firstName?.charAt(0)?.toUpperCase() || 'P'}{selectedPatient.lastName?.charAt(0)?.toUpperCase() || ''}
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold">{selectedPatient.firstName} {selectedPatient.lastName}</h2>
-                  <div className="flex items-center gap-4 text-muted-foreground">
-                    <span>MR: {selectedPatient.mrNumber}</span>
-                    <span>Age: {new Date().getFullYear() - new Date(selectedPatient.dateOfBirth).getFullYear()}</span>
-                    <span>Gender: {selectedPatient.gender}</span>
-                    {selectedPatient.bloodGroup && (
-                      <Badge variant="secondary">{selectedPatient.bloodGroup}</Badge>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <Tabs defaultValue="basic" className="w-full">
-                <TabsList className="grid w-full grid-cols-5">
-                  <TabsTrigger value="basic">Basic Info</TabsTrigger>
-                  <TabsTrigger value="medical">Medical History</TabsTrigger>
-                  <TabsTrigger value="allergies">Allergies</TabsTrigger>
-                  <TabsTrigger value="vaccinations">Vaccinations</TabsTrigger>
-                  <TabsTrigger value="insurance">Insurance</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="basic" className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="font-semibold mb-2">Personal Information</h3>
-                        <div className="space-y-2 text-sm">
-                          <p><span className="font-medium">Date of Birth:</span> {new Date(selectedPatient.dateOfBirth).toLocaleDateString()}</p>
-                          <p><span className="font-medium">Blood Group:</span> {selectedPatient.bloodGroup || 'Not specified'}</p>
+            <Tabs defaultValue="overview" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="medical">Medical</TabsTrigger>
+                <TabsTrigger value="vaccinations">Vaccinations</TabsTrigger>
+                <TabsTrigger value="insurance">Insurance</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="overview" className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Personal Information</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xl font-semibold">
+                          {selectedPatient.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
                         </div>
-                      </div>
-
-                      <div>
-                        <h3 className="font-semibold mb-2">Contact Information</h3>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4" />
-                            {selectedPatient.phoneNumber}
-                          </div>
-                          {selectedPatient.email && (
-                            <div className="flex items-center gap-2">
-                              <Mail className="h-4 w-4" />
-                              {selectedPatient.email}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="font-semibold mb-2">Address</h3>
-                        <div className="text-sm">
-                          <div className="flex items-start gap-2">
-                            <MapPin className="h-4 w-4 mt-0.5" />
-                            <div>
-                              <p>{selectedPatient.address?.street}</p>
-                              <p>{selectedPatient.address?.city}, {selectedPatient.address?.state}</p>
-                              <p>{selectedPatient.address?.pinCode}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {selectedPatient.emergencyContact?.name && (
                         <div>
-                          <h3 className="font-semibold mb-2">Emergency Contact</h3>
-                          <div className="space-y-1 text-sm">
-                            <p><span className="font-medium">Name:</span> {selectedPatient.emergencyContact.name}</p>
-                            <p><span className="font-medium">Relationship:</span> {selectedPatient.emergencyContact.relationship}</p>
-                            <p><span className="font-medium">Phone:</span> {selectedPatient.emergencyContact.phoneNumber}</p>
-                          </div>
+                          <h3 className="text-xl font-semibold">{selectedPatient.name}</h3>
+                          <p className="text-muted-foreground">Age {calculateAge(selectedPatient.dateOfBirth)}</p>
                         </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm">
+                            Born {new Date(selectedPatient.dateOfBirth).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Phone className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm">{selectedPatient.phone}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Mail className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm">{selectedPatient.email}</span>
+                        </div>
+                        {selectedPatient.address && (
+                          <div className="flex items-start gap-2">
+                            <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
+                            <span className="text-sm">{selectedPatient.address}</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <Badge variant="outline">{selectedPatient.gender}</Badge>
+                        {selectedPatient.bloodType && (
+                          <Badge variant="secondary">{selectedPatient.bloodType}</Badge>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Emergency Contact</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <div>
+                        <p className="font-medium">{selectedPatient.emergencyContact.name}</p>
+                        <p className="text-sm text-muted-foreground">{selectedPatient.emergencyContact.relationship}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm">{selectedPatient.emergencyContact.phone}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="medical" className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <FileText className="w-4 h-4" />
+                        Medical History
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {selectedPatient.medicalHistory.length > 0 ? (
+                        <div className="space-y-2">
+                          {selectedPatient.medicalHistory.map((condition, index) => (
+                            <Badge key={index} variant="secondary">{condition}</Badge>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground text-sm">No medical history recorded</p>
                       )}
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="medical" className="space-y-4">
-                  {selectedPatient.chronicConditions && selectedPatient.chronicConditions.length > 0 ? (
-                    <div className="space-y-3">
-                      <h3 className="font-semibold">Chronic Conditions</h3>
-                      {selectedPatient.chronicConditions.map((condition) => (
-                        <div key={condition.id} className="p-4 border rounded-lg">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h4 className="font-medium">{condition.condition}</h4>
-                            <Badge variant={
-                              condition.severity === 'severe' ? 'destructive' : 
-                              condition.severity === 'moderate' ? 'default' : 'secondary'
-                            }>
-                              {condition.severity}
-                            </Badge>
-                          </div>
-                          <div className="text-sm text-muted-foreground space-y-1">
-                            <p>Diagnosed: {new Date(condition.diagnosedDate).toLocaleDateString()}</p>
-                            <p>Last Review: {new Date(condition.lastReviewDate).toLocaleDateString()}</p>
-                            {condition.notes && <p>Notes: {condition.notes}</p>}
-                          </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Warning className="w-4 h-4 text-destructive" />
+                        Allergies
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {selectedPatient.allergies.length > 0 ? (
+                        <div className="space-y-2">
+                          {selectedPatient.allergies.map((allergy, index) => (
+                            <Badge key={index} variant="destructive">{allergy}</Badge>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Heart className="mx-auto h-12 w-12 mb-2" />
-                      <p>No chronic conditions recorded</p>
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="allergies" className="space-y-4">
-                  {selectedPatient.allergies && selectedPatient.allergies.length > 0 ? (
-                    <div className="space-y-3">
-                      <h3 className="font-semibold text-destructive">Known Allergies</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedPatient.allergies.map((allergy, index) => (
-                          <Badge key={index} variant="destructive" className="flex items-center gap-1">
-                            <Warning className="w-3 h-3" />
-                            {allergy}
-                          </Badge>
+                      ) : (
+                        <p className="text-muted-foreground text-sm">No known allergies</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Activity className="w-4 h-4" />
+                        Chronic Conditions
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {selectedPatient.chronicConditions.length > 0 ? (
+                        <div className="space-y-2">
+                          {selectedPatient.chronicConditions.map((condition, index) => (
+                            <Badge key={index} variant="outline">{condition}</Badge>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground text-sm">No chronic conditions</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="vaccinations" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Shield className="w-4 h-4" />
+                      Vaccination Records
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {selectedPatient.vaccinations.length > 0 ? (
+                      <div className="space-y-3">
+                        {selectedPatient.vaccinations.map((vaccination, index) => (
+                          <div key={index} className="p-3 border rounded-lg">
+                            <h5 className="font-medium">{vaccination.vaccine}</h5>
+                            <p className="text-sm text-muted-foreground">
+                              Given: {new Date(vaccination.date).toLocaleDateString()}
+                              {vaccination.nextDue && (
+                                <span className="ml-4">
+                                  Next due: {new Date(vaccination.nextDue).toLocaleDateString()}
+                                </span>
+                              )}
+                            </p>
+                          </div>
                         ))}
                       </div>
+                    ) : (
+                      <p className="text-muted-foreground text-sm">No vaccination records</p>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="insurance" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Shield className="w-4 h-4" />
+                      Insurance Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div>
+                      <Label className="text-sm font-medium">Provider</Label>
+                      <p className="text-sm">{selectedPatient.insuranceInfo.provider || 'Not specified'}</p>
                     </div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <AlertTriangle className="mx-auto h-12 w-12 mb-2" />
-                      <p>No allergies recorded</p>
+                    <div>
+                      <Label className="text-sm font-medium">Policy Number</Label>
+                      <p className="text-sm">{selectedPatient.insuranceInfo.policyNumber || 'Not specified'}</p>
                     </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="vaccinations" className="space-y-4">
-                  {selectedPatient.vaccinationRecords && selectedPatient.vaccinationRecords.length > 0 ? (
-                    <div className="space-y-3">
-                      <h3 className="font-semibold">Vaccination History</h3>
-                      {selectedPatient.vaccinationRecords.map((vaccination) => (
-                        <div key={vaccination.id} className="p-4 border rounded-lg">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Syringe className="w-4 h-4 text-primary" />
-                            <h4 className="font-medium">{vaccination.vaccineName}</h4>
-                            {vaccination.nextDueDate && new Date(vaccination.nextDueDate) > new Date() && (
-                              <Badge variant="outline">Next Due: {new Date(vaccination.nextDueDate).toLocaleDateString()}</Badge>
-                            )}
-                          </div>
-                          <div className="text-sm text-muted-foreground space-y-1">
-                            <p>Administered: {new Date(vaccination.dateAdministered).toLocaleDateString()}</p>
-                            <p>Administered by: {vaccination.administeredBy}</p>
-                            {vaccination.batchNumber && <p>Batch: {vaccination.batchNumber}</p>}
-                            {vaccination.notes && <p>Notes: {vaccination.notes}</p>}
-                          </div>
-                        </div>
-                      ))}
+                    <div>
+                      <Label className="text-sm font-medium">Group Number</Label>
+                      <p className="text-sm">{selectedPatient.insuranceInfo.groupNumber || 'Not specified'}</p>
                     </div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Syringe className="mx-auto h-12 w-12 mb-2" />
-                      <p>No vaccination records found</p>
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="insurance" className="space-y-4">
-                  {selectedPatient.insuranceInfo?.provider ? (
-                    <div className="space-y-4">
-                      <h3 className="font-semibold">Insurance Information</h3>
-                      <div className="p-4 border rounded-lg">
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <p className="font-medium">Provider</p>
-                            <p>{selectedPatient.insuranceInfo.provider}</p>
-                          </div>
-                          <div>
-                            <p className="font-medium">Policy Number</p>
-                            <p>{selectedPatient.insuranceInfo.policyNumber}</p>
-                          </div>
-                          <div>
-                            <p className="font-medium">Coverage Amount</p>
-                            <p>₹{selectedPatient.insuranceInfo.coverageAmount?.toLocaleString()}</p>
-                          </div>
-                          <div>
-                            <p className="font-medium">Copay Amount</p>
-                            <p>₹{selectedPatient.insuranceInfo.copayAmount?.toLocaleString()}</p>
-                          </div>
-                          <div className="col-span-2">
-                            <p className="font-medium">Valid Until</p>
-                            <p>{new Date(selectedPatient.insuranceInfo.expiryDate).toLocaleDateString()}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <UserCircle className="mx-auto h-12 w-12 mb-2" />
-                      <p>No insurance information available</p>
-                    </div>
-                  )}
-                </TabsContent>
-              </Tabs>
-
-              <Separator />
-
-              <div className="text-sm text-muted-foreground">
-                <p>Patient registered on {new Date(selectedPatient.createdAt).toLocaleDateString()}</p>
-                {selectedPatient.updatedAt !== selectedPatient.createdAt && (
-                  <p>Last updated on {new Date(selectedPatient.updatedAt).toLocaleDateString()}</p>
-                )}
-              </div>
-            </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           )}
+          
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
+              Close
+            </Button>
+            <Button onClick={() => {
+              if (selectedPatient) {
+                openEditDialog(selectedPatient)
+                setIsViewDialogOpen(false)
+              }
+            }}>
+              Edit Patient
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
   )
 }
+
+export default PatientManagement

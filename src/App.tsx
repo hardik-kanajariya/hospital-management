@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { useAuth } from '@/hooks/useAuth'
 import LoginForm from '@/components/auth/LoginForm'
 import RoleBasedAccess from '@/components/auth/RoleBasedAccess'
+import LandingPage from '@/components/landing/LandingPage'
 import { 
   Users, 
   Calendar, 
@@ -20,7 +21,8 @@ import {
   SignOut,
   Shield,
   Settings,
-  Bell
+  Bell,
+  Home
 } from '@phosphor-icons/react'
 
 // Hospital components
@@ -37,15 +39,28 @@ import UserManagement from '@/components/auth/UserManagement'
 import NotificationCenter from '@/components/hospital/NotificationCenter'
 
 function App() {
-  const [activeTab, setActiveTab] = useState('dashboard')
+  const [activeTab, setActiveTab] = useState('landing')
   const [patients] = useKV('hospital-patients', [])
   const [appointments] = useKV('hospital-appointments', [])
   const [todayAppointments] = useKV('today-appointments', [])
   const { user, isAuthenticated, logout, canAccessModule } = useAuth()
 
-  // If not authenticated, show login form
+  // Show landing page if not authenticated
   if (!isAuthenticated) {
-    return <LoginForm onLogin={() => {}} />
+    if (activeTab === 'landing') {
+      return (
+        <div>
+          <LandingPage />
+          <div className="fixed bottom-4 right-4 z-50">
+            <Button onClick={() => setActiveTab('login')} size="lg">
+              <Heart className="w-4 h-4 mr-2" />
+              Access Hospital System
+            </Button>
+          </div>
+        </div>
+      )
+    }
+    return <LoginForm onLogin={() => setActiveTab('dashboard')} />
   }
 
   const stats = {
@@ -57,6 +72,7 @@ function App() {
 
   // Filter tabs based on user permissions
   const availableTabs = [
+    { id: 'landing', label: 'Home', icon: Home, module: 'landing' },
     { id: 'dashboard', label: 'Dashboard', icon: Activity, module: 'dashboard' },
     { id: 'patients', label: 'Patients', icon: Users, module: 'patients' },
     { id: 'appointments', label: 'Appointments', icon: Calendar, module: 'appointments' },
@@ -69,6 +85,9 @@ function App() {
     { id: 'notifications', label: 'Notifications', icon: Bell, module: 'notifications' },
     { id: 'users', label: 'Users', icon: Shield, module: 'user_management', requiresRole: 'super_admin' }
   ].filter(tab => {
+    // Always show landing page
+    if (tab.id === 'landing') return true;
+    
     // Check module permission
     if (!canAccessModule(tab.module)) return false;
     
@@ -138,7 +157,7 @@ function App() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-11 lg:w-fit">
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-12 lg:w-fit">
             {availableTabs.map((tab) => {
               const Icon = tab.icon;
               return (
@@ -149,6 +168,10 @@ function App() {
               );
             })}
           </TabsList>
+
+          <TabsContent value="landing" className="space-y-6">
+            <LandingPage />
+          </TabsContent>
 
           <TabsContent value="dashboard" className="space-y-6">
             <div className="flex items-center justify-between">
