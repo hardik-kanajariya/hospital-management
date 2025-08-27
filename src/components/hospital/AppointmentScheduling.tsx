@@ -49,7 +49,6 @@ export default function AppointmentScheduling() {
   const [sendReminder, setSendReminder] = useState(true)
   const { sendAppointmentReminder, isLoading: isNotificationLoading } = useNotifications()
   const [todayAppointments, setTodayAppointments] = useKV<Appointment[]>('today-appointments', [])
-  const [patients] = useKV('hospital-patients', [])
   
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')

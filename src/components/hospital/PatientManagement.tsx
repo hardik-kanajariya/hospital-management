@@ -515,6 +515,8 @@ export default function PatientManagement() {
                     </div>
                   </div>
                 </div>
+              </TabsContent>
+
               <TabsContent value="medical" className="space-y-4">
                 <div className="space-y-4">
                   <h3 className="font-semibold">Chronic Conditions</h3>
