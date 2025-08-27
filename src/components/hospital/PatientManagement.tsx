@@ -24,6 +24,11 @@ interface Patient {
   emergencyContact: string
   medicalHistory?: string
   allergies?: string
+  insurance?: {
+    provider: string
+    policyNumber: string
+    validUntil: string
+  }
   createdAt: string
   lastVisit?: string
 }
@@ -45,7 +50,11 @@ export default function PatientManagement() {
     bloodGroup: '',
     emergencyContact: '',
     medicalHistory: '',
-    allergies: ''
+    allergies: '',
+    hasInsurance: false,
+    insuranceProvider: '',
+    policyNumber: '',
+    policyValidUntil: ''
   })
 
   const filteredPatients = patients.filter(patient =>
@@ -72,6 +81,11 @@ export default function PatientManagement() {
       emergencyContact: newPatient.emergencyContact,
       medicalHistory: newPatient.medicalHistory,
       allergies: newPatient.allergies,
+      insurance: newPatient.hasInsurance ? {
+        provider: newPatient.insuranceProvider,
+        policyNumber: newPatient.policyNumber,
+        validUntil: newPatient.policyValidUntil
+      } : undefined,
       createdAt: new Date().toISOString(),
     }
 
@@ -86,7 +100,11 @@ export default function PatientManagement() {
       bloodGroup: '',
       emergencyContact: '',
       medicalHistory: '',
-      allergies: ''
+      allergies: '',
+      hasInsurance: false,
+      insuranceProvider: '',
+      policyNumber: '',
+      policyValidUntil: ''
     })
     setIsDialogOpen(false)
     toast.success(`Patient ${patient.name} registered successfully with ID: ${patient.id}`)
@@ -262,6 +280,54 @@ export default function PatientManagement() {
                   rows={2}
                 />
               </div>
+
+              {/* Insurance Information */}
+              <div className="space-y-4 border-t pt-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-medium">Insurance Information</Label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={newPatient.hasInsurance}
+                      onChange={(e) => setNewPatient({...newPatient, hasInsurance: e.target.checked})}
+                      className="rounded"
+                    />
+                    <Label className="text-sm">Has Insurance</Label>
+                  </div>
+                </div>
+
+                {newPatient.hasInsurance && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Insurance Provider</Label>
+                        <Input
+                          value={newPatient.insuranceProvider}
+                          onChange={(e) => setNewPatient({...newPatient, insuranceProvider: e.target.value})}
+                          placeholder="Insurance company name"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Policy Number</Label>
+                        <Input
+                          value={newPatient.policyNumber}
+                          onChange={(e) => setNewPatient({...newPatient, policyNumber: e.target.value})}
+                          placeholder="Policy/Card number"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Policy Valid Until</Label>
+                      <Input
+                        type="date"
+                        value={newPatient.policyValidUntil}
+                        onChange={(e) => setNewPatient({...newPatient, policyValidUntil: e.target.value})}
+                        min={new Date().toISOString().split('T')[0]}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             <DialogFooter>
@@ -402,6 +468,18 @@ export default function PatientManagement() {
                               <div>
                                 <Label className="text-sm font-medium text-muted-foreground">Known Allergies</Label>
                                 <p className="text-sm mt-1">{selectedPatient.allergies || 'No known allergies'}</p>
+                              </div>
+                              <div>
+                                <Label className="text-sm font-medium text-muted-foreground">Insurance Information</Label>
+                                {selectedPatient.insurance ? (
+                                  <div className="text-sm mt-1 space-y-1">
+                                    <p><strong>Provider:</strong> {selectedPatient.insurance.provider}</p>
+                                    <p><strong>Policy Number:</strong> {selectedPatient.insurance.policyNumber}</p>
+                                    <p><strong>Valid Until:</strong> {new Date(selectedPatient.insurance.validUntil).toLocaleDateString()}</p>
+                                  </div>
+                                ) : (
+                                  <p className="text-sm mt-1">No insurance information</p>
+                                )}
                               </div>
                               <div>
                                 <Label className="text-sm font-medium text-muted-foreground">Last Visit</Label>

@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { CalendarPlus, Clock, User, CheckCircle, XCircle, Calendar as CalendarIcon, Search } from '@phosphor-icons/react'
+import { CalendarPlus, Clock, User, CheckCircle, XCircle, Calendar as CalendarIcon, Search, Receipt } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 
@@ -478,10 +478,36 @@ export default function AppointmentScheduling() {
                         </Button>
                       )}
                       {appointment.status === 'completed' && (
-                        <Badge variant="default" className="bg-green-500">
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          Completed
-                        </Badge>
+                        <>
+                          <Badge variant="default" className="bg-green-500">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Completed
+                          </Badge>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              // Navigate to billing with pre-filled patient info
+                              const patient = patients.find(p => p.id === appointment.patientId)
+                              if (patient) {
+                                // Store billing context in localStorage for cross-component communication
+                                localStorage.setItem('billing-context', JSON.stringify({
+                                  patientId: patient.id,
+                                  patientName: patient.name,
+                                  appointmentId: appointment.id,
+                                  appointmentType: appointment.type,
+                                  doctor: appointment.doctor
+                                }))
+                                // This would trigger navigation to billing tab in a real app
+                                // For now, just show a toast with instruction
+                                toast.success('Patient info saved. Please go to Billing tab to create bill.')
+                              }
+                            }}
+                          >
+                            <Receipt className="w-4 h-4 mr-1" />
+                            Create Bill
+                          </Button>
+                        </>
                       )}
                       {appointment.status === 'cancelled' && (
                         <Badge variant="destructive">

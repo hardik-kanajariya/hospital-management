@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -34,6 +34,16 @@ interface Bill {
   paidAmount: number
   dueAmount: number
   notes?: string
+  insuranceClaim?: {
+    provider: string
+    policyNumber: string
+    claimAmount: number
+    claimStatus: 'pending' | 'approved' | 'rejected' | 'processing'
+    claimId?: string
+    submittedDate?: string
+    approvedDate?: string
+    rejectionReason?: string
+  }
   createdAt: string
 }
 
@@ -63,6 +73,18 @@ const paymentMethods = [
   'Cheque'
 ]
 
+const insuranceProviders = [
+  'Ayushman Bharat',
+  'ESI Corporation',
+  'CGHS',
+  'Star Health',
+  'HDFC ERGO',
+  'ICICI Lombard',
+  'New India Assurance',
+  'United India Insurance',
+  'Other'
+]
+
 export default function BillingSystem() {
   const [bills, setBills] = useKV('hospital-bills', [])
   const [patients] = useKV('hospital-patients', [])
@@ -83,6 +105,15 @@ export default function BillingSystem() {
     notes: ''
   })
 
+  const [insuranceClaim, setInsuranceClaim] = useState({
+    provider: '',
+    policyNumber: '',
+    claimAmount: 0,
+    hasInsurance: false
+  })
+
+  const [isInsuranceDialogOpen, setIsInsuranceDialogOpen] = useState(false)
+
   const [billItems, setBillItems] = useState<BillItem[]>([{
     id: '1',
     description: '',
@@ -99,6 +130,53 @@ export default function BillingSystem() {
 
   const today = new Date().toISOString().split('T')[0]
   const currentMonth = new Date().toISOString().slice(0, 7)
+
+  // Check for billing context from appointments on component mount
+  useEffect(() => {
+    const billingContext = localStorage.getItem('billing-context')
+    if (billingContext) {
+      try {
+        const context = JSON.parse(billingContext)
+        const patient = patients.find(p => p.id === context.patientId)
+        
+        setNewBill(prev => ({
+          ...prev,
+          patientId: context.patientId,
+          patientName: context.patientName
+        }))
+
+        // Pre-populate insurance if patient has it
+        if (patient?.insurance) {
+          setInsuranceClaim({
+            provider: patient.insurance.provider,
+            policyNumber: patient.insurance.policyNumber,
+            claimAmount: 0,
+            hasInsurance: true
+          })
+        }
+
+        // Add consultation service based on appointment type
+        if (context.appointmentType) {
+          const consultationRate = context.appointmentType === 'Emergency' ? 1000 : 
+                                 context.appointmentType === 'Specialist Consultation' ? 800 : 500
+          setBillItems([{
+            id: '1',
+            description: context.appointmentType === 'Emergency' ? 'Emergency Consultation' : 
+                        context.appointmentType === 'Specialist Consultation' ? 'Specialist Consultation' : 'General Consultation',
+            quantity: 1,
+            rate: consultationRate,
+            amount: consultationRate
+          }])
+        }
+
+        setIsDialogOpen(true)
+        localStorage.removeItem('billing-context') // Clear after use
+        toast.success('Billing form pre-populated from appointment')
+      } catch (error) {
+        console.error('Error parsing billing context:', error)
+      }
+    }
+  }, [patients])
 
   const filteredBills = bills.filter(bill => {
     const matchesSearch = bill.patientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -185,6 +263,13 @@ export default function BillingSystem() {
       paidAmount: 0,
       dueAmount: total,
       notes: newBill.notes,
+      insuranceClaim: insuranceClaim.hasInsurance ? {
+        provider: insuranceClaim.provider,
+        policyNumber: insuranceClaim.policyNumber,
+        claimAmount: insuranceClaim.claimAmount,
+        claimStatus: 'pending',
+        submittedDate: new Date().toISOString()
+      } : undefined,
       createdAt: new Date().toISOString()
     }
 
@@ -198,6 +283,12 @@ export default function BillingSystem() {
       discount: 0,
       tax: 18,
       notes: ''
+    })
+    setInsuranceClaim({
+      provider: '',
+      policyNumber: '',
+      claimAmount: 0,
+      hasInsurance: false
     })
     setBillItems([{
       id: '1',
@@ -249,6 +340,40 @@ export default function BillingSystem() {
     setPaymentData({ amount: 0, method: '', notes: '' })
     setIsPaymentDialogOpen(false)
     toast.success(`Payment of ₹${paymentData.amount} recorded successfully`)
+  }
+
+  const handleInsuranceClaim = (billId: string, action: 'approve' | 'reject', rejectionReason?: string) => {
+    setBills(currentBills =>
+      currentBills.map(bill =>
+        bill.id === billId && bill.insuranceClaim
+          ? {
+              ...bill,
+              insuranceClaim: {
+                ...bill.insuranceClaim,
+                claimStatus: action === 'approve' ? 'approved' : 'rejected',
+                approvedDate: action === 'approve' ? new Date().toISOString() : undefined,
+                rejectionReason: action === 'reject' ? rejectionReason : undefined
+              }
+            }
+          : bill
+      )
+    )
+    toast.success(`Insurance claim ${action}ed successfully`)
+  }
+
+  const getClaimStatusBadge = (status?: string) => {
+    switch (status) {
+      case 'pending':
+        return <Badge variant="outline" className="text-blue-600">Claim Pending</Badge>
+      case 'processing':
+        return <Badge variant="default" className="bg-yellow-500">Processing</Badge>
+      case 'approved':
+        return <Badge variant="default" className="bg-green-500">Claim Approved</Badge>
+      case 'rejected':
+        return <Badge variant="destructive">Claim Rejected</Badge>
+      default:
+        return null
+    }
   }
 
   const getStatusBadge = (status: string) => {
@@ -503,6 +628,65 @@ export default function BillingSystem() {
                 </div>
               </div>
 
+              {/* Insurance Claim Section */}
+              <Card className="p-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-base font-medium">Insurance Claim</Label>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={insuranceClaim.hasInsurance}
+                        onChange={(e) => setInsuranceClaim({...insuranceClaim, hasInsurance: e.target.checked})}
+                        className="rounded"
+                      />
+                      <Label className="text-sm">Has Insurance</Label>
+                    </div>
+                  </div>
+
+                  {insuranceClaim.hasInsurance && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Insurance Provider *</Label>
+                        <Select 
+                          value={insuranceClaim.provider} 
+                          onValueChange={(value) => setInsuranceClaim({...insuranceClaim, provider: value})}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select provider" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {insuranceProviders.map((provider) => (
+                              <SelectItem key={provider} value={provider}>
+                                {provider}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Policy Number *</Label>
+                        <Input
+                          value={insuranceClaim.policyNumber}
+                          onChange={(e) => setInsuranceClaim({...insuranceClaim, policyNumber: e.target.value})}
+                          placeholder="Enter policy number"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Claim Amount (₹)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          value={insuranceClaim.claimAmount}
+                          onChange={(e) => setInsuranceClaim({...insuranceClaim, claimAmount: parseFloat(e.target.value) || 0})}
+                          placeholder="Amount to claim"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Card>
+
               {/* Bill Summary */}
               <Card className="p-4 bg-muted/50">
                 <div className="space-y-4">
@@ -598,6 +782,7 @@ export default function BillingSystem() {
                         <h3 className="text-lg font-semibold">{bill.patientName}</h3>
                         <Badge variant="outline">{bill.id}</Badge>
                         {getStatusBadge(bill.paymentStatus)}
+                        {bill.insuranceClaim && getClaimStatusBadge(bill.insuranceClaim.claimStatus)}
                       </div>
                       <div className="space-y-1">
                         <p className="text-sm text-muted-foreground">
@@ -611,6 +796,13 @@ export default function BillingSystem() {
                         {bill.paymentMethod && (
                           <p className="text-sm text-muted-foreground">
                             <strong>Payment Method:</strong> {bill.paymentMethod}
+                          </p>
+                        )}
+                        {bill.insuranceClaim && (
+                          <p className="text-sm text-muted-foreground">
+                            <strong>Insurance:</strong> {bill.insuranceClaim.provider} • 
+                            <strong> Policy:</strong> {bill.insuranceClaim.policyNumber} • 
+                            <strong> Claim:</strong> ₹{bill.insuranceClaim.claimAmount.toLocaleString()}
                           </p>
                         )}
                       </div>
