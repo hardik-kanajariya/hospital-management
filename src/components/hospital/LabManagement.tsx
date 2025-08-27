@@ -9,19 +9,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
-import { 
-  TestTube, 
-  Plus, 
-  Search, 
-  FileText, 
-  Clock, 
-  CheckCircle,
+import {
+  TestTube,
+  Plus,
+  Search,
+  FileText,
+  Clock,
   AlertTriangle,
-  Eye,
   Download,
   User,
-  Calendar
-} from '@phosphor-icons/react'
+  Calendar,
+} from '@phosphor-icons/react';
 import { toast } from 'sonner'
 
 interface LabTest {

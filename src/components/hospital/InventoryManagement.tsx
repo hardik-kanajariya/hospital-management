@@ -9,21 +9,20 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
-import { 
-  Package, 
-  Plus, 
-  Search, 
-  AlertTriangle, 
-  TrendingDown, 
-  Eye, 
+import {
+  Package,
+  Plus,
+  Search,
+  AlertTriangle,
+  TrendingDown,
   Edit,
   ShoppingCart,
   Archive,
   Calendar,
   DollarSign,
   Pill,
-  FirstAid
-} from '@phosphor-icons/react'
+  FirstAid,
+} from '@phosphor-icons/react';
 import { toast } from 'sonner'
 
 interface InventoryItem {

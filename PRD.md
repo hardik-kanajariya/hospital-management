@@ -5,7 +5,7 @@ Rural healthcare management system designed for small hospitals and clinics (10-
 **Experience Qualities**:
 1. **Simplicity** - Interface designed for users with limited digital literacy, featuring large buttons and clear navigation
 2. **Reliability** - Offline-first architecture that works without internet connectivity and syncs when available
-3. **Accessibility** - Multi-language support (Hindi/English) with intuitive workflows for rural healthcare workers
+3. **Accessibility** - Multi-language support (Hindi/English) with intuitive workflows for rural healthcare workersre
 
 **Complexity Level**: Light Application (multiple features with basic state)
 - Multiple interconnected modules for patient management, appointments, billing, and medical records

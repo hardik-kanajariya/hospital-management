@@ -1,26 +1,19 @@
-import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/hooks/useAuth'
 import { useNotifications } from '@/hooks/useNotifications'
-import { 
-  Users, 
-  Calendar, 
-  CreditCard, 
-  TrendingUp, 
-  Activity,
+import {
+  Users,
+  Calendar,
+  CreditCard,
   Heart,
   Clock,
   AlertTriangle,
-  CheckCircle,
   Bell,
-  Package,
   Stethoscope,
-  UserCircle,
-  TestTube
-} from '@phosphor-icons/react'
+  TestTube,
+} from '@phosphor-icons/react';
 
 export default function Dashboard() {
   const { user } = useAuth()

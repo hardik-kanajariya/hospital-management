@@ -209,8 +209,8 @@ export default function MedicalRecords() {
       return
     }
 
-    const patient = patients.find(p => p.id === prescriptionFormData.patientId)
-    const doctor = doctors.find(d => d.id === prescriptionFormData.doctorId)
+    const patient = patients?.find(p => p.id === prescriptionFormData.patientId)
+    const doctor = doctors?.find(d => d.id === prescriptionFormData.doctorId)
     
     if (!patient || !doctor) {
       toast.error('Patient or doctor not found')

@@ -8,18 +8,17 @@ import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  UserCircle, 
-  Plus, 
-  Calendar, 
-  Clock, 
-  Edit, 
+import {
+  UserCircle,
+  Calendar,
+  Clock,
+  Edit,
   CheckCircle,
   XCircle,
   MapPin,
   Stethoscope,
-  CalendarBlank
-} from '@phosphor-icons/react'
+  CalendarBlank,
+} from '@phosphor-icons/react';
 import { toast } from 'sonner'
 
 interface Doctor {

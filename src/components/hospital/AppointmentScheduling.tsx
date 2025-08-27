@@ -4,12 +4,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import { Switch } from '@/components/ui/switch'
-import { Calendar, CalendarPlus, Search, Clock, User, FileText, Bell, Phone, Mail } from '@phosphor-icons/react'
+import { Calendar, CalendarPlus, Search, Clock, User, FileText } from '@phosphor-icons/react';
 import { toast } from 'sonner'
 import { useNotifications } from '@/hooks/useNotifications'
 import { Appointment, Patient } from '@/types/hospital'
@@ -196,10 +194,10 @@ export default function AppointmentScheduling() {
   }
 
   const todayStats = {
-    total: appointments.filter(apt => apt.date === today).length,
-    completed: appointments.filter(apt => apt.date === today && apt.status === 'completed').length,
-    inProgress: appointments.filter(apt => apt.date === today && apt.status === 'in-progress').length,
-    scheduled: appointments.filter(apt => apt.date === today && apt.status === 'scheduled').length
+    total: appointments?.filter(apt => apt.date === today).length,
+    completed: appointments?.filter(apt => apt.date === today && apt.status === 'completed').length,
+    inProgress: appointments?.filter(apt => apt.date === today && apt.status === 'in-progress').length,
+    scheduled: appointments?.filter(apt => apt.date === today && apt.status === 'scheduled').length
   }
 
   return (

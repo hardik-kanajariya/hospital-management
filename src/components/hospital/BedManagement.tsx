@@ -9,20 +9,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
-import { 
-  Bed, 
-  Plus, 
-  Search, 
-  Users, 
-  Clock, 
+import {
+  Bed,
+  Plus,
+  Search,
+  Users,
   CheckCircle,
-  XCircle,
   AlertTriangle,
   MapPin,
   Calendar,
   User,
-  Home
-} from '@phosphor-icons/react'
+  Home,
+} from '@phosphor-icons/react';
 import { toast } from 'sonner'
 
 interface Room {

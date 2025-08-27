@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react';
 import { useKV } from '@github/spark/hooks'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -9,9 +9,19 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
-import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
-import { Receipt, Plus, Search, CreditCard, Eye, Printer, DollarSign, TrendingUp, FileText, Download, Bell, X, Calculator } from '@phosphor-icons/react'
+import {
+  Receipt,
+  Plus,
+  Search,
+  CreditCard,
+  Eye,
+  Printer,
+  FileText,
+  Download,
+  X,
+  Calculator,
+} from '@phosphor-icons/react';
 import { toast } from 'sonner'
 import { useNotifications } from '@/hooks/useNotifications'
 import { Bill, Patient, BillItem, InsuranceClaim } from '@/types/hospital'
