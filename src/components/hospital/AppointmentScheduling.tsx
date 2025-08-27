@@ -53,7 +53,6 @@ export default function AppointmentScheduling() {
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterDate, setFilterDate] = useState('all')
   const [selectedDate, setSelectedDate] = useState(new Date())
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
   
   const [newAppointment, setNewAppointment] = useState({
     patientId: '',
