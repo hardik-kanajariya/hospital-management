@@ -1,5 +1,5 @@
 // Application configuration
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 export const DB_CONFIG = {
   host: import.meta.env.VITE_DB_HOST || 'localhost',
   user: import.meta.env.VITE_DB_USER || 'root',

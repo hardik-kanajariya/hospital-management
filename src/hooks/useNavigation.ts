@@ -7,6 +7,8 @@ export function useNavigation() {
 
     // Handle navigation based on authentication state
     useEffect(() => {
+        console.log('useNavigation effect - Auth:', isAuthenticated, 'Current Tab:', activeTab);
+
         if (isAuthenticated) {
             // User is authenticated, ensure they're on a valid tab
             if (activeTab === 'landing' || activeTab === 'login' || !activeTab) {
@@ -18,7 +20,7 @@ export function useNavigation() {
             console.log('User not authenticated, redirecting to landing');
             setActiveTab('landing');
         }
-    }, [isAuthenticated]);
+    }, [isAuthenticated, activeTab]);
 
     return { activeTab, setActiveTab };
 }

@@ -83,9 +83,13 @@ export function useAuth() {
     setAuthState(prev => ({ ...prev, isLoading: true }));
 
     try {
+      console.log('Login attempt for:', email, 'isOnline:', db.isOnline());
+
       if (db.isOnline()) {
         // Try database authentication first
+        console.log('Attempting database authentication...');
         const authenticatedUser = await db.authenticate(email, password);
+        console.log('Database authentication successful:', authenticatedUser);
 
         // Store user data safely
         setUserData(authenticatedUser);
@@ -96,9 +100,11 @@ export function useAuth() {
           isLoading: false
         });
 
+        console.log('Auth state updated - isAuthenticated: true (from database)');
         return { success: true };
       } else {
         // Offline mode - use demo users
+        console.log('Using offline demo authentication...');
         const userRole = getUserRoleFromEmail(email);
 
         // Simple password check for demo (admin123 for all demo accounts)
@@ -125,7 +131,7 @@ export function useAuth() {
             isLoading: false
           });
 
-          console.log('Auth state updated - isAuthenticated: true');
+          console.log('Auth state updated - isAuthenticated: true (from demo)');
 
           return { success: true };
         }
@@ -133,6 +139,7 @@ export function useAuth() {
 
       throw new Error('Invalid credentials');
     } catch (error) {
+      console.error('Login error:', error);
       setAuthState(prev => ({ ...prev, isLoading: false }));
       return { success: false, error: error instanceof Error ? error.message : 'Authentication failed' };
     }

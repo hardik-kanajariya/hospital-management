@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '@/config';
 import { useAuth } from './useAuth';
-import { useNotifications } from './useNotifications';
+import { toast } from 'sonner';
 
 // IndexedDB configuration for offline support
 const DB_NAME = 'MedCareRuralDB';
@@ -167,7 +167,6 @@ export const initializeOfflineDB = async (): Promise<void> => {
  */
 export function useDatabase(tableName: string) {
   const token = localStorage.getItem('auth_token');
-  const { addNotification } = useNotifications();
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -224,14 +223,11 @@ export function useDatabase(tableName: string) {
         setError(err.message || 'Error fetching data');
       }
 
-      addNotification({
-        message: `Error fetching ${tableName}: ${err.message}`,
-        type: 'error'
-      });
+      toast.error(`Error fetching ${tableName}: ${err.message}`);
     } finally {
       setLoading(false);
     }
-  }, [tableName, token, isOnline, addNotification]);
+  }, [tableName, token, isOnline]);
 
   // Initial data fetch
   useEffect(() => {
@@ -280,14 +276,11 @@ export function useDatabase(tableName: string) {
       // Refresh data after sync
       await fetchData();
 
-      addNotification({
-        message: 'Data synchronized successfully',
-        type: 'success'
-      });
+      toast.success('Data synchronized successfully');
     } catch (err: any) {
       console.error('Sync failed:', err);
     }
-  }, [token, fetchData, addNotification]);
+  }, [token, fetchData]);
 
   // Add new record
   const addRecord = useCallback(async (record: any) => {
@@ -311,10 +304,7 @@ export function useDatabase(tableName: string) {
         await offlineDB.update(tableName, response.data);
         setData(prevData => [...prevData, response.data]);
 
-        addNotification({
-          message: `${tableName.slice(0, -1)} added successfully`,
-          type: 'success'
-        });
+        toast.success(`${tableName.slice(0, -1)} added successfully`);
 
         return response.data;
       } else {
@@ -324,24 +314,18 @@ export function useDatabase(tableName: string) {
 
         setData(prevData => [...prevData, savedRecord]);
 
-        addNotification({
-          message: `${tableName.slice(0, -1)} saved offline - will sync when online`,
-          type: 'info'
-        });
+        toast.info(`${tableName.slice(0, -1)} saved offline - will sync when online`);
 
         return savedRecord;
       }
     } catch (err: any) {
       setError(err.message || 'Error adding record');
-      addNotification({
-        message: `Error adding to ${tableName}: ${err.message}`,
-        type: 'error'
-      });
+      toast.error(`Error adding to ${tableName}: ${err.message}`);
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [tableName, token, isOnline, addNotification]);
+  }, [tableName, token, isOnline]);
 
   // Update existing record
   const updateRecord = useCallback(async (id: number, updates: any) => {
@@ -365,10 +349,7 @@ export function useDatabase(tableName: string) {
         await offlineDB.update(tableName, response.data);
         setData(prevData => prevData.map(item => item.id === id ? response.data : item));
 
-        addNotification({
-          message: `${tableName.slice(0, -1)} updated successfully`,
-          type: 'success'
-        });
+        toast.success(`${tableName.slice(0, -1)} updated successfully`);
 
         return response.data;
       } else {
@@ -378,24 +359,18 @@ export function useDatabase(tableName: string) {
 
         setData(prevData => prevData.map(item => item.id === id ? updatedRecord : item));
 
-        addNotification({
-          message: `${tableName.slice(0, -1)} updated offline - will sync when online`,
-          type: 'info'
-        });
+        toast.info(`${tableName.slice(0, -1)} updated offline - will sync when online`);
 
         return updatedRecord;
       }
     } catch (err: any) {
       setError(err.message || 'Error updating record');
-      addNotification({
-        message: `Error updating ${tableName}: ${err.message}`,
-        type: 'error'
-      });
+      toast.error(`Error updating ${tableName}: ${err.message}`);
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [tableName, token, isOnline, addNotification]);
+  }, [tableName, token, isOnline]);
 
   // Delete record
   const deleteRecord = useCallback(async (id: number) => {
@@ -413,31 +388,22 @@ export function useDatabase(tableName: string) {
         await offlineDB.delete(tableName, id);
         setData(prevData => prevData.filter(item => item.id !== id));
 
-        addNotification({
-          message: `${tableName.slice(0, -1)} deleted successfully`,
-          type: 'success'
-        });
+        toast.success(`${tableName.slice(0, -1)} deleted successfully`);
       } else {
         // Mark for deletion in offline storage
         await offlineDB.addToSyncQueue('delete', tableName, { id });
         setData(prevData => prevData.filter(item => item.id !== id));
 
-        addNotification({
-          message: `${tableName.slice(0, -1)} marked for deletion - will sync when online`,
-          type: 'info'
-        });
+        toast.info(`${tableName.slice(0, -1)} marked for deletion - will sync when online`);
       }
     } catch (err: any) {
       setError(err.message || 'Error deleting record');
-      addNotification({
-        message: `Error deleting from ${tableName}: ${err.message}`,
-        type: 'error'
-      });
+      toast.error(`Error deleting from ${tableName}: ${err.message}`);
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [tableName, token, isOnline, addNotification]);
+  }, [tableName, token, isOnline]);
 
   // Refresh data
   const refresh = useCallback(() => {
@@ -482,7 +448,7 @@ export function usePatients() {
   }, [addRecord]);
 
   const updatePatient = useCallback(async (id: string, updates: any) => {
-    return updateRecord(id, updates);
+    return updateRecord(parseInt(id), updates);
   }, [updateRecord]);
 
   return {

@@ -493,9 +493,17 @@ export class HospitalDatabase {
 
     try {
       const response = await this.apiClient.post('/auth/login', { email, password });
-      this.apiClient.setToken(response.token);
-      return response.user;
+      console.log('Authentication API response:', response);
+
+      // Check if the response has the expected structure
+      if (response.success && response.data) {
+        this.apiClient.setToken(response.data.token);
+        return response.data.user;
+      } else {
+        throw new Error('Invalid response structure from authentication API');
+      }
     } catch (error) {
+      console.error('Authentication error:', error);
       throw new Error('Authentication failed');
     }
   }

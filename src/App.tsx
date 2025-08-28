@@ -78,10 +78,10 @@ function App() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-        <div className="fixed top-4 left-4 bg-black/10 text-black p-2 rounded text-xs">
-          Debug: Not authenticated - Showing LoginForm
-        </div>
-        <LoginForm />
+        <LoginForm onLogin={() => {
+          console.log('Login callback triggered, setting tab to dashboard');
+          setActiveTab('dashboard');
+        }} />
       </div>
     )
   }
@@ -118,11 +118,6 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Debug Info */}
-      <div className="fixed top-4 left-4 bg-black/10 text-black p-2 rounded text-xs z-50">
-        Debug: Auth: {isAuthenticated ? 'Yes' : 'No'} | Tab: {activeTab} | User: {user?.name || 'None'}
-      </div>
-
       {/* Header */}
       <header className="border-b bg-card">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
