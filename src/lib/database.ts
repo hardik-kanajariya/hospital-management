@@ -6,7 +6,7 @@ interface HospitalDB extends DBSchema {
   patients: {
     key: string;
     value: Patient;
-    indexes: { 'by-id': string; 'by-phone': string; 'by-email': string };
+    indexes: { 'by-phone': string; 'by-email': string; 'by-id': string };
   };
   appointments: {
     key: string;
@@ -46,7 +46,7 @@ interface HospitalDB extends DBSchema {
   sync_queue: {
     key: string;
     value: SyncOperation;
-    indexes: { 'by-table': string; 'by-operation': string; 'by-timestamp': number };
+    indexes: { 'by-table': string; 'by-timestamp': number };
   };
   metadata: {
     key: string;
@@ -54,22 +54,24 @@ interface HospitalDB extends DBSchema {
   };
 }
 
-// Type definitions
+// Core interfaces
 interface Patient {
   id: string;
   patient_id: string;
-  name: string;
-  phone: string;
-  email?: string;
+  first_name: string;
+  last_name: string;
   date_of_birth: string;
   gender: 'male' | 'female' | 'other';
+  phone: string;
+  email?: string;
   address: string;
-  emergency_contact: string;
-  blood_group?: string;
+  emergency_contact: ContactInfo;
+  insurance_info?: InsuranceInfo;
+  medical_history: string[];
   allergies: string[];
   chronic_conditions: string[];
   vaccination_records: VaccinationRecord[];
-  insurance_info?: InsuranceInfo;
+  blood_group?: string;
   created_at: string;
   updated_at: string;
   synced: boolean;
@@ -78,16 +80,10 @@ interface Patient {
 
 interface VaccinationRecord {
   vaccine_name: string;
-  date_administered: string;
+  administered_date: string;
   next_due_date?: string;
+  batch_number?: string;
   administered_by: string;
-}
-
-interface InsuranceInfo {
-  provider: string;
-  policy_number: string;
-  coverage_amount: number;
-  expiry_date: string;
 }
 
 interface Appointment {
@@ -180,9 +176,17 @@ interface InsuranceClaim {
   rejection_reason?: string;
 }
 
+interface InsuranceInfo {
+  provider: string;
+  policy_number: string;
+  coverage_amount: number;
+  expiry_date: string;
+}
+
 interface InventoryItem {
   id: string;
   name: string;
+  description: string;
   category: 'medicine' | 'equipment' | 'supplies' | 'consumables';
   current_stock: number;
   minimum_stock: number;
@@ -292,7 +296,7 @@ class DatabaseService {
   private baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
   private syncInterval: NodeJS.Timeout | null = null;
 
-  async initialize() {
+  async initialize(): Promise<IDBPDatabase<HospitalDB>> {
     this.db = await openDB<HospitalDB>('HospitalDB', 1, {
       upgrade(db) {
         // Patients store
@@ -340,7 +344,6 @@ class DatabaseService {
         // Sync queue store
         const syncStore = db.createObjectStore('sync_queue', { keyPath: 'id' });
         syncStore.createIndex('by-table', 'table_name');
-        syncStore.createIndex('by-operation', 'operation');
         syncStore.createIndex('by-timestamp', 'timestamp');
 
         // Metadata store
@@ -350,7 +353,7 @@ class DatabaseService {
 
     // Start background sync
     this.startBackgroundSync();
-    
+
     return this.db;
   }
 
@@ -397,7 +400,7 @@ class DatabaseService {
     };
 
     await this.db.put(storeName, updated);
-    
+
     // Add to sync queue
     await this.addToSyncQueue(storeName as string, id, 'update', updated);
     
@@ -466,17 +469,17 @@ class DatabaseService {
   // Background sync process
   private startBackgroundSync(): void {
     this.syncInterval = setInterval(async () => {
-      if (navigator.onLine) {
+      if (this.isOnline()) {
         await this.processSyncQueue();
       }
     }, 30000); // Sync every 30 seconds when online
   }
 
-  async processSyncQueue(): Promise<void> {
+  private async processSyncQueue(): Promise<void> {
     if (!this.db) return;
 
     const pendingOperations = await this.query('sync_queue', 'by-timestamp');
-    
+
     for (const operation of pendingOperations.filter(op => op.status === 'pending')) {
       try {
         await this.syncOperation(operation);
@@ -500,7 +503,7 @@ class DatabaseService {
 
   private async syncOperation(operation: SyncOperation): Promise<void> {
     const { table_name, operation: op, data } = operation;
-    
+
     const response = await fetch(`${this.baseUrl}/${table_name}`, {
       method: this.getHttpMethod(op),
       headers: {
@@ -616,4 +619,3 @@ class DatabaseService {
 }
 
 export const db = new DatabaseService();
-export default DatabaseService;
