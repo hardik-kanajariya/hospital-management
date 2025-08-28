@@ -10,18 +10,18 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
-  FileText,
-  Plus,
-  MagnifyingGlass,
-  Stethoscope,
-  Pill,
-  Pulse,
-  Eye,
-  Heart,
-  TestTube,
-  Calendar,
-  User,
-  Thermometer
+  FileTextIcon,
+  PlusIcon,
+  MagnifyingGlassIcon,
+  StethoscopeIcon,
+  PillIcon,
+  PulseIcon,
+  EyeIcon,
+  HeartIcon,
+  TestTubeIcon,
+  CalendarIcon,
+  UserIcon,
+  ThermometerIcon
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { Patient, Doctor } from '@/types/hospital'
@@ -338,7 +338,7 @@ export default function MedicalRecords() {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-1">
           <div className="relative max-w-md">
-            <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Search medical records..."
               value={searchTerm}
@@ -367,7 +367,7 @@ export default function MedicalRecords() {
           <Dialog open={isPrescriptionDialogOpen} onOpenChange={setIsPrescriptionDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2">
-                <Pill className="h-4 w-4" />
+                <PillIcon className="h-4 w-4" />
                 New Prescription
               </Button>
             </DialogTrigger>
@@ -437,7 +437,7 @@ export default function MedicalRecords() {
                   <div className="flex items-center justify-between">
                     <Label className="text-base font-medium">Medications</Label>
                     <Button type="button" variant="outline" size="sm" onClick={addMedication}>
-                      <Plus className="h-4 w-4 mr-1" />
+                      <PlusIcon className="h-4 w-4 mr-1" />
                       Add Medication
                     </Button>
                   </div>
@@ -564,7 +564,7 @@ export default function MedicalRecords() {
           <Dialog open={isRecordDialogOpen} onOpenChange={setIsRecordDialogOpen}>
             <DialogTrigger asChild>
               <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
+                <PlusIcon className="h-4 w-4" />
                 New Record
               </Button>
             </DialogTrigger>
@@ -780,7 +780,7 @@ export default function MedicalRecords() {
                   <div className="flex items-center justify-between mb-4">
                     <Label className="text-base font-medium">Lab Tests Ordered</Label>
                     <Button type="button" variant="outline" size="sm" onClick={addLabTest}>
-                      <Plus className="h-4 w-4 mr-1" />
+                      <PlusIcon className="h-4 w-4 mr-1" />
                       Add Test
                     </Button>
                   </div>
@@ -870,7 +870,7 @@ export default function MedicalRecords() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Records</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <FileTextIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{records.length}</div>
@@ -880,7 +880,7 @@ export default function MedicalRecords() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Today's Records</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CalendarIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{todayRecords.length}</div>
@@ -890,7 +890,7 @@ export default function MedicalRecords() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Follow-ups Due</CardTitle>
-            <Pulse className="h-4 w-4 text-muted-foreground" />
+            <PulseIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeRecords.length}</div>
@@ -900,7 +900,7 @@ export default function MedicalRecords() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Prescriptions</CardTitle>
-            <Pill className="h-4 w-4 text-muted-foreground" />
+            <PillIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{prescriptions.filter(p => p.status === 'active').length}</div>
@@ -926,7 +926,7 @@ export default function MedicalRecords() {
               <div className="space-y-4">
                 {filteredRecords.length === 0 ? (
                   <div className="text-center py-8">
-                    <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <FileTextIcon className="mx-auto h-12 w-12 text-muted-foreground" />
                     <h3 className="mt-4 text-lg font-semibold">No medical records found</h3>
                     <p className="text-muted-foreground">
                       {searchTerm ? 'Try adjusting your search terms' : 'Start by creating your first medical record'}
@@ -958,7 +958,7 @@ export default function MedicalRecords() {
                               setIsViewDialogOpen(true)
                             }}
                           >
-                            <Eye className="h-4 w-4" />
+                            <EyeIcon className="h-4 w-4" />
                             View
                           </Button>
                         </div>
@@ -967,7 +967,7 @@ export default function MedicalRecords() {
                       <div className="grid gap-3 md:grid-cols-2">
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
-                            <User className="h-4 w-4" />
+                            <UserIcon className="h-4 w-4" />
                             <span className="font-medium">{record.patientName}</span>
                           </div>
                           <div className="text-sm text-muted-foreground">
@@ -989,11 +989,11 @@ export default function MedicalRecords() {
                           )}
                           {record.vitals.temperature && (
                             <div className="flex items-center gap-2 text-sm">
-                              <Thermometer className="h-3 w-3" />
+                              <ThermometerIcon className="h-3 w-3" />
                               <span>Temp: {record.vitals.temperature}°F</span>
                               {record.vitals.bloodPressure && (
                                 <>
-                                  <Heart className="h-3 w-3 ml-2" />
+                                  <HeartIcon className="h-3 w-3 ml-2" />
                                   <span>BP: {record.vitals.bloodPressure}</span>
                                 </>
                               )}
@@ -1050,7 +1050,7 @@ export default function MedicalRecords() {
               <div className="space-y-4">
                 {prescriptions.length === 0 ? (
                   <div className="text-center py-8">
-                    <Pill className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <PillIcon className="mx-auto h-12 w-12 text-muted-foreground" />
                     <h3 className="mt-4 text-lg font-semibold">No prescriptions found</h3>
                     <p className="text-muted-foreground">Start by creating your first prescription</p>
                   </div>
@@ -1074,7 +1074,7 @@ export default function MedicalRecords() {
 
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                          <User className="h-4 w-4" />
+                          <UserIcon className="h-4 w-4" />
                           <span className="font-medium">{prescription.patientName}</span>
                         </div>
                         <div className="text-sm text-muted-foreground">

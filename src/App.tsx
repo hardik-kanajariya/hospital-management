@@ -147,8 +147,8 @@ function App() {
             {/* Connection Status Indicator */}
             <div className="flex items-center gap-4">
               <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${isOnline
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-orange-100 text-orange-800'
+                ? 'bg-green-100 text-green-800'
+                : 'bg-orange-100 text-orange-800'
                 }`}>
                 {isOnline ? (
                   <>

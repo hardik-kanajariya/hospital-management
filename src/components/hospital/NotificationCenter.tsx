@@ -10,15 +10,15 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import {
-  Bell,
-  Plus,
-  Phone,
-  Clock,
-  CheckCircle,
-  XCircle,
-  Calendar,
-  TestTube,
-  CreditCard
+  BellIcon,
+  PlusIcon,
+  PhoneIcon,
+  ClockIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  CalendarIcon,
+  TestTubeIcon,
+  CreditCardIcon
 } from '@phosphor-icons/react';
 import { CircleAlert, Mail } from 'lucide-react';
 
@@ -78,11 +78,11 @@ export default function NotificationCenter() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'sent':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+        return <CheckCircleIcon className="w-4 h-4 text-green-500" />;
       case 'failed':
-        return <XCircle className="w-4 h-4 text-red-500" />;
+        return <XCircleIcon className="w-4 h-4 text-red-500" />;
       case 'pending':
-        return <Clock className="w-4 h-4 text-yellow-500" />;
+        return <ClockIcon className="w-4 h-4 text-yellow-500" />;
       default:
         return <CircleAlert className="w-4 h-4 text-gray-500" />;
     }
@@ -91,11 +91,11 @@ export default function NotificationCenter() {
   const getTemplateIcon = (templateType: string) => {
     switch (templateType) {
       case 'appointment_reminder':
-        return <Calendar className="w-4 h-4 text-blue-500" />;
+        return <CalendarIcon className="w-4 h-4 text-blue-500" />;
       case 'lab_result':
-        return <TestTube className="w-4 h-4 text-green-500" />;
+        return <TestTubeIcon className="w-4 h-4 text-green-500" />;
       case 'billing_reminder':
-        return <CreditCard className="w-4 h-4 text-orange-500" />;
+        return <CreditCardIcon className="w-4 h-4 text-orange-500" />;
       default:
         return <CircleAlert className="w-4 h-4 text-gray-500" />;
     }
@@ -114,7 +114,7 @@ export default function NotificationCenter() {
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="h-4 w-4 mr-2" />
+              <PlusIcon className="h-4 w-4 mr-2" />
               Send Notification
             </Button>
           </DialogTrigger>
@@ -139,7 +139,7 @@ export default function NotificationCenter() {
                   <SelectContent>
                     <SelectItem value="sms">
                       <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4" />
+                        <PhoneIcon className="w-4 h-4" />
                         SMS
                       </div>
                     </SelectItem>
@@ -223,7 +223,7 @@ export default function NotificationCenter() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Sent</CardTitle>
-            <Bell className="h-4 w-4 text-muted-foreground" />
+            <BellIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{notifications.length}</div>
@@ -233,7 +233,7 @@ export default function NotificationCenter() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">SMS Sent</CardTitle>
-            <Phone className="h-4 w-4 text-muted-foreground" />
+            <PhoneIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -257,7 +257,7 @@ export default function NotificationCenter() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CheckCircleIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -281,7 +281,7 @@ export default function NotificationCenter() {
           <div className="space-y-4">
             {notificationHistory.length === 0 ? (
               <div className="text-center py-8">
-                <Bell className="mx-auto h-12 w-12 text-muted-foreground" />
+                <BellIcon className="mx-auto h-12 w-12 text-muted-foreground" />
                 <h3 className="mt-4 text-lg font-semibold">No notifications sent</h3>
                 <p className="text-muted-foreground">
                   Start by sending your first notification
@@ -294,7 +294,7 @@ export default function NotificationCenter() {
                     <div className="flex items-center gap-2">
                       {getTemplateIcon(notification.templateType)}
                       {notification.type === 'sms' ? 
-                        <Phone className="w-4 h-4 text-blue-500" /> : 
+                        <PhoneIcon className="w-4 h-4 text-blue-500" /> : 
                         <Mail className="w-4 h-4 text-green-500" />
                       }
                     </div>

@@ -5,15 +5,15 @@ import { useAuth } from '@/hooks/useAuth'
 import { useNotifications } from '@/hooks/useNotifications'
 import { Patient, Appointment, Bill, InventoryItem } from '@/types/hospital'
 import {
-  Users,
-  Calendar,
-  CreditCard,
-  Heart,
-  Clock,
-  Warning,
-  Bell,
-  Stethoscope,
-  TestTube,
+  UsersIcon,
+  CalendarIcon,
+  CreditCardIcon,
+  HeartIcon,
+  ClockIcon,
+  WarningIcon,
+  BellIcon,
+  StethoscopeIcon,
+  TestTubeIcon,
 } from '@phosphor-icons/react';
 
 export default function Dashboard() {
@@ -107,7 +107,7 @@ export default function Dashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Patients</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <UsersIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{patients.length}</div>
@@ -123,7 +123,7 @@ export default function Dashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Today's Appointments</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{todayAppointments.length}</div>
@@ -139,7 +139,7 @@ export default function Dashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Today's Revenue</CardTitle>
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
+              <CreditCardIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">₹{todayRevenue.toLocaleString()}</div>
@@ -155,7 +155,7 @@ export default function Dashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Low Stock Items</CardTitle>
-              <Warning className="h-4 w-4 text-muted-foreground" />
+              <WarningIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{lowStockItems.length}</div>
@@ -173,7 +173,7 @@ export default function Dashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">My Appointments Today</CardTitle>
-              <Stethoscope className="h-4 w-4 text-muted-foreground" />
+              <StethoscopeIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -187,7 +187,7 @@ export default function Dashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Pending Lab Results</CardTitle>
-              <TestTube className="h-4 w-4 text-muted-foreground" />
+              <TestTubeIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">3</div>
@@ -200,7 +200,7 @@ export default function Dashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Critical Patients</CardTitle>
-              <Heart className="h-4 w-4 text-muted-foreground" />
+              <HeartIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">1</div>
@@ -218,7 +218,7 @@ export default function Dashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Pending Payments</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
+              <ClockIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -233,7 +233,7 @@ export default function Dashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
+              <CreditCardIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -248,7 +248,7 @@ export default function Dashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Outstanding Amount</CardTitle>
-              <Warning className="h-4 w-4 text-muted-foreground" />
+              <WarningIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -269,7 +269,7 @@ export default function Dashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Critical Stock</CardTitle>
-              <Warning className="h-4 w-4 text-muted-foreground" />
+              <WarningIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{lowStockItems.length}</div>
@@ -282,7 +282,7 @@ export default function Dashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Pending Prescriptions</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
+              <ClockIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">12</div>
@@ -295,7 +295,7 @@ export default function Dashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Expiring Soon</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -319,7 +319,7 @@ export default function Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
+              <UsersIcon className="h-5 w-5" />
               Recent Patients
             </CardTitle>
             <CardDescription>Latest patient registrations</CardDescription>
@@ -356,7 +356,7 @@ export default function Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
+              <ClockIcon className="h-5 w-5" />
               Upcoming Appointments
             </CardTitle>
             <CardDescription>Next scheduled appointments</CardDescription>
@@ -398,7 +398,7 @@ export default function Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5" />
+              <BellIcon className="h-5 w-5" />
               Recent Notifications
             </CardTitle>
             <CardDescription>Latest system notifications</CardDescription>
@@ -440,7 +440,7 @@ export default function Dashboard() {
         <Card className="border-destructive">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
-              <Warning className="h-5 w-5" />
+              <WarningIcon className="h-5 w-5" />
               Low Stock Alert
             </CardTitle>
             <CardDescription>

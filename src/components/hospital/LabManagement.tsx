@@ -10,15 +10,15 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import {
-  TestTube,
-  Plus,
-  MagnifyingGlass,
-  FileText,
-  Clock,
-  Warning,
-  Download,
-  User,
-  Calendar,
+  TestTubeIcon,
+  PlusIcon,
+  MagnifyingGlassIcon,
+  FileTextIcon,
+  ClockIcon,
+  WarningIcon,
+  DownloadIcon,
+  UserIcon,
+  CalendarIcon,
 } from '@phosphor-icons/react';
 import { toast } from 'sonner'
 import { Patient, Doctor } from '@/types/hospital'
@@ -269,7 +269,7 @@ export default function LabManagement() {
       {/* Header Actions */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="relative flex-1 max-w-md">
-          <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
             placeholder="Search orders by patient, test, or order ID..."
             value={searchTerm}
@@ -282,7 +282,7 @@ export default function LabManagement() {
           <Dialog open={isTestDialogOpen} onOpenChange={setIsTestDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2">
-                <TestTube className="h-4 w-4" />
+                <TestTubeIcon className="h-4 w-4" />
                 Add Test
               </Button>
             </DialogTrigger>
@@ -395,7 +395,7 @@ export default function LabManagement() {
           <Dialog open={isOrderDialogOpen} onOpenChange={setIsOrderDialogOpen}>
             <DialogTrigger asChild>
               <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
+                <PlusIcon className="h-4 w-4" />
                 New Order
               </Button>
             </DialogTrigger>
@@ -528,7 +528,7 @@ export default function LabManagement() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Today's Orders</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CalendarIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{todayOrders.length}</div>
@@ -538,7 +538,7 @@ export default function LabManagement() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pending Orders</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <ClockIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{pendingOrders.length}</div>
@@ -548,7 +548,7 @@ export default function LabManagement() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Urgent Orders</CardTitle>
-            <Warning className="h-4 w-4 text-muted-foreground" />
+            <WarningIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-destructive">{urgentOrders.length}</div>
@@ -558,7 +558,7 @@ export default function LabManagement() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Available Tests</CardTitle>
-            <TestTube className="h-4 w-4 text-muted-foreground" />
+            <TestTubeIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{labTests.filter(t => t.status === 'active').length}</div>
@@ -585,7 +585,7 @@ export default function LabManagement() {
               <div className="space-y-4">
                 {filteredOrders.length === 0 ? (
                   <div className="text-center py-8">
-                    <TestTube className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <TestTubeIcon className="mx-auto h-12 w-12 text-muted-foreground" />
                     <h3 className="mt-4 text-lg font-semibold">No lab orders found</h3>
                     <p className="text-muted-foreground">
                       {searchTerm ? 'Try adjusting your search terms' : 'Start by creating your first lab order'}
@@ -620,7 +620,7 @@ export default function LabManagement() {
                               setIsResultDialogOpen(true)
                             }}
                           >
-                            <Plus className="h-4 w-4" />
+                            <PlusIcon className="h-4 w-4" />
                             Add Result
                           </Button>
                           <Select
@@ -644,7 +644,7 @@ export default function LabManagement() {
                       <div className="grid gap-3 md:grid-cols-2">
                         <div>
                           <div className="flex items-center gap-2 mb-2">
-                            <User className="h-4 w-4" />
+                            <UserIcon className="h-4 w-4" />
                             <span className="font-medium">{order.patientName}</span>
                           </div>
                           <div className="text-sm text-muted-foreground">
@@ -726,7 +726,7 @@ export default function LabManagement() {
               <div className="space-y-4">
                 {labResults.length === 0 ? (
                   <div className="text-center py-8">
-                    <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <FileTextIcon className="mx-auto h-12 w-12 text-muted-foreground" />
                     <h3 className="mt-4 text-lg font-semibold">No results available</h3>
                     <p className="text-muted-foreground">Lab results will appear here once tests are completed</p>
                   </div>
@@ -746,7 +746,7 @@ export default function LabManagement() {
                             </Badge>
                           </div>
                           <Button variant="outline" size="sm">
-                            <Download className="h-4 w-4" />
+                            <DownloadIcon className="h-4 w-4" />
                             Download Report
                           </Button>
                         </div>

@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Receipt, Plus, MagnifyingGlass, CreditCard, Eye, Printer, CurrencyDollar, TrendUp } from '@phosphor-icons/react';
+import { ReceiptIcon, PlusIcon, MagnifyingGlassIcon, CreditCardIcon, EyeIcon, PrinterIcon, CurrencyDollarIcon, TrendUpIcon } from '@phosphor-icons/react';
 import { toast } from 'sonner'
 import { Bill, BillItem, Patient } from '@/types/hospital';
 
@@ -394,7 +394,7 @@ export default function BillingSystem() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Today's Revenue</CardTitle>
-            <CurrencyDollar className="h-4 w-4 text-muted-foreground" />
+            <CurrencyDollarIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">₹{todayRevenue.toLocaleString()}</div>
@@ -407,7 +407,7 @@ export default function BillingSystem() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
-            <TrendUp className="h-4 w-4 text-muted-foreground" />
+            <TrendUpIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">₹{monthlyRevenue.toLocaleString()}</div>
@@ -420,7 +420,7 @@ export default function BillingSystem() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pending Amount</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
+            <CreditCardIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-destructive">₹{pendingAmount.toLocaleString()}</div>
@@ -433,7 +433,7 @@ export default function BillingSystem() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Bills</CardTitle>
-            <Receipt className="h-4 w-4 text-muted-foreground" />
+            <ReceiptIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{bills.length}</div>
@@ -448,7 +448,7 @@ export default function BillingSystem() {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-1">
           <div className="relative max-w-md">
-            <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Search bills by patient or invoice ID..."
               value={searchTerm}
@@ -486,7 +486,7 @@ export default function BillingSystem() {
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="w-4 h-4 mr-2" />
+              <PlusIcon className="w-4 h-4 mr-2" />
               Create Bill
             </Button>
           </DialogTrigger>
@@ -541,7 +541,7 @@ export default function BillingSystem() {
                 <div className="flex items-center justify-between">
                   <Label className="text-base font-medium">Bill Items</Label>
                   <Button variant="outline" size="sm" onClick={addBillItem}>
-                    <Plus className="w-4 h-4 mr-1" />
+                    <PlusIcon className="w-4 h-4 mr-1" />
                     Add Item
                   </Button>
                 </div>
@@ -751,7 +751,7 @@ export default function BillingSystem() {
         {filteredBills.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <Receipt className="h-12 w-12 text-muted-foreground mb-4" />
+              <ReceiptIcon className="h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-lg font-medium text-muted-foreground">No bills found</p>
               <p className="text-sm text-muted-foreground">
                 {searchTerm ? 'Try adjusting your search criteria' : 'Create your first bill'}
@@ -765,7 +765,7 @@ export default function BillingSystem() {
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center">
-                      <Receipt className="w-6 h-6" />
+                      <ReceiptIcon className="w-6 h-6" />
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
@@ -807,7 +807,7 @@ export default function BillingSystem() {
                           size="sm"
                           onClick={() => setSelectedBill(bill)}
                         >
-                          <Eye className="w-4 h-4 mr-1" />
+                          <EyeIcon className="w-4 h-4 mr-1" />
                           View
                         </Button>
                       </DialogTrigger>
@@ -905,7 +905,7 @@ export default function BillingSystem() {
                               setPaymentData({ amount: bill.balanceAmount || 0, method: '', notes: '' })
                             }}
                           >
-                            <CreditCard className="w-4 h-4 mr-1" />
+                            <CreditCardIcon className="w-4 h-4 mr-1" />
                             Pay
                           </Button>
                         </DialogTrigger>
@@ -990,7 +990,7 @@ export default function BillingSystem() {
                     )}
 
                     <Button variant="outline" size="sm">
-                      <Printer className="w-4 h-4 mr-1" />
+                      <PrinterIcon className="w-4 h-4 mr-1" />
                       Print
                     </Button>
                   </div>

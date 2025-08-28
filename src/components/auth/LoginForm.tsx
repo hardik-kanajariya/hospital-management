@@ -6,8 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { ROLE_CONFIGS } from '@/types/auth';
-import { Eye, EyeSlash, SignIn, Hospital } from '@phosphor-icons/react';
+import { HospitalIcon, SignInIcon, EyeSlashIcon } from '@phosphor-icons/react';
 import { toast } from 'sonner';
+import { EyeIcon } from 'lucide-react';
 
 interface LoginFormProps {
   onLogin: () => void;
@@ -60,7 +61,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
         <Card className="w-full max-w-md mx-auto shadow-xl">
           <CardHeader className="space-y-4 text-center">
             <div className="flex items-center justify-center w-16 h-16 bg-primary text-primary-foreground rounded-2xl mx-auto">
-              <Hospital className="w-8 h-8" weight="fill" />
+              <HospitalIcon className="w-8 h-8" weight="fill" />
             </div>
             <div>
               <CardTitle className="text-2xl font-bold">MedCare Rural</CardTitle>
@@ -102,7 +103,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
                     className="absolute right-0 top-0 h-11 px-3"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <EyeSlash className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
                   </Button>
                 </div>
               </div>
@@ -119,7 +120,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <SignIn className="w-4 h-4" />
+                    <SignInIcon className="w-4 h-4" />
                     Sign In
                   </div>
                 )}

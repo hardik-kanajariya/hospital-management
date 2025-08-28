@@ -10,18 +10,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import {
-  Package,
-  Plus,
-  MagnifyingGlass,
-  Warning,
-  TrendDown,
-  PencilSimple,
-  ShoppingCart,
-  Archive,
-  Calendar,
-  CurrencyDollar,
-  Pill,
-  FirstAid,
+  PackageIcon,
+  PlusIcon,
+  MagnifyingGlassIcon,
+  WarningIcon,
+  TrendDownIcon,
+  PencilSimpleIcon,
+  ShoppingCartIcon,
+  ArchiveIcon,
+  CalendarIcon,
+  CurrencyDollarIcon,
+  PillIcon,
+  FirstAidIcon,
 } from '@phosphor-icons/react';
 import { toast } from 'sonner'
 
@@ -323,7 +323,7 @@ export default function InventoryManagement() {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-1">
           <div className="relative max-w-md">
-            <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Search inventory items..."
               value={searchTerm}
@@ -363,7 +363,7 @@ export default function InventoryManagement() {
           <Dialog open={isPurchaseOrderDialogOpen} onOpenChange={setIsPurchaseOrderDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2">
-                <ShoppingCart className="h-4 w-4" />
+                <ShoppingCartIcon className="h-4 w-4" />
                 Purchase Order
               </Button>
             </DialogTrigger>
@@ -395,7 +395,7 @@ export default function InventoryManagement() {
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
+                <PlusIcon className="h-4 w-4" />
                 Add Item
               </Button>
             </DialogTrigger>
@@ -606,7 +606,7 @@ export default function InventoryManagement() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Items</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
+            <PackageIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{inventory.length}</div>
@@ -616,7 +616,7 @@ export default function InventoryManagement() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Low Stock</CardTitle>
-            <Warning className="h-4 w-4 text-destructive" />
+            <WarningIcon className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-destructive">{lowStockItems.length}</div>
@@ -626,7 +626,7 @@ export default function InventoryManagement() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Out of Stock</CardTitle>
-            <TrendDown className="h-4 w-4 text-destructive" />
+            <TrendDownIcon className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-destructive">{outOfStockItems.length}</div>
@@ -636,7 +636,7 @@ export default function InventoryManagement() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Expiring Soon</CardTitle>
-            <Calendar className="h-4 w-4 text-yellow-600" />
+            <CalendarIcon className="h-4 w-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-600">{expiringItems.length}</div>
@@ -646,7 +646,7 @@ export default function InventoryManagement() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Value</CardTitle>
-            <CurrencyDollar className="h-4 w-4 text-muted-foreground" />
+            <CurrencyDollarIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">₹{totalValue.toLocaleString()}</div>
@@ -673,7 +673,7 @@ export default function InventoryManagement() {
               <div className="space-y-4">
                 {filteredInventory.length === 0 ? (
                   <div className="text-center py-8">
-                    <Package className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <PackageIcon className="mx-auto h-12 w-12 text-muted-foreground" />
                     <h3 className="mt-4 text-lg font-semibold">No inventory items found</h3>
                     <p className="text-muted-foreground">
                       {searchTerm ? 'Try adjusting your search terms' : 'Start by adding your first inventory item'}
@@ -691,9 +691,9 @@ export default function InventoryManagement() {
                               <h3 className="font-medium">{item.name}</h3>
                               <div className="flex items-center gap-2 mt-1">
                                 <Badge variant="outline" className="text-xs">
-                                  {item.type === 'medicine' ? <Pill className="w-3 h-3 mr-1" /> :
-                                    item.type === 'supply' ? <FirstAid className="w-3 h-3 mr-1" /> :
-                                      <Package className="w-3 h-3 mr-1" />}
+                                  {item.type === 'medicine' ? <PillIcon className="w-3 h-3 mr-1" /> :
+                                    item.type === 'supply' ? <FirstAidIcon className="w-3 h-3 mr-1" /> :
+                                      <PackageIcon className="w-3 h-3 mr-1" />}
                                   {item.category}
                                 </Badge>
                                 <Badge variant={
@@ -709,10 +709,10 @@ export default function InventoryManagement() {
                                 setSelectedItem(item)
                                 setIsTransactionDialogOpen(true)
                               }}>
-                                <Archive className="h-3 w-3" />
+                                <ArchiveIcon className="h-3 w-3" />
                               </Button>
                               <Button variant="outline" size="sm" onClick={() => handleEditItem(item)}>
-                                <PencilSimple className="h-3 w-3" />
+                                <PencilSimpleIcon className="h-3 w-3" />
                               </Button>
                             </div>
                           </div>
@@ -752,7 +752,7 @@ export default function InventoryManagement() {
 
                           {item.quantity <= item.reorderLevel && (
                             <div className="mt-3 p-2 bg-destructive/10 border border-destructive/20 rounded text-xs text-destructive">
-                              <Warning className="h-3 w-3 inline mr-1" />
+                              <WarningIcon className="h-3 w-3 inline mr-1" />
                               Low stock - Reorder required
                             </div>
                           )}
@@ -772,7 +772,7 @@ export default function InventoryManagement() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-destructive">
-                  <Warning className="h-5 w-5" />
+                  <WarningIcon className="h-5 w-5" />
                   Low Stock Items ({lowStockItems.length})
                 </CardTitle>
                 <CardDescription>Items below reorder level</CardDescription>
@@ -805,7 +805,7 @@ export default function InventoryManagement() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-yellow-600">
-                  <Calendar className="h-5 w-5" />
+                  <CalendarIcon className="h-5 w-5" />
                   Expiring Soon ({expiringItems.length})
                 </CardTitle>
                 <CardDescription>Items expiring within 30 days</CardDescription>
@@ -850,7 +850,7 @@ export default function InventoryManagement() {
               <div className="space-y-4">
                 {transactions.length === 0 ? (
                   <div className="text-center py-8">
-                    <Archive className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <ArchiveIcon className="mx-auto h-12 w-12 text-muted-foreground" />
                     <h3 className="mt-4 text-lg font-semibold">No transactions found</h3>
                     <p className="text-muted-foreground">Stock transactions will appear here</p>
                   </div>

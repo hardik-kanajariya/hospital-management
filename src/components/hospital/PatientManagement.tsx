@@ -12,25 +12,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { toast } from 'sonner'
 import {
-  Users,
-  Plus,
-  MagnifyingGlass,
-  PencilSimple,
-  Eye,
-  Calendar,
-  Phone,
-  Envelope,
-  MapPin,
-  Heart,
-  Shield,
-  FileText,
-  Pulse,
-  Pill,
-  Warning,
-  CloudArrowUp,
-  WifiSlash,
-  Syringe,
-  User
+  UsersIcon,
+  PlusIcon,
+  MagnifyingGlassIcon,
+  PencilSimpleIcon,
+  EyeIcon,
+  CalendarIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  MapPinIcon,
+  HeartIcon,
+  ShieldIcon,
+  FileTextIcon,
+  PulseIcon,
+  PillIcon,
+  WarningIcon,
+  CloudArrowUpIcon,
+  WifiSlashIcon,
+  SyringeIcon,
+  UserIcon
 } from '@phosphor-icons/react'
 
 interface Patient {
@@ -244,7 +244,7 @@ export default function PatientManagement() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <Users className="w-6 h-6 text-primary" />
+            <UsersIcon className="w-6 h-6 text-primary" />
             <h1 className="text-2xl font-bold">Patient Management</h1>
           </div>
 
@@ -252,19 +252,19 @@ export default function PatientManagement() {
           <div className="flex items-center gap-2">
             {patients.isOnline ? (
               <Badge variant="outline" className="text-green-600 border-green-600">
-                <CloudArrowUp className="w-3 h-3 mr-1" />
+                <CloudArrowUpIcon className="w-3 h-3 mr-1" />
                 Online
               </Badge>
             ) : (
               <Badge variant="outline" className="text-orange-600 border-orange-600">
-                <WifiSlash className="w-3 h-3 mr-1" />
+                <WifiSlashIcon className="w-3 h-3 mr-1" />
                 Offline
               </Badge>
             )}
 
             {patients.syncing && (
               <Badge variant="outline" className="text-blue-600 border-blue-600">
-                <Pulse className="w-3 h-3 mr-1 animate-spin" />
+                <PulseIcon className="w-3 h-3 mr-1 animate-spin" />
                 Syncing
               </Badge>
             )}
@@ -277,14 +277,14 @@ export default function PatientManagement() {
             onClick={refreshPatients}
             disabled={loading}
           >
-            <CloudArrowUp className="w-4 h-4 mr-2" />
+            <CloudArrowUpIcon className="w-4 h-4 mr-2" />
             Sync Now
           </Button>
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button onClick={resetForm}>
-                <Plus className="w-4 h-4 mr-2" />
+                <PlusIcon className="w-4 h-4 mr-2" />
                 Add Patient
               </Button>
             </DialogTrigger>
@@ -416,7 +416,7 @@ export default function PatientManagement() {
                       <div className="flex items-center justify-between mb-2">
                         <Label>Allergies</Label>
                         <Button type="button" variant="outline" size="sm" onClick={addAllergy}>
-                          <Plus className="w-3 h-3 mr-1" />
+                          <PlusIcon className="w-3 h-3 mr-1" />
                           Add Allergy
                         </Button>
                       </div>
@@ -434,7 +434,7 @@ export default function PatientManagement() {
                               size="sm"
                               onClick={() => removeAllergy(index)}
                             >
-                              <Warning className="w-3 h-3" />
+                              <WarningIcon className="w-3 h-3" />
                             </Button>
                           </div>
                         ))}
@@ -445,7 +445,7 @@ export default function PatientManagement() {
                       <div className="flex items-center justify-between mb-2">
                         <Label>Chronic Conditions</Label>
                         <Button type="button" variant="outline" size="sm" onClick={addChronicCondition}>
-                          <Plus className="w-3 h-3 mr-1" />
+                          <PlusIcon className="w-3 h-3 mr-1" />
                           Add Condition
                         </Button>
                       </div>
@@ -463,7 +463,7 @@ export default function PatientManagement() {
                               size="sm"
                               onClick={() => removeChronicCondition(index)}
                             >
-                              <Warning className="w-3 h-3" />
+                              <WarningIcon className="w-3 h-3" />
                             </Button>
                           </div>
                         ))}
@@ -475,7 +475,7 @@ export default function PatientManagement() {
                     <div className="flex items-center justify-between">
                       <Label>Vaccination Records</Label>
                       <Button type="button" variant="outline" size="sm" onClick={addVaccination}>
-                        <Syringe className="w-3 h-3 mr-1" />
+                        <SyringeIcon className="w-3 h-3 mr-1" />
                         Add Vaccination
                       </Button>
                     </div>
@@ -628,7 +628,7 @@ export default function PatientManagement() {
       {/* Search */}
       <div className="flex gap-4">
         <div className="relative flex-1">
-          <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             placeholder="Search patients by name, phone, or patient ID..."
             value={searchTerm}
@@ -653,12 +653,12 @@ export default function PatientManagement() {
         <CardContent>
           {patients.loading ? (
             <div className="text-center py-8">
-              <Pulse className="w-8 h-8 animate-spin mx-auto mb-2" />
+              <PulseIcon className="w-8 h-8 animate-spin mx-auto mb-2" />
               <p>Loading patients...</p>
             </div>
           ) : filteredPatients.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <User className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <UserIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p>No patients found</p>
               {searchTerm && <p className="text-sm">Try adjusting your search terms</p>}
             </div>
@@ -701,7 +701,7 @@ export default function PatientManagement() {
                       <div className="flex gap-1">
                         {!patient.synced && (
                           <Badge variant="outline" className="text-orange-600 border-orange-600">
-                            <CloudArrowUp className="w-3 h-3 mr-1" />
+                            <CloudArrowUpIcon className="w-3 h-3 mr-1" />
                             Pending
                           </Badge>
                         )}
@@ -712,7 +712,7 @@ export default function PatientManagement() {
                         )}
                         {patient.allergies && patient.allergies.length > 0 && (
                           <Badge variant="outline" className="text-red-600 border-red-600">
-                            <Warning className="w-3 h-3 mr-1" />
+                            <WarningIcon className="w-3 h-3 mr-1" />
                             Allergies
                           </Badge>
                         )}
@@ -725,14 +725,14 @@ export default function PatientManagement() {
                           size="sm"
                           onClick={() => handleView(patient)}
                         >
-                          <Eye className="w-4 h-4" />
+                          <EyeIcon className="w-4 h-4" />
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleEdit(patient)}
                         >
-                          <PencilSimple className="w-4 h-4" />
+                          <PencilSimpleIcon className="w-4 h-4" />
                         </Button>
                         <Button
                           variant="outline"
@@ -740,7 +740,7 @@ export default function PatientManagement() {
                           onClick={() => handleDelete(patient)}
                           className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
                         >
-                          <Warning className="w-4 h-4" />
+                          <WarningIcon className="w-4 h-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -765,7 +765,7 @@ export default function PatientManagement() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
-                      <User className="w-5 h-5" />
+                      <UserIcon className="w-5 h-5" />
                       Basic Information
                     </CardTitle>
                   </CardHeader>
@@ -781,7 +781,7 @@ export default function PatientManagement() {
                     <div>
                       <Label className="text-sm font-medium">Phone</Label>
                       <p className="text-sm flex items-center gap-1">
-                        <Phone className="w-3 h-3" />
+                        <PhoneIcon className="w-3 h-3" />
                         {selectedPatient.phone}
                       </p>
                     </div>
@@ -789,7 +789,7 @@ export default function PatientManagement() {
                       <div>
                         <Label className="text-sm font-medium">Email</Label>
                         <p className="text-sm flex items-center gap-1">
-                          <Envelope className="w-3 h-3" />
+                          <EnvelopeIcon className="w-3 h-3" />
                           {selectedPatient.email}
                         </p>
                       </div>
@@ -797,7 +797,7 @@ export default function PatientManagement() {
                     <div>
                       <Label className="text-sm font-medium">Date of Birth</Label>
                       <p className="text-sm flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
+                        <CalendarIcon className="w-3 h-3" />
                         {new Date(selectedPatient.date_of_birth).toLocaleDateString()}
                       </p>
                     </div>
@@ -817,7 +817,7 @@ export default function PatientManagement() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
-                      <MapPin className="w-5 h-5" />
+                      <MapPinIcon className="w-5 h-5" />
                       Contact Information
                     </CardTitle>
                   </CardHeader>
@@ -838,7 +838,7 @@ export default function PatientManagement() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
-                      <Heart className="w-5 h-5" />
+                      <HeartIcon className="w-5 h-5" />
                       Medical Information
                     </CardTitle>
                   </CardHeader>
@@ -849,7 +849,7 @@ export default function PatientManagement() {
                         <div className="flex flex-wrap gap-1 mt-1">
                           {selectedPatient.allergies.map((allergy, index) => (
                             <Badge key={index} variant="outline" className="text-red-600 border-red-600">
-                              <Warning className="w-3 h-3 mr-1" />
+                              <WarningIcon className="w-3 h-3 mr-1" />
                               {allergy}
                             </Badge>
                           ))}
@@ -877,7 +877,7 @@ export default function PatientManagement() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
-                      <Syringe className="w-5 h-5" />
+                      <SyringeIcon className="w-5 h-5" />
                       Vaccination Records
                     </CardTitle>
                   </CardHeader>
@@ -916,7 +916,7 @@ export default function PatientManagement() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
-                      <Shield className="w-5 h-5" />
+                      <ShieldIcon className="w-5 h-5" />
                       Insurance Information
                     </CardTitle>
                   </CardHeader>
@@ -951,7 +951,7 @@ export default function PatientManagement() {
         <Card className="border-destructive">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-destructive">
-              <Warning className="w-4 h-4" />
+              <WarningIcon className="w-4 h-4" />
               <p className="text-sm">Error: {patients.error}</p>
             </div>
           </CardContent>

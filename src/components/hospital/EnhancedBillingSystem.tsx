@@ -11,16 +11,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import {
-  Receipt,
-  Plus,
-  MagnifyingGlass,
-  CreditCard,
-  Eye,
-  Printer,
-  FileText,
-  Download,
-  X,
-  Calculator,
+  ReceiptIcon,
+  PlusIcon,
+  MagnifyingGlassIcon,
+  CreditCardIcon,
+  EyeIcon,
+  PrinterIcon,
+  FileTextIcon,
+  DownloadIcon,
+  XIcon,
+  CalculatorIcon,
 } from '@phosphor-icons/react';
 import { toast } from 'sonner'
 import { useNotifications } from '@/hooks/useNotifications'
@@ -299,7 +299,7 @@ export default function EnhancedBillingSystem() {
           {/* Header with Search and Actions */}
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             <div className="relative flex-1 max-w-md">
-              <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder="Search bills by patient name or bill ID..."
                 value={searchTerm}
@@ -310,14 +310,14 @@ export default function EnhancedBillingSystem() {
 
             <div className="flex gap-2">
               <Button onClick={generateDailyReport} variant="outline">
-                <FileText className="h-4 w-4 mr-2" />
+                <FileTextIcon className="h-4 w-4 mr-2" />
                 Daily Report
               </Button>
 
               <Dialog open={isNewBillDialogOpen} onOpenChange={setIsNewBillDialogOpen}>
                 <DialogTrigger asChild>
                   <Button>
-                    <Plus className="h-4 w-4 mr-2" />
+                    <PlusIcon className="h-4 w-4 mr-2" />
                     New Bill
                   </Button>
                 </DialogTrigger>
@@ -420,7 +420,7 @@ export default function EnhancedBillingSystem() {
                         </div>
                       </div>
                       <Button onClick={addItemToBill} variant="outline">
-                        <Plus className="h-4 w-4 mr-2" />
+                        <PlusIcon className="h-4 w-4 mr-2" />
                         Add Item
                       </Button>
                     </div>
@@ -445,7 +445,7 @@ export default function EnhancedBillingSystem() {
                                   size="sm"
                                   onClick={() => removeItemFromBill(item.id)}
                                 >
-                                  <X className="h-4 w-4" />
+                                  <XIcon className="h-4 w-4" />
                                 </Button>
                               </div>
                             </div>
@@ -488,7 +488,7 @@ export default function EnhancedBillingSystem() {
                     {newBill.items.length > 0 && (
                       <div className="border rounded-lg p-4 bg-muted/20">
                         <h3 className="font-medium mb-3 flex items-center gap-2">
-                          <Calculator className="h-4 w-4" />
+                          <CalculatorIcon className="h-4 w-4" />
                           Bill Summary
                         </h3>
                         <div className="space-y-2 text-sm">
@@ -546,7 +546,7 @@ export default function EnhancedBillingSystem() {
             {filteredBills.length === 0 ? (
               <Card>
                 <CardContent className="text-center py-8">
-                  <Receipt className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <ReceiptIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No bills found</h3>
                   <p className="text-muted-foreground">
                     {searchTerm ? 'Try adjusting your search terms' : 'Create your first bill to get started'}
@@ -596,10 +596,10 @@ export default function EnhancedBillingSystem() {
                                 setIsViewBillDialogOpen(true)
                               }}
                             >
-                              <Eye className="h-4 w-4" />
+                              <EyeIcon className="h-4 w-4" />
                             </Button>
                             <Button variant="outline" size="sm">
-                              <Printer className="h-4 w-4" />
+                              <PrinterIcon className="h-4 w-4" />
                             </Button>
                           </div>
                         </div>
@@ -645,11 +645,11 @@ export default function EnhancedBillingSystem() {
 
                 <div className="mt-6 space-y-2">
                   <Button onClick={generateDailyReport} className="w-full">
-                    <Download className="h-4 w-4 mr-2" />
+                    <DownloadIcon className="h-4 w-4 mr-2" />
                     Generate Daily Report
                   </Button>
                   <Button onClick={generateMonthlyReport} variant="outline" className="w-full">
-                    <Download className="h-4 w-4 mr-2" />
+                    <DownloadIcon className="h-4 w-4 mr-2" />
                     Generate Monthly Report
                   </Button>
                 </div>
@@ -699,7 +699,7 @@ export default function EnhancedBillingSystem() {
             </CardHeader>
             <CardContent>
               <div className="text-center py-8 text-muted-foreground">
-                <CreditCard className="mx-auto h-12 w-12 mb-4" />
+                <CreditCardIcon className="mx-auto h-12 w-12 mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Insurance Claims Management</h3>
                 <p>This feature will help you process insurance claims and track reimbursements.</p>
                 <Button className="mt-4" disabled>

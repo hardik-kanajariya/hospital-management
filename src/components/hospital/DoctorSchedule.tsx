@@ -9,15 +9,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
-  UserCircle,
-  Calendar,
-  Clock,
-  PencilSimple,
-  CheckCircle,
-  XCircle,
-  MapPin,
-  Stethoscope,
-  CalendarBlank,
+  UserCircleIcon,
+  CalendarIcon,
+  ClockIcon,
+  PencilSimpleIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  MapPinIcon,
+  StethoscopeIcon,
+  CalendarBlankIcon,
 } from '@phosphor-icons/react';
 import { toast } from 'sonner'
 
@@ -217,7 +217,7 @@ export default function DoctorSchedule() {
           <Dialog open={isDoctorDialogOpen} onOpenChange={setIsDoctorDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2">
-                <UserCircle className="h-4 w-4" />
+                <UserCircleIcon className="h-4 w-4" />
                 Add Doctor
               </Button>
             </DialogTrigger>
@@ -334,7 +334,7 @@ export default function DoctorSchedule() {
           <Dialog open={isScheduleDialogOpen} onOpenChange={setIsScheduleDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
+                <CalendarIcon className="h-4 w-4" />
                 Add Schedule
               </Button>
             </DialogTrigger>
@@ -444,7 +444,7 @@ export default function DoctorSchedule() {
           <Dialog open={isAvailabilityDialogOpen} onOpenChange={setIsAvailabilityDialogOpen}>
             <DialogTrigger asChild>
               <Button className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
+                <ClockIcon className="h-4 w-4" />
                 Update Availability
               </Button>
             </DialogTrigger>
@@ -542,7 +542,7 @@ export default function DoctorSchedule() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Doctors</CardTitle>
-            <UserCircle className="h-4 w-4 text-muted-foreground" />
+            <UserCircleIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{doctors.filter(d => d.status === 'active').length}</div>
@@ -552,7 +552,7 @@ export default function DoctorSchedule() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Schedules</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CalendarIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{schedules.filter(s => s.status === 'active').length}</div>
@@ -562,7 +562,7 @@ export default function DoctorSchedule() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Today Available</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CheckCircleIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -578,7 +578,7 @@ export default function DoctorSchedule() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Specializations</CardTitle>
-            <Stethoscope className="h-4 w-4 text-muted-foreground" />
+            <StethoscopeIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -608,7 +608,7 @@ export default function DoctorSchedule() {
                   return (
                     <div key={day} className="border rounded-lg p-4">
                       <h3 className="font-semibold mb-3 flex items-center gap-2">
-                        <CalendarBlank className="h-4 w-4" />
+                        <CalendarBlankIcon className="h-4 w-4" />
                         {day}
                         <Badge variant="outline">{daySchedules.length} schedules</Badge>
                       </h3>
@@ -626,11 +626,11 @@ export default function DoctorSchedule() {
                               </div>
                               <div className="text-sm text-muted-foreground space-y-1">
                                 <div className="flex items-center gap-1">
-                                  <Clock className="h-3 w-3" />
+                                  <ClockIcon className="h-3 w-3" />
                                   {schedule.startTime} - {schedule.endTime}
                                 </div>
                                 <div className="flex items-center gap-1">
-                                  <MapPin className="h-3 w-3" />
+                                  <MapPinIcon className="h-3 w-3" />
                                   {schedule.location}
                                 </div>
                                 <div>Max Patients: {schedule.maxPatients}</div>
@@ -657,7 +657,7 @@ export default function DoctorSchedule() {
               <div className="space-y-4">
                 {doctors.length === 0 ? (
                   <div className="text-center py-8">
-                    <UserCircle className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <UserCircleIcon className="mx-auto h-12 w-12 text-muted-foreground" />
                     <h3 className="mt-4 text-lg font-semibold">No doctors registered</h3>
                     <p className="text-muted-foreground">Start by adding your first doctor</p>
                   </div>
@@ -666,7 +666,7 @@ export default function DoctorSchedule() {
                     <div key={doctor.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center">
-                          <UserCircle className="h-6 w-6" />
+                          <UserCircleIcon className="h-6 w-6" />
                         </div>
                         <div>
                           <div className="flex items-center gap-3">
@@ -685,7 +685,7 @@ export default function DoctorSchedule() {
                         </div>
                       </div>
                       <Button variant="outline" size="sm">
-                        <PencilSimple className="h-4 w-4" />
+                        <PencilSimpleIcon className="h-4 w-4" />
                       </Button>
                     </div>
                   ))
@@ -712,7 +712,7 @@ export default function DoctorSchedule() {
                     <div key={doctor.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center">
-                          <UserCircle className="h-6 w-6" />
+                          <UserCircleIcon className="h-6 w-6" />
                         </div>
                         <div>
                           <h3 className="font-medium">Dr. {doctor.name}</h3>
@@ -723,12 +723,12 @@ export default function DoctorSchedule() {
                       <div className="flex items-center gap-3">
                         {isAvailable ? (
                           <div className="flex items-center gap-2 text-green-600">
-                            <CheckCircle className="h-4 w-4" />
+                            <CheckCircleIcon className="h-4 w-4" />
                             <span className="text-sm font-medium">Available</span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-2 text-red-600">
-                            <XCircle className="h-4 w-4" />
+                            <XCircleIcon className="h-4 w-4" />
                             <div className="text-sm">
                               <span className="font-medium">Not Available</span>
                               {todayAvailability?.reason && (
