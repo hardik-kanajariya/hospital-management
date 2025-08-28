@@ -1,11 +1,18 @@
 import { useState } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { useNotificationsData } from './useDatabase';
 import { Notification } from '@/types/hospital';
 import { toast } from 'sonner';
 
 export function useNotifications() {
-  const [notifications, setNotifications] = useKV<Notification[]>('notifications', []);
-  const [isLoading, setIsLoading] = useState(false);
+  const { 
+    notifications, 
+    loading: isLoading, 
+    addNotificationRecord 
+  } = useNotificationsData();
+
+  const addNotification = (notification: { message: string; type: 'success' | 'error' | 'info' | 'warning' }) => {
+    toast[notification.type](notification.message);
+  };
 
   const sendSMSNotification = async (
     phoneNumber: string,
@@ -13,8 +20,6 @@ export function useNotifications() {
     templateType: Notification['templateType']
   ): Promise<{ success: boolean; error?: string }> => {
     try {
-      setIsLoading(true);
-      
       // Simulate SMS API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
@@ -31,15 +36,13 @@ export function useNotifications() {
         templateType
       };
 
-      setNotifications(prev => [...prev, notification]);
+      await addNotificationRecord(notification);
       toast.success('SMS notification sent successfully');
       
       return { success: true };
     } catch (error) {
       toast.error('Failed to send SMS notification');
       return { success: false, error: 'SMS service unavailable' };
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -50,8 +53,6 @@ export function useNotifications() {
     templateType: Notification['templateType']
   ): Promise<{ success: boolean; error?: string }> => {
     try {
-      setIsLoading(true);
-      
       // Simulate email API call
       await new Promise(resolve => setTimeout(resolve, 1500));
       
@@ -68,15 +69,13 @@ export function useNotifications() {
         templateType
       };
 
-      setNotifications(prev => [...prev, notification]);
+      await addNotificationRecord(notification);
       toast.success('Email notification sent successfully');
       
       return { success: true };
     } catch (error) {
       toast.error('Failed to send email notification');
       return { success: false, error: 'Email service unavailable' };
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -206,6 +205,7 @@ export function useNotifications() {
   return {
     notifications,
     isLoading,
+    addNotification,
     sendSMSNotification,
     sendEmailNotification,
     sendAppointmentReminder,

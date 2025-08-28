@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { db } from '@/lib/database'
+import { initializeOfflineDB } from '@/hooks/useDatabase'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
@@ -22,7 +23,9 @@ import {
   Shield,
   Settings,
   Bell,
-  Home
+  Home,
+  WifiSlash,
+  CloudArrowUp
 } from '@phosphor-icons/react'
 
 // Hospital components
@@ -40,37 +43,35 @@ import NotificationCenter from '@/components/hospital/NotificationCenter'
 
 function App() {
   const [activeTab, setActiveTab] = useState('landing')
-  const [patients, setPatients] = useState([])
-  const [appointments, setAppointments] = useState([])
-  const [todayAppointments, setTodayAppointments] = useState([])
-  const { user, isAuthenticated, logout, canAccessModule } = useAuth()
+  const [isOnline, setIsOnline] = useState(navigator.onLine)
+  const { user, isAuthenticated, logout, hasPermission } = useAuth()
 
   // Initialize database on app start
   useEffect(() => {
     const initializeApp = async () => {
       try {
         await db.initialize()
-        // Load initial data
-        const patientsData = await db.getAll('patients')
-        const appointmentsData = await db.getAll('appointments')
-        setPatients(patientsData)
-        setAppointments(appointmentsData)
-        
-        // Filter today's appointments
-        const today = new Date().toISOString().split('T')[0]
-        const todayAppts = appointmentsData.filter(apt => 
-          apt.appointment_date === today
-        )
-        setTodayAppointments(todayAppts)
+        await initializeOfflineDB()
+        console.log('Database initialized successfully')
       } catch (error) {
-        console.error('Failed to initialize app:', error)
+        console.error('Failed to initialize database:', error)
       }
     }
 
-    if (isAuthenticated) {
-      initializeApp()
+    initializeApp()
+
+    // Monitor online/offline status
+    const handleOnline = () => setIsOnline(true)
+    const handleOffline = () => setIsOnline(false)
+    
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
     }
-  }, [isAuthenticated])
+  }, [])
 
   // Show landing page if not authenticated
   if (!isAuthenticated) {
@@ -90,16 +91,9 @@ function App() {
     return <LoginForm onLogin={() => setActiveTab('dashboard')} />
   }
 
-  const stats = {
-    totalPatients: Array.isArray(patients) ? patients.length : 0,
-    todayAppointments: Array.isArray(todayAppointments) ? todayAppointments.length : 0,
-    pendingAppointments: Array.isArray(appointments) ? appointments.filter(apt => apt?.status === 'scheduled').length : 0,
-    activeConsultations: Array.isArray(appointments) ? appointments.filter(apt => apt?.status === 'in-progress').length : 0
-  }
-
   // Filter tabs based on user permissions
   const availableTabs = [
-    { id: 'landing', label: 'Home', icon: Home, module: 'landing' },
+    { id: 'landing', label: 'Home', icon: Home, module: 'dashboard' },
     { id: 'dashboard', label: 'Dashboard', icon: Activity, module: 'dashboard' },
     { id: 'patients', label: 'Patients', icon: Users, module: 'patients' },
     { id: 'appointments', label: 'Appointments', icon: Calendar, module: 'appointments' },
@@ -116,7 +110,7 @@ function App() {
     if (tab.id === 'landing') return true;
     
     // Check module permission
-    if (!canAccessModule(tab.module)) return false;
+    if (!hasPermission(tab.module, 'read')) return false;
     
     // Check role requirement if specified
     if (tab.requiresRole && user?.role !== tab.requiresRole) return false;
@@ -140,7 +134,26 @@ function App() {
               </div>
             </div>
             
+            {/* Connection Status Indicator */}
             <div className="flex items-center gap-4">
+              <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${
+                isOnline 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-orange-100 text-orange-800'
+              }`}>
+                {isOnline ? (
+                  <>
+                    <CloudArrowUp className="w-3 h-3" />
+                    Online
+                  </>
+                ) : (
+                  <>
+                    <WifiSlash className="w-3 h-3" />
+                    Offline
+                  </>
+                )}
+              </div>
+              
               <div className="text-right">
                 <p className="text-sm font-medium">{user?.name || 'User'}</p>
                 <p className="text-xs text-muted-foreground">
@@ -164,19 +177,25 @@ function App() {
           <div className="flex items-center gap-6 text-sm">
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-primary" />
-              <span className="font-medium">{stats.totalPatients}</span>
+              <span className="font-medium">-</span>
               <span className="text-muted-foreground">Total Patients</span>
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-accent" />
-              <span className="font-medium">{stats.todayAppointments}</span>
+              <span className="font-medium">-</span>
               <span className="text-muted-foreground">Today's Appointments</span>
             </div>
             <div className="flex items-center gap-2">
               <Activity className="w-4 h-4 text-destructive" />
-              <span className="font-medium">{stats.activeConsultations}</span>
+              <span className="font-medium">-</span>
               <span className="text-muted-foreground">Active Consultations</span>
             </div>
+            {!isOnline && (
+              <div className="flex items-center gap-2 text-orange-600">
+                <WifiSlash className="w-4 h-4" />
+                <span className="text-muted-foreground">Working Offline - Changes will sync when online</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
