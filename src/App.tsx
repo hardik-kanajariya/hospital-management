@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { db } from '@/lib/database'
 import { initializeOfflineDB } from '@/hooks/useDatabase'
+import { useNavigation } from '@/hooks/useNavigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
@@ -42,9 +43,9 @@ import UserManagement from '@/components/auth/UserManagement'
 import NotificationCenter from '@/components/hospital/NotificationCenter'
 
 function App() {
-  const [activeTab, setActiveTab] = useState('landing')
   const [isOnline, setIsOnline] = useState(navigator.onLine)
   const { user, isAuthenticated, logout, hasPermission } = useAuth()
+  const { activeTab, setActiveTab } = useNavigation()
 
   // Initialize database on app start
   useEffect(() => {
@@ -73,35 +74,20 @@ function App() {
     }
   }, [])
 
-  // Show landing page if not authenticated
+  // Show login form when not authenticated
   if (!isAuthenticated) {
-    if (activeTab === 'landing') {
-      return (
-        <div>
-          <LandingPage />
-          <div className="fixed bottom-4 right-4 z-50">
-            <Button onClick={() => setActiveTab('login')} size="lg">
-              <HeartIcon className="w-4 h-4 mr-2" />
-              Access Hospital System
-            </Button>
-          </div>
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+        <div className="fixed top-4 left-4 bg-black/10 text-black p-2 rounded text-xs">
+          Debug: Not authenticated - Showing LoginForm
         </div>
-      )
-    }
-    // Show login form for any other tab when not authenticated
-    return <LoginForm />
+        <LoginForm />
+      </div>
+    )
   }
 
-  // Auto-redirect to dashboard after successful login
-  useEffect(() => {
-    if (isAuthenticated) {
-      // If user just logged in and is not on a valid authenticated tab, redirect to dashboard
-      const validTabs = ['dashboard', 'patients', 'appointments', 'doctors', 'records', 'lab', 'beds', 'billing', 'inventory', 'notifications', 'users'];
-      if (!validTabs.includes(activeTab)) {
-        setActiveTab('dashboard');
-      }
-    }
-  }, [isAuthenticated, activeTab])
+  // Debug info for authenticated state
+  console.log('App render - Authenticated:', isAuthenticated, 'Active Tab:', activeTab, 'User:', user?.name)
 
   // Filter tabs based on user permissions
   const availableTabs = [
@@ -132,6 +118,11 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Debug Info */}
+      <div className="fixed top-4 left-4 bg-black/10 text-black p-2 rounded text-xs z-50">
+        Debug: Auth: {isAuthenticated ? 'Yes' : 'No'} | Tab: {activeTab} | User: {user?.name || 'None'}
+      </div>
+
       {/* Header */}
       <header className="border-b bg-card">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

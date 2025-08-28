@@ -117,11 +117,15 @@ export function useAuth() {
           // Store user data safely
           setUserData(user);
 
+          console.log('Login successful - Setting auth state:', user);
+
           setAuthState({
             user,
             isAuthenticated: true,
             isLoading: false
           });
+
+          console.log('Auth state updated - isAuthenticated: true');
 
           return { success: true };
         }
