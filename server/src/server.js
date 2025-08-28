@@ -35,30 +35,30 @@ dotenv.config();
 const app = express();
 const server = createServer(app);
 const io = new Server(server, {
-  cors: {
-    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
-  }
+    cors: {
+        origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+        methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+    }
 });
 
 const PORT = process.env.PORT || 3001;
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: (process.env.RATE_LIMIT_WINDOW || 15) * 60 * 1000, // 15 minutes
-  max: process.env.RATE_LIMIT_MAX_REQUESTS || 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false,
+    windowMs: (process.env.RATE_LIMIT_WINDOW || 15) * 60 * 1000, // 15 minutes
+    max: process.env.RATE_LIMIT_MAX_REQUESTS || 100, // limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again later.',
+    standardHeaders: true,
+    legacyHeaders: false,
 });
 
 // Middleware
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
+    crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || "http://localhost:5173",
-  credentials: true
+    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+    credentials: true
 }));
 app.use(compression());
 app.use(morgan('combined'));
@@ -68,12 +68,12 @@ app.use(limiter);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV,
-    version: '1.0.0'
-  });
+    res.status(200).json({
+        status: 'OK',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV,
+        version: '1.0.0'
+    });
 });
 
 // API Routes
@@ -91,30 +91,30 @@ app.use('/api/dashboard', authMiddleware, dashboardRoutes);
 
 // Socket.IO for real-time features
 io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+    console.log('User connected:', socket.id);
 
-  // Join room based on user role/department
-  socket.on('join-room', (room) => {
-    socket.join(room);
-    console.log(`User ${socket.id} joined room: ${room}`);
-  });
+    // Join room based on user role/department
+    socket.on('join-room', (room) => {
+        socket.join(room);
+        console.log(`User ${socket.id} joined room: ${room}`);
+    });
 
-  // Handle real-time notifications
-  socket.on('new-appointment', (data) => {
-    socket.broadcast.to('doctors').emit('appointment-notification', data);
-  });
+    // Handle real-time notifications
+    socket.on('new-appointment', (data) => {
+        socket.broadcast.to('doctors').emit('appointment-notification', data);
+    });
 
-  socket.on('emergency-alert', (data) => {
-    io.emit('emergency', data);
-  });
+    socket.on('emergency-alert', (data) => {
+        io.emit('emergency', data);
+    });
 
-  socket.on('bed-status-update', (data) => {
-    socket.broadcast.to('nurses').emit('bed-update', data);
-  });
+    socket.on('bed-status-update', (data) => {
+        socket.broadcast.to('nurses').emit('bed-update', data);
+    });
 
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
-  });
+    socket.on('disconnect', () => {
+        console.log('User disconnected:', socket.id);
+    });
 });
 
 // Error handling middleware
@@ -123,38 +123,38 @@ app.use(errorHandler);
 
 // Start server
 const startServer = async () => {
-  try {
-    await connectDatabase();
-    console.log('✅ Database connected successfully');
-    
-    server.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
-      console.log(`📡 Socket.IO enabled for real-time features`);
-    });
-  } catch (error) {
-    console.error('❌ Failed to start server:', error);
-    process.exit(1);
-  }
+    try {
+        await connectDatabase();
+        console.log('✅ Database connected successfully');
+
+        server.listen(PORT, () => {
+            console.log(`🚀 Server running on port ${PORT}`);
+            console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
+            console.log(`📡 Socket.IO enabled for real-time features`);
+        });
+    } catch (error) {
+        console.error('❌ Failed to start server:', error);
+        process.exit(1);
+    }
 };
 
 startServer();
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('SIGTERM received. Shutting down gracefully...');
-  server.close(() => {
-    console.log('Server closed');
-    process.exit(0);
-  });
+    console.log('SIGTERM received. Shutting down gracefully...');
+    server.close(() => {
+        console.log('Server closed');
+        process.exit(0);
+    });
 });
 
 process.on('SIGINT', () => {
-  console.log('SIGINT received. Shutting down gracefully...');
-  server.close(() => {
-    console.log('Server closed');
-    process.exit(0);
-  });
+    console.log('SIGINT received. Shutting down gracefully...');
+    server.close(() => {
+        console.log('Server closed');
+        process.exit(0);
+    });
 });
 
 export default app;

@@ -6,18 +6,18 @@ const router = express.Router();
 // @route   GET /api/dashboard
 // @access  Private
 router.get('/', async (req, res) => {
-  res.json({
-    success: true,
-    message: 'Dashboard endpoint - Coming soon',
-    data: {
-      stats: {
-        total_patients: 0,
-        total_appointments: 0,
-        available_beds: 0,
-        pending_lab_results: 0
-      }
-    }
-  });
+    res.json({
+        success: true,
+        message: 'Dashboard endpoint - Coming soon',
+        data: {
+            stats: {
+                total_patients: 0,
+                total_appointments: 0,
+                available_beds: 0,
+                pending_lab_results: 0
+            }
+        }
+    });
 });
 
 export default router;

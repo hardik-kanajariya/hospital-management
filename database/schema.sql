@@ -5,7 +5,7 @@ CREATE DATABASE IF NOT EXISTS medcare_rural CHARACTER SET utf8mb4 COLLATE utf8mb
 USE medcare_rural;
 
 -- Users table for authentication and role management
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id VARCHAR(36) PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE users (
 );
 
 -- Patients table
-CREATE TABLE patients (
+CREATE TABLE IF NOT EXISTS patients (
     id VARCHAR(36) PRIMARY KEY,
     patient_id VARCHAR(20) UNIQUE NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -47,7 +47,7 @@ CREATE TABLE patients (
 );
 
 -- Doctors table
-CREATE TABLE doctors (
+CREATE TABLE IF NOT EXISTS doctors (
     id VARCHAR(36) PRIMARY KEY,
     user_id VARCHAR(36),
     name VARCHAR(255) NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE doctors (
 );
 
 -- Appointments table
-CREATE TABLE appointments (
+CREATE TABLE IF NOT EXISTS appointments (
     id VARCHAR(36) PRIMARY KEY,
     patient_id VARCHAR(36) NOT NULL,
     doctor_id VARCHAR(36) NOT NULL,
@@ -88,7 +88,7 @@ CREATE TABLE appointments (
 );
 
 -- Medical records table
-CREATE TABLE medical_records (
+CREATE TABLE IF NOT EXISTS medical_records (
     id VARCHAR(36) PRIMARY KEY,
     patient_id VARCHAR(36) NOT NULL,
     doctor_id VARCHAR(36) NOT NULL,
@@ -111,7 +111,7 @@ CREATE TABLE medical_records (
 );
 
 -- Billing records table
-CREATE TABLE billing_records (
+CREATE TABLE IF NOT EXISTS billing_records (
     id VARCHAR(36) PRIMARY KEY,
     patient_id VARCHAR(36) NOT NULL,
     invoice_number VARCHAR(50) UNIQUE NOT NULL,
@@ -134,7 +134,7 @@ CREATE TABLE billing_records (
 );
 
 -- Inventory items table
-CREATE TABLE inventory_items (
+CREATE TABLE IF NOT EXISTS inventory_items (
     id VARCHAR(36) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     category ENUM('medicine', 'equipment', 'supplies', 'consumables') NOT NULL,
@@ -155,7 +155,7 @@ CREATE TABLE inventory_items (
 );
 
 -- Lab tests table
-CREATE TABLE lab_tests (
+CREATE TABLE IF NOT EXISTS lab_tests (
     id VARCHAR(36) PRIMARY KEY,
     patient_id VARCHAR(36) NOT NULL,
     doctor_id VARCHAR(36) NOT NULL,
@@ -179,7 +179,7 @@ CREATE TABLE lab_tests (
 );
 
 -- Beds table
-CREATE TABLE beds (
+CREATE TABLE IF NOT EXISTS beds (
     id VARCHAR(36) PRIMARY KEY,
     bed_number VARCHAR(20) UNIQUE NOT NULL,
     room_number VARCHAR(20) NOT NULL,
@@ -198,7 +198,7 @@ CREATE TABLE beds (
 );
 
 -- Notifications table
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
     id VARCHAR(36) PRIMARY KEY,
     user_id VARCHAR(36),
     patient_id VARCHAR(36),
@@ -218,7 +218,7 @@ CREATE TABLE notifications (
 );
 
 -- Audit log table for tracking changes
-CREATE TABLE audit_logs (
+CREATE TABLE IF NOT EXISTS audit_logs (
     id VARCHAR(36) PRIMARY KEY,
     user_id VARCHAR(36),
     table_name VARCHAR(100) NOT NULL,
@@ -238,7 +238,7 @@ CREATE TABLE audit_logs (
 );
 
 -- System settings table
-CREATE TABLE system_settings (
+CREATE TABLE IF NOT EXISTS system_settings (
     id VARCHAR(36) PRIMARY KEY,
     setting_key VARCHAR(100) UNIQUE NOT NULL,
     setting_value JSON NOT NULL,
@@ -251,7 +251,7 @@ CREATE TABLE system_settings (
 );
 
 -- Reports table for storing generated reports
-CREATE TABLE reports (
+CREATE TABLE IF NOT EXISTS reports (
     id VARCHAR(36) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     type VARCHAR(100) NOT NULL,
@@ -268,7 +268,7 @@ CREATE TABLE reports (
 );
 
 -- Stock movements table for inventory tracking
-CREATE TABLE stock_movements (
+CREATE TABLE IF NOT EXISTS stock_movements (
     id VARCHAR(36) PRIMARY KEY,
     inventory_item_id VARCHAR(36) NOT NULL,
     type ENUM('IN', 'OUT', 'ADJUSTMENT') NOT NULL,
@@ -286,7 +286,7 @@ CREATE TABLE stock_movements (
 );
 
 -- Insurance providers table
-CREATE TABLE insurance_providers (
+CREATE TABLE IF NOT EXISTS insurance_providers (
     id VARCHAR(36) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     contact_info JSON,
