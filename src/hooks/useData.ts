@@ -29,7 +29,7 @@ interface DataOperations<T> {
 }
 
 export function useData<T extends { id: string; synced?: boolean; local_changes?: boolean }>(
-  storeName: keyof import('@/lib/database').HospitalDB,
+  storeName: string,
   endpoint: string,
   options: UseDataOptions = {}
 ): [DataState<T>, DataOperations<T>] {
@@ -132,7 +132,9 @@ export function useData<T extends { id: string; synced?: boolean; local_changes?
       setState(prev => ({ ...prev, syncing: true, error: null }));
 
       // First, sync local changes to server
-      await db.processSyncQueue?.();
+      if (db.forceSyncAll) {
+        await db.forceSyncAll();
+      }
 
       // Then fetch latest data from server if not cache-first or data is empty
       if (!cacheFirst || state.data.length === 0) {
@@ -397,8 +399,8 @@ export function useSyncStatus() {
 
   const checkPendingSync = useCallback(async () => {
     try {
-      const pendingOperations = await db.query('sync_queue', 'by-timestamp');
-      const pending = pendingOperations.filter(op => op.status === 'pending').length;
+      const pendingOperations = await db.query('sync_queue', 'status', 'pending');
+      const pending = pendingOperations.length;
       
       setStatus(prev => ({ ...prev, pendingSync: pending }));
     } catch (error) {
