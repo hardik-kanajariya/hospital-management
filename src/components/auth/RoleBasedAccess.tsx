@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield, Lock } from '@phosphor-icons/react';
+import { ShieldIcon, LockIcon } from '@phosphor-icons/react';
 
 interface RoleBasedAccessProps {
   children: ReactNode;
@@ -30,7 +30,7 @@ export default function RoleBasedAccess({
       if (showMessage) {
         return (
           <Alert className="border-destructive">
-            <Lock className="h-4 w-4 text-destructive" />
+            <LockIcon className="h-4 w-4 text-destructive" />
             <AlertDescription className="text-destructive">
               Access denied. This feature requires {Array.isArray(requiredRole) ? requiredRole.join(' or ') : requiredRole} role.
             </AlertDescription>
@@ -47,7 +47,7 @@ export default function RoleBasedAccess({
     if (showMessage) {
       return (
         <Alert className="border-destructive">
-          <Shield className="h-4 w-4 text-destructive" />
+          <ShieldIcon className="h-4 w-4 text-destructive" />
           <AlertDescription className="text-destructive">
             Access denied. You don't have permission to {requiredAction} {requiredModule}.
           </AlertDescription>

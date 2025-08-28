@@ -13,16 +13,16 @@ import { User, UserRole, Permission, ROLE_CONFIGS } from '@/types/auth';
 import { toast } from 'sonner';
 import RoleBasedAccess from '@/components/auth/RoleBasedAccess';
 import {
-  Users,
-  Plus,
-  PencilSimple,
-  Trash,
-  Shield,
-  UserCircle,
-  Key,
-  Eye,
-  EyeSlash,
-  MagnifyingGlass
+  UsersIcon,
+  PlusIcon,
+  PencilSimpleIcon,
+  TrashIcon,
+  ShieldIcon,
+  UserCircleIcon,
+  KeyIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  MagnifyingGlassIcon
 } from '@phosphor-icons/react';
 
 export default function UserManagement() {
@@ -187,7 +187,7 @@ export default function UserManagement() {
       <RoleBasedAccess requiredRole="super_admin">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <div className="relative flex-1 max-w-md">
-            <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Search users by name, email, or role..."
               value={searchTerm}
@@ -202,7 +202,7 @@ export default function UserManagement() {
                 resetForm();
                 generatePassword();
               }}>
-                <Plus className="h-4 w-4 mr-2" />
+                <PlusIcon className="h-4 w-4 mr-2" />
                 Add User
               </Button>
             </DialogTrigger>
@@ -293,12 +293,12 @@ export default function UserManagement() {
                               className="h-full px-3"
                               onClick={() => setShowPassword(!showPassword)}
                             >
-                              {showPassword ? <EyeSlash className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                              {showPassword ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
                             </Button>
                           </div>
                         </div>
                         <Button type="button" variant="outline" onClick={generatePassword}>
-                          <Key className="w-4 h-4" />
+                          <KeyIcon className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>
@@ -366,7 +366,7 @@ export default function UserManagement() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <UsersIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{users.length}</div>
@@ -376,7 +376,7 @@ export default function UserManagement() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-              <Shield className="h-4 w-4 text-muted-foreground" />
+              <ShieldIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -388,7 +388,7 @@ export default function UserManagement() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Doctors</CardTitle>
-              <UserCircle className="h-4 w-4 text-muted-foreground" />
+              <UserCircleIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -400,7 +400,7 @@ export default function UserManagement() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Admin Users</CardTitle>
-              <Shield className="h-4 w-4 text-muted-foreground" />
+              <ShieldIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -422,7 +422,7 @@ export default function UserManagement() {
             <div className="space-y-4">
               {filteredUsers.length === 0 ? (
                 <div className="text-center py-8">
-                  <Users className="mx-auto h-12 w-12 text-muted-foreground" />
+                  <UsersIcon className="mx-auto h-12 w-12 text-muted-foreground" />
                   <h3 className="mt-4 text-lg font-semibold">No users found</h3>
                   <p className="text-muted-foreground">
                     {searchTerm ? 'Try adjusting your search terms' : 'Start by creating your first user'}
@@ -477,7 +477,7 @@ export default function UserManagement() {
                             setIsDialogOpen(true);
                           }}
                         >
-                          <PencilSimple className="h-4 w-4" />
+                          <PencilSimpleIcon className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="outline"
@@ -485,7 +485,7 @@ export default function UserManagement() {
                           onClick={() => handleDeleteUser(user.id)}
                           disabled={user.id === currentUser?.id}
                         >
-                          <Trash className="h-4 w-4" />
+                          <TrashIcon className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>

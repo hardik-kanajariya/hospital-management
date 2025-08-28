@@ -9,23 +9,23 @@ import LoginForm from '@/components/auth/LoginForm'
 import RoleBasedAccess from '@/components/auth/RoleBasedAccess'
 import LandingPage from '@/components/landing/LandingPage'
 import {
-  Users,
-  Calendar,
-  FileText,
-  CreditCard,
-  Package,
-  Pulse,
-  Heart,
-  UserCircle,
-  TestTube,
-  Bed,
-  SignOut,
-  Shield,
-  Gear,
-  Bell,
-  House,
-  WifiSlash,
-  CloudArrowUp
+  UsersIcon,
+  CalendarIcon,
+  FileTextIcon,
+  CreditCardIcon,
+  PackageIcon,
+  PulseIcon,
+  HeartIcon,
+  UserCircleIcon,
+  TestTubeIcon,
+  BedIcon,
+  SignOutIcon,
+  ShieldIcon,
+  GearIcon,
+  BellIcon,
+  HouseIcon,
+  WifiSlashIcon,
+  CloudArrowUpIcon
 } from '@phosphor-icons/react'
 
 // Hospital components
@@ -81,7 +81,7 @@ function App() {
           <LandingPage />
           <div className="fixed bottom-4 right-4 z-50">
             <Button onClick={() => setActiveTab('login')} size="lg">
-              <Heart className="w-4 h-4 mr-2" />
+              <HeartIcon className="w-4 h-4 mr-2" />
               Access Hospital System
             </Button>
           </div>
@@ -103,18 +103,18 @@ function App() {
 
   // Filter tabs based on user permissions
   const availableTabs = [
-    { id: 'landing', label: 'Home', icon: House, module: 'dashboard' },
-    { id: 'dashboard', label: 'Dashboard', icon: Pulse, module: 'dashboard' },
-    { id: 'patients', label: 'Patients', icon: Users, module: 'patients' },
-    { id: 'appointments', label: 'Appointments', icon: Calendar, module: 'appointments' },
-    { id: 'doctors', label: 'Doctors', icon: UserCircle, module: 'doctors' },
-    { id: 'records', label: 'Records', icon: FileText, module: 'medical_records' },
-    { id: 'lab', label: 'Lab', icon: TestTube, module: 'lab_tests' },
-    { id: 'beds', label: 'Beds', icon: Bed, module: 'beds' },
-    { id: 'billing', label: 'Billing', icon: CreditCard, module: 'billing' },
-    { id: 'inventory', label: 'Inventory', icon: Package, module: 'inventory' },
-    { id: 'notifications', label: 'Notifications', icon: Bell, module: 'notifications' },
-    { id: 'users', label: 'Users', icon: Shield, module: 'user_management', requiresRole: 'super_admin' }
+    { id: 'landing', label: 'Home', icon: HouseIcon, module: 'dashboard' },
+    { id: 'dashboard', label: 'Dashboard', icon: PulseIcon, module: 'dashboard' },
+    { id: 'patients', label: 'Patients', icon: UsersIcon, module: 'patients' },
+    { id: 'appointments', label: 'Appointments', icon: CalendarIcon, module: 'appointments' },
+    { id: 'doctors', label: 'Doctors', icon: UserCircleIcon, module: 'doctors' },
+    { id: 'records', label: 'Records', icon: FileTextIcon, module: 'medical_records' },
+    { id: 'lab', label: 'Lab', icon: TestTubeIcon, module: 'lab_tests' },
+    { id: 'beds', label: 'Beds', icon: BedIcon, module: 'beds' },
+    { id: 'billing', label: 'Billing', icon: CreditCardIcon, module: 'billing' },
+    { id: 'inventory', label: 'Inventory', icon: PackageIcon, module: 'inventory' },
+    { id: 'notifications', label: 'Notifications', icon: BellIcon, module: 'notifications' },
+    { id: 'users', label: 'Users', icon: ShieldIcon, module: 'user_management', requiresRole: 'super_admin' }
   ].filter(tab => {
     // Always show landing page
     if (tab.id === 'landing') return true;
@@ -136,7 +136,7 @@ function App() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-10 h-10 bg-primary text-primary-foreground rounded-lg">
-                <Heart className="w-6 h-6" weight="fill" />
+                <HeartIcon className="w-6 h-6" weight="fill" />
               </div>
               <div>
                 <h1 className="text-xl font-bold text-foreground">MedCare Rural</h1>
@@ -152,12 +152,12 @@ function App() {
                 }`}>
                 {isOnline ? (
                   <>
-                    <CloudArrowUp className="w-3 h-3" />
+                    <CloudArrowUpIcon className="w-3 h-3" />
                     Online
                   </>
                 ) : (
                   <>
-                    <WifiSlash className="w-3 h-3" />
+                    <WifiSlashIcon className="w-3 h-3" />
                     Offline
                   </>
                 )}
@@ -173,7 +173,7 @@ function App() {
                 {user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U'}
               </div>
               <Button variant="outline" size="sm" onClick={logout}>
-                <SignOut className="w-4 h-4" />
+                <SignOutIcon className="w-4 h-4" />
               </Button>
             </div>
           </div>
@@ -185,23 +185,23 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center gap-6 text-sm">
             <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-primary" />
+              <UsersIcon className="w-4 h-4 text-primary" />
               <span className="font-medium">-</span>
               <span className="text-muted-foreground">Total Patients</span>
             </div>
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-accent" />
+              <CalendarIcon className="w-4 h-4 text-accent" />
               <span className="font-medium">-</span>
               <span className="text-muted-foreground">Today's Appointments</span>
             </div>
             <div className="flex items-center gap-2">
-              <Pulse className="w-4 h-4 text-destructive" />
+              <PulseIcon className="w-4 h-4 text-destructive" />
               <span className="font-medium">-</span>
               <span className="text-muted-foreground">Active Consultations</span>
             </div>
             {!isOnline && (
               <div className="flex items-center gap-2 text-orange-600">
-                <WifiSlash className="w-4 h-4" />
+                <WifiSlashIcon className="w-4 h-4" />
                 <span className="text-muted-foreground">Working Offline - Changes will sync when online</span>
               </div>
             )}
