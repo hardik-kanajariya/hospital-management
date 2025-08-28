@@ -1,57 +1,30 @@
-// Database service for offline-first architecture with MySQL backend
-import { openDB, DBSchema, IDBPDatabase } from 'idb';
+/**
+ * Database service for offline-first architecture with MySQL backend
+ * Provides comprehensive data management for rural hospital operations
+ */
 
-// Define the IndexedDB schema
-interface HospitalDB extends DBSchema {
-  patients: {
-    key: string;
-    value: Patient;
-    indexes: { 'by-phone': string; 'by-email': string; 'by-id': string };
-  };
-  appointments: {
-    key: string;
-    value: Appointment;
-    indexes: { 'by-patient': string; 'by-doctor': string; 'by-date': string };
-  };
-  medical_records: {
-    key: string;
-    value: MedicalRecord;
-    indexes: { 'by-patient': string; 'by-date': string };
-  };
-  billing: {
-    key: string;
-    value: BillingRecord;
-    indexes: { 'by-patient': string; 'by-status': string };
-  };
-  inventory: {
-    key: string;
-    value: InventoryItem;
-    indexes: { 'by-category': string; 'by-stock': number };
-  };
-  lab_tests: {
-    key: string;
-    value: LabTest;
-    indexes: { 'by-patient': string; 'by-status': string };
-  };
-  beds: {
-    key: string;
-    value: BedRecord;
-    indexes: { 'by-room': string; 'by-status': string };
-  };
-  doctors: {
-    key: string;
-    value: Doctor;
-    indexes: { 'by-specialization': string; 'by-department': string };
-  };
-  sync_queue: {
-    key: string;
-    value: SyncOperation;
-    indexes: { 'by-table': string; 'by-timestamp': number };
-  };
-  metadata: {
-    key: string;
-    value: MetadataRecord;
-  };
+// Core interfaces for hospital data models
+interface Patient {
+  id: string;
+  patient_id: string;
+  first_name: string;
+  last_name: string;
+  date_of_birth: string;
+  gender: 'male' | 'female' | 'other';
+  phone: string;
+  email?: string;
+  address: string;
+  emergency_contact: ContactInfo;
+  insurance_info?: InsuranceInfo;
+  medical_history: string[];
+  allergies: string[];
+  chronic_conditions: string[];
+  vaccination_records: VaccinationRecord[];
+  blood_group?: string;
+  created_at: string;
+  updated_at: string;
+  synced: boolean;
+  local_changes: boolean;
 }
 
 // Core interfaces
@@ -84,6 +57,19 @@ interface VaccinationRecord {
   next_due_date?: string;
   batch_number?: string;
   administered_by: string;
+}
+
+interface ContactInfo {
+  phone: string;
+  email: string;
+  address: string;
+}
+
+interface InsuranceInfo {
+  provider: string;
+  policy_number: string;
+  coverage_amount: number;
+  expiry_date: string;
 }
 
 interface Appointment {
@@ -176,13 +162,6 @@ interface InsuranceClaim {
   rejection_reason?: string;
 }
 
-interface InsuranceInfo {
-  provider: string;
-  policy_number: string;
-  coverage_amount: number;
-  expiry_date: string;
-}
-
 interface InventoryItem {
   id: string;
   name: string;
@@ -267,12 +246,6 @@ interface DoctorAvailability {
   max_patients: number;
 }
 
-interface ContactInfo {
-  phone: string;
-  email: string;
-  address: string;
-}
-
 interface SyncOperation {
   id: string;
   table_name: string;
@@ -291,77 +264,159 @@ interface MetadataRecord {
   updated_at: string;
 }
 
-class DatabaseService {
-  private db: IDBPDatabase<HospitalDB> | null = null;
-  private baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+/**
+ * Database Manager Class
+ * Handles offline-first operations with MySQL backend synchronization
+ */
+class DatabaseManager {
+  private db: IDBDatabase | null = null;
+  private dbName = 'HospitalDB';
+  private dbVersion = 2;
+  private baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
   private syncInterval: NodeJS.Timeout | null = null;
 
-  async initialize(): Promise<IDBPDatabase<HospitalDB>> {
-    this.db = await openDB<HospitalDB>('HospitalDB', 1, {
-      upgrade(db) {
-        // Patients store
-        const patientsStore = db.createObjectStore('patients', { keyPath: 'id' });
-        patientsStore.createIndex('by-id', 'patient_id');
-        patientsStore.createIndex('by-phone', 'phone');
-        patientsStore.createIndex('by-email', 'email');
-
-        // Appointments store
-        const appointmentsStore = db.createObjectStore('appointments', { keyPath: 'id' });
-        appointmentsStore.createIndex('by-patient', 'patient_id');
-        appointmentsStore.createIndex('by-doctor', 'doctor_id');
-        appointmentsStore.createIndex('by-date', 'appointment_date');
-
-        // Medical records store
-        const recordsStore = db.createObjectStore('medical_records', { keyPath: 'id' });
-        recordsStore.createIndex('by-patient', 'patient_id');
-        recordsStore.createIndex('by-date', 'visit_date');
-
-        // Billing store
-        const billingStore = db.createObjectStore('billing', { keyPath: 'id' });
-        billingStore.createIndex('by-patient', 'patient_id');
-        billingStore.createIndex('by-status', 'payment_status');
-
-        // Inventory store
-        const inventoryStore = db.createObjectStore('inventory', { keyPath: 'id' });
-        inventoryStore.createIndex('by-category', 'category');
-        inventoryStore.createIndex('by-stock', 'current_stock');
-
-        // Lab tests store
-        const labStore = db.createObjectStore('lab_tests', { keyPath: 'id' });
-        labStore.createIndex('by-patient', 'patient_id');
-        labStore.createIndex('by-status', 'status');
-
-        // Beds store
-        const bedsStore = db.createObjectStore('beds', { keyPath: 'id' });
-        bedsStore.createIndex('by-room', 'room_number');
-        bedsStore.createIndex('by-status', 'status');
-
-        // Doctors store
-        const doctorsStore = db.createObjectStore('doctors', { keyPath: 'id' });
-        doctorsStore.createIndex('by-specialization', 'specialization');
-        doctorsStore.createIndex('by-department', 'department');
-
-        // Sync queue store
-        const syncStore = db.createObjectStore('sync_queue', { keyPath: 'id' });
-        syncStore.createIndex('by-table', 'table_name');
-        syncStore.createIndex('by-timestamp', 'timestamp');
-
-        // Metadata store
-        db.createObjectStore('metadata', { keyPath: 'key' });
-      }
-    });
-
-    // Start background sync
-    this.startBackgroundSync();
-
-    return this.db;
+  constructor() {
+    this.initialize();
   }
 
-  // Generic CRUD operations for offline-first approach
-  async create<T extends keyof HospitalDB>(
-    storeName: T,
-    data: HospitalDB[T]['value']
-  ): Promise<HospitalDB[T]['value']> {
+  /**
+   * Initialize IndexedDB database
+   */
+  async initialize(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(this.dbName, this.dbVersion);
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        this.db = request.result;
+        this.startBackgroundSync();
+        resolve();
+      };
+
+      request.onupgradeneeded = (event) => {
+        const db = (event.target as IDBOpenDBRequest).result;
+        
+        // Create object stores with proper indexes
+        this.createObjectStores(db);
+      };
+    });
+  }
+
+  /**
+   * Create all required object stores and indexes
+   */
+  private createObjectStores(db: IDBDatabase): void {
+    const stores = [
+      {
+        name: 'patients',
+        keyPath: 'id',
+        indexes: [
+          { name: 'patient_id', keyPath: 'patient_id', unique: true },
+          { name: 'phone', keyPath: 'phone', unique: false },
+          { name: 'email', keyPath: 'email', unique: false }
+        ]
+      },
+      {
+        name: 'appointments',
+        keyPath: 'id',
+        indexes: [
+          { name: 'patient_id', keyPath: 'patient_id', unique: false },
+          { name: 'doctor_id', keyPath: 'doctor_id', unique: false },
+          { name: 'appointment_date', keyPath: 'appointment_date', unique: false },
+          { name: 'status', keyPath: 'status', unique: false }
+        ]
+      },
+      {
+        name: 'medical_records',
+        keyPath: 'id',
+        indexes: [
+          { name: 'patient_id', keyPath: 'patient_id', unique: false },
+          { name: 'doctor_id', keyPath: 'doctor_id', unique: false },
+          { name: 'visit_date', keyPath: 'visit_date', unique: false }
+        ]
+      },
+      {
+        name: 'billing',
+        keyPath: 'id',
+        indexes: [
+          { name: 'patient_id', keyPath: 'patient_id', unique: false },
+          { name: 'invoice_number', keyPath: 'invoice_number', unique: true },
+          { name: 'payment_status', keyPath: 'payment_status', unique: false }
+        ]
+      },
+      {
+        name: 'inventory',
+        keyPath: 'id',
+        indexes: [
+          { name: 'category', keyPath: 'category', unique: false },
+          { name: 'name', keyPath: 'name', unique: false },
+          { name: 'current_stock', keyPath: 'current_stock', unique: false }
+        ]
+      },
+      {
+        name: 'lab_tests',
+        keyPath: 'id',
+        indexes: [
+          { name: 'patient_id', keyPath: 'patient_id', unique: false },
+          { name: 'doctor_id', keyPath: 'doctor_id', unique: false },
+          { name: 'status', keyPath: 'status', unique: false },
+          { name: 'ordered_date', keyPath: 'ordered_date', unique: false }
+        ]
+      },
+      {
+        name: 'beds',
+        keyPath: 'id',
+        indexes: [
+          { name: 'bed_number', keyPath: 'bed_number', unique: true },
+          { name: 'room_number', keyPath: 'room_number', unique: false },
+          { name: 'status', keyPath: 'status', unique: false },
+          { name: 'patient_id', keyPath: 'patient_id', unique: false }
+        ]
+      },
+      {
+        name: 'doctors',
+        keyPath: 'id',
+        indexes: [
+          { name: 'name', keyPath: 'name', unique: false },
+          { name: 'specialization', keyPath: 'specialization', unique: false },
+          { name: 'department', keyPath: 'department', unique: false }
+        ]
+      },
+      {
+        name: 'sync_queue',
+        keyPath: 'id',
+        indexes: [
+          { name: 'table_name', keyPath: 'table_name', unique: false },
+          { name: 'timestamp', keyPath: 'timestamp', unique: false },
+          { name: 'status', keyPath: 'status', unique: false }
+        ]
+      },
+      {
+        name: 'metadata',
+        keyPath: 'key',
+        indexes: []
+      }
+    ];
+
+    stores.forEach(storeConfig => {
+      let store: IDBObjectStore;
+      
+      if (db.objectStoreNames.contains(storeConfig.name)) {
+        db.deleteObjectStore(storeConfig.name);
+      }
+      
+      store = db.createObjectStore(storeConfig.name, { keyPath: storeConfig.keyPath });
+      
+      storeConfig.indexes.forEach(index => {
+        store.createIndex(index.name, index.keyPath, { unique: index.unique });
+      });
+    });
+  }
+
+  /**
+   * Generic create operation
+   */
+  async create(storeName: string, data: any): Promise<any> {
     if (!this.db) throw new Error('Database not initialized');
 
     const record = {
@@ -373,22 +428,58 @@ class DatabaseService {
       local_changes: true
     };
 
-    await this.db.put(storeName, record);
-    
-    // Add to sync queue
-    await this.addToSyncQueue(storeName as string, record.id, 'create', record);
-    
-    return record;
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([storeName], 'readwrite');
+      const store = transaction.objectStore(storeName);
+      const request = store.add(record);
+
+      request.onsuccess = () => {
+        this.addToSyncQueue(storeName, record.id, 'create', record);
+        resolve(record);
+      };
+      request.onerror = () => reject(request.error);
+    });
   }
 
-  async update<T extends keyof HospitalDB>(
-    storeName: T,
-    id: string,
-    data: Partial<HospitalDB[T]['value']>
-  ): Promise<HospitalDB[T]['value']> {
+  /**
+   * Generic read operation by ID
+   */
+  async get(storeName: string, id: string): Promise<any> {
     if (!this.db) throw new Error('Database not initialized');
 
-    const existing = await this.db.get(storeName, id);
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([storeName], 'readonly');
+      const store = transaction.objectStore(storeName);
+      const request = store.get(id);
+
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * Get all records from a store
+   */
+  async getAll(storeName: string): Promise<any[]> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([storeName], 'readonly');
+      const store = transaction.objectStore(storeName);
+      const request = store.getAll();
+
+      request.onsuccess = () => resolve(request.result || []);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * Update a record
+   */
+  async update(storeName: string, id: string, data: Partial<any>): Promise<any> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    const existing = await this.get(storeName, id);
     if (!existing) throw new Error('Record not found');
 
     const updated = {
@@ -399,59 +490,78 @@ class DatabaseService {
       local_changes: true
     };
 
-    await this.db.put(storeName, updated);
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([storeName], 'readwrite');
+      const store = transaction.objectStore(storeName);
+      const request = store.put(updated);
 
-    // Add to sync queue
-    await this.addToSyncQueue(storeName as string, id, 'update', updated);
+      request.onsuccess = () => {
+        this.addToSyncQueue(storeName, id, 'update', updated);
+        resolve(updated);
+      };
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * Delete a record
+   */
+  async delete(storeName: string, id: string): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([storeName], 'readwrite');
+      const store = transaction.objectStore(storeName);
+      const request = store.delete(id);
+
+      request.onsuccess = () => {
+        this.addToSyncQueue(storeName, id, 'delete', { id });
+        resolve();
+      };
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * Query records by index
+   */
+  async query(storeName: string, indexName: string, query?: IDBValidKey | IDBKeyRange): Promise<any[]> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([storeName], 'readonly');
+      const store = transaction.objectStore(storeName);
+      const index = store.index(indexName);
+      const request = query ? index.getAll(query) : index.getAll();
+
+      request.onsuccess = () => resolve(request.result || []);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * Search records with filters
+   */
+  async search(storeName: string, filters: Record<string, any>): Promise<any[]> {
+    const allRecords = await this.getAll(storeName);
     
-    return updated;
+    return allRecords.filter(record => {
+      return Object.entries(filters).every(([key, value]) => {
+        if (value === undefined || value === null || value === '') return true;
+        
+        const recordValue = record[key];
+        if (typeof value === 'string' && typeof recordValue === 'string') {
+          return recordValue.toLowerCase().includes(value.toLowerCase());
+        }
+        return recordValue === value;
+      });
+    });
   }
 
-  async delete<T extends keyof HospitalDB>(
-    storeName: T,
-    id: string
-  ): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
-
-    await this.db.delete(storeName, id);
-    
-    // Add to sync queue
-    await this.addToSyncQueue(storeName as string, id, 'delete', { id });
-  }
-
-  async get<T extends keyof HospitalDB>(
-    storeName: T,
-    id: string
-  ): Promise<HospitalDB[T]['value'] | undefined> {
-    if (!this.db) throw new Error('Database not initialized');
-    return await this.db.get(storeName, id);
-  }
-
-  async getAll<T extends keyof HospitalDB>(
-    storeName: T
-  ): Promise<HospitalDB[T]['value'][]> {
-    if (!this.db) throw new Error('Database not initialized');
-    return await this.db.getAll(storeName);
-  }
-
-  async query<T extends keyof HospitalDB>(
-    storeName: T,
-    indexName: string,
-    query?: IDBValidKey | IDBKeyRange
-  ): Promise<HospitalDB[T]['value'][]> {
-    if (!this.db) throw new Error('Database not initialized');
-    return await this.db.getAllFromIndex(storeName, indexName, query);
-  }
-
-  // Sync queue management
-  private async addToSyncQueue(
-    tableName: string,
-    recordId: string,
-    operation: 'create' | 'update' | 'delete',
-    data: any
-  ): Promise<void> {
-    if (!this.db) return;
-
+  /**
+   * Add operation to sync queue
+   */
+  private async addToSyncQueue(tableName: string, recordId: string, operation: 'create' | 'update' | 'delete', data: any): Promise<void> {
     const syncOperation: SyncOperation = {
       id: this.generateId(),
       table_name: tableName,
@@ -463,54 +573,74 @@ class DatabaseService {
       status: 'pending'
     };
 
-    await this.db.put('sync_queue', syncOperation);
+    await this.create('sync_queue', syncOperation);
   }
 
-  // Background sync process
+  /**
+   * Start background synchronization
+   */
   private startBackgroundSync(): void {
     this.syncInterval = setInterval(async () => {
-      if (this.isOnline()) {
+      if (navigator.onLine) {
         await this.processSyncQueue();
       }
     }, 30000); // Sync every 30 seconds when online
   }
 
+  /**
+   * Process pending sync operations
+   */
   private async processSyncQueue(): Promise<void> {
-    if (!this.db) return;
-
-    const pendingOperations = await this.query('sync_queue', 'by-timestamp');
-
-    for (const operation of pendingOperations.filter(op => op.status === 'pending')) {
-      try {
-        await this.syncOperation(operation);
-        
-        // Mark as completed
-        await this.update('sync_queue', operation.id, { 
-          status: 'completed' 
-        });
-      } catch (error) {
-        console.error('Sync operation failed:', error);
-        
-        // Update retry count and status
-        await this.update('sync_queue', operation.id, {
-          retry_count: operation.retry_count + 1,
-          status: operation.retry_count >= 3 ? 'failed' : 'pending',
-          error_message: error instanceof Error ? error.message : 'Unknown error'
-        });
+    try {
+      const pendingOps = await this.query('sync_queue', 'status', 'pending');
+      
+      for (const operation of pendingOps) {
+        try {
+          await this.syncOperation(operation);
+          await this.update('sync_queue', operation.id, { status: 'completed' });
+        } catch (error) {
+          console.error('Sync operation failed:', error);
+          
+          const retryCount = operation.retry_count + 1;
+          await this.update('sync_queue', operation.id, {
+            retry_count: retryCount,
+            status: retryCount >= 3 ? 'failed' : 'pending',
+            error_message: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
       }
+    } catch (error) {
+      console.error('Failed to process sync queue:', error);
     }
   }
 
+  /**
+   * Sync individual operation with server
+   */
   private async syncOperation(operation: SyncOperation): Promise<void> {
-    const { table_name, operation: op, data } = operation;
+    const { table_name, operation: op, data, record_id } = operation;
+    
+    let url = `${this.baseUrl}/${table_name}`;
+    let method = 'POST';
+    
+    switch (op) {
+      case 'update':
+        url += `/${record_id}`;
+        method = 'PUT';
+        break;
+      case 'delete':
+        url += `/${record_id}`;
+        method = 'DELETE';
+        break;
+    }
 
-    const response = await fetch(`${this.baseUrl}/${table_name}`, {
-      method: this.getHttpMethod(op),
+    const response = await fetch(url, {
+      method,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${this.getAuthToken()}`
       },
-      body: op !== 'delete' ? JSON.stringify(data) : undefined
+      body: method !== 'DELETE' ? JSON.stringify(data) : undefined
     });
 
     if (!response.ok) {
@@ -519,10 +649,9 @@ class DatabaseService {
 
     // Update local record sync status
     if (op !== 'delete') {
-      const record = await this.get(table_name as keyof HospitalDB, data.id);
+      const record = await this.get(table_name, record_id);
       if (record) {
-        await this.db?.put(table_name as keyof HospitalDB, {
-          ...record,
+        await this.update(table_name, record_id, {
           synced: true,
           local_changes: false
         });
@@ -530,13 +659,15 @@ class DatabaseService {
     }
   }
 
-  // API methods
+  /**
+   * Sync data from server
+   */
   async syncFromServer(): Promise<void> {
     if (!navigator.onLine) return;
 
     const tables = [
-      'patients', 'appointments', 'medical_records', 
-      'billing', 'inventory', 'lab_tests', 'beds', 'doctors'
+      'patients', 'appointments', 'medical_records', 'billing',
+      'inventory', 'lab_tests', 'beds', 'doctors'
     ];
 
     for (const table of tables) {
@@ -557,65 +688,129 @@ class DatabaseService {
     }
   }
 
+  /**
+   * Merge server data with local data
+   */
   private async mergeServerData(tableName: string, serverData: any[]): Promise<void> {
-    if (!this.db) return;
-
     for (const serverRecord of serverData) {
-      const localRecord = await this.get(tableName as keyof HospitalDB, serverRecord.id);
+      const localRecord = await this.get(tableName, serverRecord.id);
       
       if (!localRecord) {
         // New record from server
-        await this.db.put(tableName as keyof HospitalDB, {
+        const record = {
           ...serverRecord,
           synced: true,
           local_changes: false
+        };
+        
+        await new Promise((resolve, reject) => {
+          const transaction = this.db!.transaction([tableName], 'readwrite');
+          const store = transaction.objectStore(tableName);
+          const request = store.add(record);
+          
+          request.onsuccess = () => resolve(record);
+          request.onerror = () => reject(request.error);
         });
       } else if (!localRecord.local_changes) {
         // Update if server record is newer and no local changes
         if (new Date(serverRecord.updated_at) > new Date(localRecord.updated_at)) {
-          await this.db.put(tableName as keyof HospitalDB, {
+          await this.update(tableName, serverRecord.id, {
             ...serverRecord,
             synced: true,
             local_changes: false
           });
         }
       }
-      // If local_changes is true, keep local version and sync will handle conflict
     }
   }
 
-  // Utility methods
+  /**
+   * Utility methods
+   */
   private generateId(): string {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
-  }
-
-  private getHttpMethod(operation: string): string {
-    switch (operation) {
-      case 'create': return 'POST';
-      case 'update': return 'PUT';
-      case 'delete': return 'DELETE';
-      default: return 'GET';
-    }
   }
 
   private getAuthToken(): string {
     return localStorage.getItem('auth_token') || '';
   }
 
-  // Connection status
+  /**
+   * Connection status
+   */
   isOnline(): boolean {
     return navigator.onLine;
   }
 
-  // Cleanup
+  /**
+   * Get sync status
+   */
+  async getSyncStatus(): Promise<{ pending: number; failed: number; total: number }> {
+    const allOps = await this.getAll('sync_queue');
+    const pending = allOps.filter(op => op.status === 'pending').length;
+    const failed = allOps.filter(op => op.status === 'failed').length;
+    
+    return { pending, failed, total: allOps.length };
+  }
+
+  /**
+   * Clear completed sync operations
+   */
+  async clearCompletedSync(): Promise<void> {
+    const completedOps = await this.query('sync_queue', 'status', 'completed');
+    
+    for (const op of completedOps) {
+      await this.delete('sync_queue', op.id);
+    }
+  }
+
+  /**
+   * Force sync all pending operations
+   */
+  async forceSyncAll(): Promise<void> {
+    if (!navigator.onLine) {
+      throw new Error('Cannot sync while offline');
+    }
+    
+    await this.processSyncQueue();
+  }
+
+  /**
+   * Clean up resources
+   */
   destroy(): void {
     if (this.syncInterval) {
       clearInterval(this.syncInterval);
     }
+    
     if (this.db) {
       this.db.close();
     }
   }
 }
 
-export const db = new DatabaseService();
+// Export singleton instance
+export const db = new DatabaseManager();
+
+// Export types for use in components
+export type {
+  Patient,
+  Appointment,
+  MedicalRecord,
+  BillingRecord,
+  InventoryItem,
+  LabTest,
+  BedRecord,
+  Doctor,
+  VaccinationRecord,
+  ContactInfo,
+  InsuranceInfo,
+  Prescription,
+  VitalSigns,
+  BillingItem,
+  InsuranceClaim,
+  LabResult,
+  DoctorAvailability,
+  SyncOperation,
+  MetadataRecord
+};
