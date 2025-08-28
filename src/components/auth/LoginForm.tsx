@@ -50,7 +50,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
 
   const fillDemoCredentials = (email: string) => {
     setEmail(email);
-    setPassword('demo123');
+    setPassword('admin123');
   };
 
   return (
@@ -174,7 +174,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
             
             <div className="pt-4 border-t">
               <p className="text-xs text-muted-foreground text-center">
-                All demo accounts use password: <span className="font-mono font-semibold">demo123</span>
+                All demo accounts use password: <span className="font-mono font-semibold">admin123</span>
               </p>
             </div>
           </CardContent>

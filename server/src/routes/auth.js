@@ -78,8 +78,11 @@ router.post('/login', [
     body('password').notEmpty()
 ], async (req, res) => {
     try {
+        console.log('🔐 Login attempt received:', req.body);
+
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
+            console.log('❌ Validation errors:', errors.array());
             return res.status(400).json({
                 success: false,
                 message: 'Validation failed',
@@ -88,18 +91,23 @@ router.post('/login', [
         }
 
         const { email, password } = req.body;
+        console.log('📧 Looking for user with email:', email);
 
         // Find user by email
         const user = await User.findOne({ where: { email } });
         if (!user) {
+            console.log('❌ User not found:', email);
             return res.status(401).json({
                 success: false,
                 message: 'Invalid credentials'
             });
         }
 
+        console.log('✅ User found:', user.email, 'Active:', user.is_active);
+
         // Check if user is active
         if (!user.is_active) {
+            console.log('❌ User account is deactivated');
             return res.status(401).json({
                 success: false,
                 message: 'Account is deactivated'
@@ -107,8 +115,12 @@ router.post('/login', [
         }
 
         // Verify password
+        console.log('🔑 Verifying password...');
         const isMatch = await user.comparePassword(password);
+        console.log('🔑 Password match result:', isMatch);
+
         if (!isMatch) {
+            console.log('❌ Password does not match');
             return res.status(401).json({
                 success: false,
                 message: 'Invalid credentials'
@@ -125,6 +137,7 @@ router.post('/login', [
             { expiresIn: process.env.JWT_EXPIRE }
         );
 
+        console.log('✅ Login successful for user:', user.email);
         res.json({
             success: true,
             message: 'Login successful',
@@ -134,7 +147,7 @@ router.post('/login', [
             }
         });
     } catch (error) {
-        console.error('Login error:', error);
+        console.error('❌ Login error:', error);
         res.status(500).json({
             success: false,
             message: 'Server error during login'
