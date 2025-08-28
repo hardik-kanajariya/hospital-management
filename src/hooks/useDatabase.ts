@@ -1,139 +1,67 @@
 import { useState, useEffect, useCallback } from 'react';
-import { db } from '@/lib/database';
+import axios from 'axios';
+import { API_BASE_URL } from '../config';
+import { useAuth } from './useAuth'; 
+import { useNotifications } from './useNotifications';
 
 /**
- * Custom hook for database operations with automatic sync
- * Replaces useKV with proper database operations
+ * Generic hook for database operations
  */
-export function useDatabase<T>(tableName: string, initialData: T[] = []) {
-  const [data, setData] = useState<T[]>(initialData);
-  const [loading, setLoading] = useState(true);
+function useDatabase(tableName: string) {
+  const { token } = useAuth();
+  const { addNotification } = useNotifications();
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load data from database
-  const loadData = useCallback(async () => {
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-      const result = await db.getAll(tableName);
-      setData(result || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load data');
-      console.error(`Failed to load ${tableName}:`, err);
+      const response = await axios.get(`${API_BASE_URL}/${tableName}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setData(response.data);
+    } catch (err: any) {
+      setError(err.message || 'Error fetching data');
+      addNotification({ message: `Error fetching ${tableName}: ${err.message}`, type: 'error' });
     } finally {
       setLoading(false);
     }
-  }, [tableName]);
+  }, [tableName, token, addNotification]);
 
-  // Add new record
-  const addRecord = useCallback(async (record: Omit<T, 'id'>) => {
-    try {
-      setError(null);
-      const id = await db.add(tableName, record);
-      const newRecord = { ...record, id } as T;
-      setData(prev => [...prev, newRecord]);
-      return id;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add record');
-      throw err;
-    }
-  }, [tableName]);
-
-  // Update existing record
-  const updateRecord = useCallback(async (id: number, updates: Partial<T>) => {
-    try {
-      setError(null);
-      await db.update(tableName, id, updates);
-      setData(prev => 
-        prev.map(item => 
-          (item as any).id === id ? { ...item, ...updates } : item
-        )
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update record');
-      throw err;
-    }
-  }, [tableName]);
-
-  // Delete record
-  const deleteRecord = useCallback(async (id: number) => {
-    try {
-      setError(null);
-      await db.delete(tableName, id);
-      setData(prev => prev.filter(item => (item as any).id !== id));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete record');
-      throw err;
-    }
-  }, [tableName]);
-
-  // Refresh data from database
-  const refresh = useCallback(() => {
-    loadData();
-  }, [loadData]);
-
-  // Load data on mount
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    fetchData();
+  }, [fetchData]);
 
-  return {
-    data,
-    loading,
-    error,
-    addRecord,
-    updateRecord,
-    deleteRecord,
-    refresh
-  };
-}
+  const addRecord = useCallback(async (record: any) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.post(`${API_BASE_URL}/${tableName}`, record, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setData(prevData => [...prevData, response.data]);
+      addNotification({ message: `${tableName.slice(0, -1)} added successfully`, type: 'success' });
+      return response.data;
+    } catch (err: any) {
+      setError(err.message || 'Error adding record');
+      addNotification({ message: `Error adding to ${tableName}: ${err.message}`, type: 'error' });
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [tableName, token, addNotification]);
 
-/**
- * Hook for patient management operations
- */
-export function usePatients() {
-  const {
-    data: patients,
-    loading,
-    error,
-    addRecord,
-    updateRecord,
-    deleteRecord,
-    refresh
-  } = useDatabase('patients');
-
-  const addPatient = useCallback(async (patientData: any) => {
-    const patient = {
-      ...patientData,
-      patient_id: `P${Date.now()}`,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-    return addRecord(patient);
-  }, [addRecord]);
-
-  const updatePatient = useCallback(async (id: number, updates: any) => {
-    const patientUpdates = {
-      ...updates,
-      updated_at: new Date().toISOString()
-    };
-    return updateRecord(id, patientUpdates);
-  }, [updateRecord]);
-
-  return {
-    patients,
-    loading,
-    error,
-    addPatient,
-    updatePatient,
-    deletePatient: deleteRecord,
-    refreshPatients: refresh
-  };
-}
-
-/**
- * Hook for appointment management operations
- */
+  const updateRecord = useCallback(async (id: number, updates: any) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.put(`${API_BASE_URL}/${tableName}/${id}`, updates, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setData(prevData => prevData.map(item => item.id === id ? response.data : item));
+      addNotification({ message: `${tableName.slice(0, -1)} updated successfully`, type: 'success' });
 export function useAppointments() {
   const {
     data: appointments,
@@ -206,57 +134,55 @@ export function useDoctors() {
     error,
     addDoctor,
     updateDoctor: updateRecord,
-    deleteDoctor: deleteRecord,
+    error,
     refreshDoctors: refresh
-  };
+    
 }
 
 /**
  * Hook for medical records management
  */
-export function useMedicalRecords() {
   const {
-    data: records,
+    error,
     loading,
     error,
     addRecord,
-    updateRecord,
     deleteRecord,
-    refresh
+      ...te
   } = useDatabase('medical_records');
 
   const addMedicalRecord = useCallback(async (recordData: any) => {
-    const record = {
+    return addRecord
       ...recordData,
       record_id: `MR${Date.now()}`,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
-    return addRecord(record);
+    deleteLabTest: deleteReco
   }, [addRecord]);
 
   return {
-    records,
+ * Hook for 
     loading,
-    error,
+  const {
     addMedicalRecord,
     updateMedicalRecord: updateRecord,
     deleteMedicalRecord: deleteRecord,
     refreshMedicalRecords: refresh
   };
-}
 
-/**
+
+   
  * Hook for billing management operations
- */
+   
 export function useBilling() {
-  const {
+    retur
     data: bills,
-    loading,
+  return {
     error,
-    addRecord,
+    error,
     updateRecord,
-    deleteRecord,
+    deleteBed: de
     refresh
   } = useDatabase('billing');
 
@@ -266,7 +192,7 @@ export function useBilling() {
       invoice_number: `INV${Date.now()}`,
       status: 'pending',
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+    deleteRecord,
     };
     return addRecord(bill);
   }, [addRecord]);
@@ -274,59 +200,59 @@ export function useBilling() {
   return {
     bills,
     loading,
-    error,
+    return
     addBill,
     updateBill: updateRecord,
     deleteBill: deleteRecord,
     refreshBills: refresh
   };
-}
+ 
 
-/**
+}
  * Hook for inventory management operations
- */
+ * 
 export function useInventory() {
   const {
     data: inventory,
-    loading,
+    error,
     error,
     addRecord,
     updateRecord,
-    deleteRecord,
+
     refresh
   } = useDatabase('inventory');
 
   const addInventoryItem = useCallback(async (itemData: any) => {
     const item = {
-      ...itemData,
+  }, [addRecord]);
       item_code: `ITM${Date.now()}`,
-      status: 'active',
+    return updateRecord
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
-    return addRecord(item);
+
   }, [addRecord]);
 
   return {
-    inventory,
+    updateNoti
     loading,
-    error,
+    refres
     addInventoryItem,
     updateInventoryItem: updateRecord,
     deleteInventoryItem: deleteRecord,
-    refreshInventory: refresh
-  };
-}
 
-/**
+  };
+
+
+
  * Hook for lab tests management
- */
+
 export function useLabTests() {
   const {
     data: labTests,
-    loading,
+
     error,
-    addRecord,
+
     updateRecord,
     deleteRecord,
     refresh
@@ -344,7 +270,7 @@ export function useLabTests() {
   }, [addRecord]);
 
   return {
-    labTests,
+
     loading,
     error,
     addLabTest,
@@ -352,17 +278,17 @@ export function useLabTests() {
     deleteLabTest: deleteRecord,
     refreshLabTests: refresh
   };
-}
 
-/**
+
+
  * Hook for bed management operations
- */
+
 export function useBeds() {
-  const {
+
     data: beds,
     loading,
     error,
-    addRecord,
+
     updateRecord,
     deleteRecord,
     refresh
@@ -370,35 +296,35 @@ export function useBeds() {
 
   const addBed = useCallback(async (bedData: any) => {
     const bed = {
-      ...bedData,
+
       bed_number: bedData.bed_number || `B${Date.now()}`,
       status: 'available',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
-    return addRecord(bed);
+
   }, [addRecord]);
 
   return {
-    beds,
+
     loading,
-    error,
+
     addBed,
     updateBed: updateRecord,
     deleteBed: deleteRecord,
-    refreshBeds: refresh
-  };
-}
 
-/**
+  };
+
+
+
  * Hook for user management operations
- */
+
 export function useUsers() {
   const {
     data: users,
-    loading,
+
     error,
-    addRecord,
+
     updateRecord,
     deleteRecord,
     refresh
@@ -412,11 +338,11 @@ export function useUsers() {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
-    return addRecord(user);
+
   }, [addRecord]);
 
   return {
-    users,
+
     loading,
     error,
     addUser,
@@ -424,17 +350,17 @@ export function useUsers() {
     deleteUser: deleteRecord,
     refreshUsers: refresh
   };
-}
 
-/**
+
+
  * Hook for notifications management
- */
+
 export function useNotifications() {
-  const {
+
     data: notifications,
     loading,
     error,
-    addRecord,
+
     updateRecord,
     deleteRecord,
     refresh
@@ -446,26 +372,25 @@ export function useNotifications() {
       status: 'unread',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
-    };
+
     return addRecord(notification);
-  }, [addRecord]);
+
 
   const markAsRead = useCallback(async (id: number) => {
     return updateRecord(id, { 
-      status: 'read',
+
       read_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     });
   }, [updateRecord]);
 
-  return {
+
     notifications,
-    loading,
+
     error,
-    addNotification,
+
     updateNotification: updateRecord,
     deleteNotification: deleteRecord,
     markAsRead,
     refreshNotifications: refresh
   };
-}

@@ -172,58 +172,58 @@ export default function LandingPage() {
   ]
 
   return (
-    <div className=\"min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100\">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Hero Section */}
-      <section className=\"relative overflow-hidden\">
-        <div className=\"absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-700\"></div>
-        <div className=\"relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24\">
-          <div className=\"text-center text-white\">
-            <div className=\"flex items-center justify-center mb-6\">
-              <div className=\"flex items-center justify-center w-16 h-16 bg-white text-blue-600 rounded-2xl mr-4\">
-                <Heart className=\"w-10 h-10\" weight=\"fill\" />
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-700"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <div className="text-center text-white">
+            <div className="flex items-center justify-center mb-6">
+              <div className="flex items-center justify-center w-16 h-16 bg-white text-blue-600 rounded-2xl mr-4">
+                <Heart className="w-10 h-10" weight="fill" />
               </div>
-              <div className=\"text-left\">
-                <h1 className=\"text-5xl font-bold mb-2\">MedCare Rural</h1>
-                <p className=\"text-xl opacity-90\">Hospital Management System</p>
+              <div className="text-left">
+                <h1 className="text-5xl font-bold mb-2">MedCare Rural</h1>
+                <p className="text-xl opacity-90">Hospital Management System</p>
               </div>
             </div>
             
-            <div className=\"max-w-3xl mx-auto mb-8\">
-              <p className=\"text-2xl mb-4 font-light\">
+            <div className="max-w-3xl mx-auto mb-8">
+              <p className="text-2xl mb-4 font-light">
                 Complete Healthcare Management Solution for Rural Hospitals
               </p>
-              <p className=\"text-lg opacity-90\">
+              <p className="text-lg opacity-90">
                 Designed specifically for small and medium hospitals in rural India with offline-first architecture, 
                 multi-language support, and comprehensive healthcare management features.
               </p>
             </div>
 
-            <div className=\"flex flex-wrap items-center justify-center gap-4 mb-12\">
-              <Badge variant=\"secondary\" className=\"bg-white/20 text-white border-white/30 px-4 py-2\">
-                <Zap className=\"w-4 h-4 mr-2\" />
+            <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
+              <Badge variant="secondary" className="bg-white/20 text-white border-white/30 px-4 py-2">
+                <Zap className="w-4 h-4 mr-2" />
                 Offline-First Design
               </Badge>
-              <Badge variant=\"secondary\" className=\"bg-white/20 text-white border-white/30 px-4 py-2\">
-                <Database className=\"w-4 h-4 mr-2\" />
+              <Badge variant="secondary" className="bg-white/20 text-white border-white/30 px-4 py-2">
+                <Database className="w-4 h-4 mr-2" />
                 MySQL Database
               </Badge>
-              <Badge variant=\"secondary\" className=\"bg-white/20 text-white border-white/30 px-4 py-2\">
-                <Shield className=\"w-4 h-4 mr-2\" />
+              <Badge variant="secondary" className="bg-white/20 text-white border-white/30 px-4 py-2">
+                <Shield className="w-4 h-4 mr-2" />
                 HIPAA Compliant
               </Badge>
-              <Badge variant=\"secondary\" className=\"bg-white/20 text-white border-white/30 px-4 py-2\">
-                <Award className=\"w-4 h-4 mr-2\" />
+              <Badge variant="secondary" className="bg-white/20 text-white border-white/30 px-4 py-2">
+                <Award className="w-4 h-4 mr-2" />
                 Premium Software
               </Badge>
             </div>
 
-            <div className=\"flex flex-col sm:flex-row items-center justify-center gap-4\">
-              <Button size=\"lg\" className=\"bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg\">
-                <Download className=\"w-5 h-5 mr-2\" />
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg">
+                <Download className="w-5 h-5 mr-2" />
                 Get Demo Access
               </Button>
-              <Button size=\"lg\" variant=\"outline\" className=\"border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-lg\">
-                <Play className=\"w-5 h-5 mr-2\" />
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-lg">
+                <Play className="w-5 h-5 mr-2" />
                 Watch Demo Video
               </Button>
             </div>
@@ -232,28 +232,28 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className=\"py-20 bg-white\">
-        <div className=\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8\">
-          <div className=\"text-center mb-16\">
-            <h2 className=\"text-4xl font-bold text-gray-900 mb-4\">Complete Healthcare Management</h2>
-            <p className=\"text-xl text-gray-600 max-w-3xl mx-auto\">
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Complete Healthcare Management</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Everything you need to run a modern hospital efficiently, from patient registration to billing and inventory management.
             </p>
           </div>
 
-          <div className=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8\">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => {
               const Icon = feature.icon
               return (
-                <Card key={index} className=\"border-0 shadow-lg hover:shadow-xl transition-shadow duration-300\">
-                  <CardHeader className=\"text-center pb-4\">
-                    <div className=\"w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4\">
-                      <Icon className=\"w-8 h-8 text-blue-600\" />
+                <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                  <CardHeader className="text-center pb-4">
+                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Icon className="w-8 h-8 text-blue-600" />
                     </div>
-                    <CardTitle className=\"text-lg font-semibold\">{feature.title}</CardTitle>
+                    <CardTitle className="text-lg font-semibold">{feature.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className=\"text-gray-600 text-center\">{feature.description}</p>
+                    <p className="text-gray-600 text-center">{feature.description}</p>
                   </CardContent>
                 </Card>
               )
@@ -263,23 +263,23 @@ export default function LandingPage() {
       </section>
 
       {/* Benefits Section */}
-      <section className=\"py-20 bg-gray-50\">
-        <div className=\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8\">
-          <div className=\"text-center mb-16\">
-            <h2 className=\"text-4xl font-bold text-gray-900 mb-4\">Why Choose MedCare Rural?</h2>
-            <p className=\"text-xl text-gray-600\">Built specifically for the unique challenges of rural healthcare</p>
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Choose MedCare Rural?</h2>
+            <p className="text-xl text-gray-600">Built specifically for the unique challenges of rural healthcare</p>
           </div>
 
-          <div className=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8\">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {benefits.map((benefit, index) => {
               const Icon = benefit.icon
               return (
-                <div key={index} className=\"text-center\">
-                  <div className=\"w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6\">
-                    <Icon className=\"w-10 h-10 text-white\" />
+                <div key={index} className="text-center">
+                  <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Icon className="w-10 h-10 text-white" />
                   </div>
-                  <h3 className=\"text-xl font-semibold mb-3\">{benefit.title}</h3>
-                  <p className=\"text-gray-600\">{benefit.description}</p>
+                  <h3 className="text-xl font-semibold mb-3">{benefit.title}</h3>
+                  <p className="text-gray-600">{benefit.description}</p>
                 </div>
               )
             })}
@@ -288,27 +288,27 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials Section */}
-      <section className=\"py-20 bg-white\">
-        <div className=\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8\">
-          <div className=\"text-center mb-16\">
-            <h2 className=\"text-4xl font-bold text-gray-900 mb-4\">Trusted by Healthcare Professionals</h2>
-            <p className=\"text-xl text-gray-600\">See what hospital staff are saying about MedCare Rural</p>
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Trusted by Healthcare Professionals</h2>
+            <p className="text-xl text-gray-600">See what hospital staff are saying about MedCare Rural</p>
           </div>
 
-          <div className=\"grid grid-cols-1 md:grid-cols-3 gap-8\">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className=\"border-0 shadow-lg\">
-                <CardContent className=\"p-8\">
-                  <div className=\"flex items-center mb-4\">
+              <Card key={index} className="border-0 shadow-lg">
+                <CardContent className="p-8">
+                  <div className="flex items-center mb-4">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className=\"w-5 h-5 text-yellow-400\" weight=\"fill\" />
+                      <Star key={i} className="w-5 h-5 text-yellow-400" weight="fill" />
                     ))}
                   </div>
-                  <p className=\"text-gray-600 mb-6 italic\">\"{testimonial.content}\"</p>
+                  <p className="text-gray-600 mb-6 italic">"{testimonial.content}"</p>
                   <div>
-                    <p className=\"font-semibold text-gray-900\">{testimonial.name}</p>
-                    <p className=\"text-sm text-gray-600\">{testimonial.role}</p>
-                    <p className=\"text-sm text-blue-600\">{testimonial.hospital}</p>
+                    <p className="font-semibold text-gray-900">{testimonial.name}</p>
+                    <p className="text-sm text-gray-600">{testimonial.role}</p>
+                    <p className="text-sm text-blue-600">{testimonial.hospital}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -318,41 +318,41 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section className=\"py-20 bg-gray-50\">
-        <div className=\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8\">
-          <div className=\"text-center mb-16\">
-            <h2 className=\"text-4xl font-bold text-gray-900 mb-4\">Simple, Transparent Pricing</h2>
-            <p className=\"text-xl text-gray-600\">One-time purchase with no recurring fees. Own your software forever.</p>
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Simple, Transparent Pricing</h2>
+            <p className="text-xl text-gray-600">One-time purchase with no recurring fees. Own your software forever.</p>
           </div>
 
-          <div className=\"grid grid-cols-1 md:grid-cols-3 gap-8\">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {pricingPlans.map((plan, index) => (
               <Card key={index} className={`relative border-0 shadow-lg ${plan.popular ? 'ring-2 ring-blue-600 scale-105' : ''}`}>
                 {plan.popular && (
-                  <div className=\"absolute -top-4 left-1/2 transform -translate-x-1/2\">
-                    <Badge className=\"bg-blue-600 text-white px-4 py-1\">Most Popular</Badge>
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <Badge className="bg-blue-600 text-white px-4 py-1">Most Popular</Badge>
                   </div>
                 )}
-                <CardHeader className=\"text-center pb-8\">
-                  <CardTitle className=\"text-2xl font-bold mb-2\">{plan.name}</CardTitle>
-                  <div className=\"mb-4\">
-                    <span className=\"text-4xl font-bold text-blue-600\">{plan.price}</span>
-                    <span className=\"text-gray-600 ml-2\">{plan.period}</span>
+                <CardHeader className="text-center pb-8">
+                  <CardTitle className="text-2xl font-bold mb-2">{plan.name}</CardTitle>
+                  <div className="mb-4">
+                    <span className="text-4xl font-bold text-blue-600">{plan.price}</span>
+                    <span className="text-gray-600 ml-2">{plan.period}</span>
                   </div>
-                  <p className=\"text-gray-600\">{plan.description}</p>
+                  <p className="text-gray-600">{plan.description}</p>
                 </CardHeader>
                 <CardContent>
-                  <ul className=\"space-y-3 mb-8\">
+                  <ul className="space-y-3 mb-8">
                     {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className=\"flex items-center\">
-                        <CheckCircle className=\"w-5 h-5 text-green-600 mr-3 flex-shrink-0\" />
-                        <span className=\"text-gray-700\">{feature}</span>
+                      <li key={featureIndex} className="flex items-center">
+                        <CheckCircle className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
+                        <span className="text-gray-700">{feature}</span>
                       </li>
                     ))}
                   </ul>
-                  <Button className={`w-full ${plan.popular ? 'bg-blue-600 hover:bg-blue-700' : ''}`} size=\"lg\">
+                  <Button className={`w-full ${plan.popular ? 'bg-blue-600 hover:bg-blue-700' : ''}`} size="lg">
                     {plan.price === 'Custom' ? 'Contact Sales' : 'Get Started'}
-                    <ArrowRight className=\"w-4 h-4 ml-2\" />
+                    <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </CardContent>
               </Card>
@@ -362,19 +362,19 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className=\"py-20 bg-blue-600\">
-        <div className=\"max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8\">
-          <h2 className=\"text-4xl font-bold text-white mb-6\">Ready to Transform Your Hospital?</h2>
-          <p className=\"text-xl text-blue-100 mb-8\">
+      <section className="py-20 bg-blue-600">
+        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+          <h2 className="text-4xl font-bold text-white mb-6">Ready to Transform Your Hospital?</h2>
+          <p className="text-xl text-blue-100 mb-8">
             Join hundreds of hospitals already using MedCare Rural to improve patient care and operational efficiency.
           </p>
-          <div className=\"flex flex-col sm:flex-row items-center justify-center gap-4\">
-            <Button size=\"lg\" className=\"bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg\">
-              <PhoneCall className=\"w-5 h-5 mr-2\" />
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg">
+              <PhoneCall className="w-5 h-5 mr-2" />
               Schedule Demo Call
             </Button>
-            <Button size=\"lg\" variant=\"outline\" className=\"border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-lg\">
-              <Mail className=\"w-5 h-5 mr-2\" />
+            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-lg">
+              <Mail className="w-5 h-5 mr-2" />
               Request Quote
             </Button>
           </div>
@@ -382,42 +382,42 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className=\"bg-gray-900 text-white py-12\">
-        <div className=\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8\">
-          <div className=\"grid grid-cols-1 md:grid-cols-4 gap-8\">
+      <footer className="bg-gray-900 text-white py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <div className=\"flex items-center mb-4\">
-                <Heart className=\"w-8 h-8 text-blue-400 mr-2\" weight=\"fill\" />
-                <span className=\"text-xl font-bold\">MedCare Rural</span>
+              <div className="flex items-center mb-4">
+                <Heart className="w-8 h-8 text-blue-400 mr-2" weight="fill" />
+                <span className="text-xl font-bold">MedCare Rural</span>
               </div>
-              <p className=\"text-gray-400\">
+              <p className="text-gray-400">
                 Complete hospital management solution designed for rural healthcare facilities.
               </p>
             </div>
             
             <div>
-              <h3 className=\"text-lg font-semibold mb-4\">Product</h3>
-              <ul className=\"space-y-2 text-gray-400\">
-                <li><a href=\"#features\" className=\"hover:text-white\">Features</a></li>
-                <li><a href=\"#pricing\" className=\"hover:text-white\">Pricing</a></li>
-                <li><a href=\"#demo\" className=\"hover:text-white\">Demo</a></li>
-                <li><a href=\"#documentation\" className=\"hover:text-white\">Documentation</a></li>
+              <h3 className="text-lg font-semibold mb-4">Product</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><a href="#features" className="hover:text-white">Features</a></li>
+                <li><a href="#pricing" className="hover:text-white">Pricing</a></li>
+                <li><a href="#demo" className="hover:text-white">Demo</a></li>
+                <li><a href="#documentation" className="hover:text-white">Documentation</a></li>
               </ul>
             </div>
             
             <div>
-              <h3 className=\"text-lg font-semibold mb-4\">Support</h3>
-              <ul className=\"space-y-2 text-gray-400\">
-                <li><a href=\"#help\" className=\"hover:text-white\">Help Center</a></li>
-                <li><a href=\"#training\" className=\"hover:text-white\">Training</a></li>
-                <li><a href=\"#contact\" className=\"hover:text-white\">Contact Us</a></li>
-                <li><a href=\"#maintenance\" className=\"hover:text-white\">Maintenance Plans</a></li>
+              <h3 className="text-lg font-semibold mb-4">Support</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><a href="#help" className="hover:text-white">Help Center</a></li>
+                <li><a href="#training" className="hover:text-white">Training</a></li>
+                <li><a href="#contact" className="hover:text-white">Contact Us</a></li>
+                <li><a href="#maintenance" className="hover:text-white">Maintenance Plans</a></li>
               </ul>
             </div>
             
             <div>
-              <h3 className=\"text-lg font-semibold mb-4\">Contact</h3>
-              <div className=\"space-y-2 text-gray-400\">
+              <h3 className="text-lg font-semibold mb-4">Contact</h3>
+              <div className="space-y-2 text-gray-400">
                 <p>📧 sales@medcare-rural.com</p>
                 <p>📞 +91-XXXX-XXXXXX</p>
                 <p>🕒 9 AM - 6 PM IST</p>
@@ -426,7 +426,7 @@ export default function LandingPage() {
             </div>
           </div>
           
-          <div className=\"border-t border-gray-800 pt-8 mt-8 text-center text-gray-400\">
+          <div className="border-t border-gray-800 pt-8 mt-8 text-center text-gray-400">
             <p>&copy; 2024 MedCare Rural. All rights reserved. This is premium commercial software.</p>
           </div>
         </div>
