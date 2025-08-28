@@ -88,16 +88,18 @@ function App() {
         </div>
       )
     }
-    return <LoginForm onLogin={() => {
-      // After successful login, redirect to dashboard
-      setActiveTab('dashboard')
-    }} />
+    // Show login form for any other tab when not authenticated
+    return <LoginForm />
   }
 
-  // Auto-redirect to dashboard on first login if on landing
+  // Auto-redirect to dashboard after successful login
   useEffect(() => {
-    if (isAuthenticated && activeTab === 'landing') {
-      setActiveTab('dashboard')
+    if (isAuthenticated) {
+      // If user just logged in and is not on a valid authenticated tab, redirect to dashboard
+      const validTabs = ['dashboard', 'patients', 'appointments', 'doctors', 'records', 'lab', 'beds', 'billing', 'inventory', 'notifications', 'users'];
+      if (!validTabs.includes(activeTab)) {
+        setActiveTab('dashboard');
+      }
     }
   }, [isAuthenticated, activeTab])
 

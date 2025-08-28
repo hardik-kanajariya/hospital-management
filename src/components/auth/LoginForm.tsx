@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { EyeIcon } from 'lucide-react';
 
 interface LoginFormProps {
-  onLogin: () => void;
+  onLogin?: () => void;
 }
 
 export default function LoginForm({ onLogin }: LoginFormProps) {
@@ -22,17 +22,17 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
       toast.error('Please enter both email and password');
       return;
     }
 
     const result = await login(email, password);
-    
+
     if (result.success) {
       toast.success('Login successful!');
-      onLogin();
+      onLogin?.(); // Only call if onLogin is provided
     } else {
       toast.error(result.error || 'Login failed');
     }
@@ -68,7 +68,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
               <p className="text-muted-foreground">Hospital Management System</p>
             </div>
           </CardHeader>
-          
+
           <CardContent className="space-y-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -83,7 +83,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
@@ -107,10 +107,10 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
                   </Button>
                 </div>
               </div>
-              
-              <Button 
-                type="submit" 
-                className="w-full h-11" 
+
+              <Button
+                type="submit"
+                className="w-full h-11"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -137,7 +137,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
               Try different user roles to explore the system features
             </p>
           </CardHeader>
-          
+
           <CardContent className="space-y-4">
             <div className="grid gap-3">
               {demoAccounts.map((account) => {
@@ -148,7 +148,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
                     className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <Badge 
+                      <Badge
                         variant={account.role === 'super_admin' ? 'destructive' : 'secondary'}
                         className="min-w-fit"
                       >
@@ -172,7 +172,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
                 );
               })}
             </div>
-            
+
             <div className="pt-4 border-t">
               <p className="text-xs text-muted-foreground text-center">
                 All demo accounts use password: <span className="font-mono font-semibold">admin123</span>
