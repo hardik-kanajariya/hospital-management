@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { db } from '@/lib/database';
 import { User, UserRole, ROLE_CONFIGS } from '@/types/auth';
 
 interface AuthState {
@@ -9,42 +9,86 @@ interface AuthState {
 }
 
 export function useAuth() {
-  const [authState, setAuthState] = useKV<AuthState>('auth-state', {
+  const [authState, setAuthState] = useState<AuthState>({
     user: null,
     isAuthenticated: false,
     isLoading: false
   });
 
+  // Check for existing session on mount
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    const savedUser = localStorage.getItem('current_user');
+    
+    if (token && savedUser) {
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        setAuthState({
+          user: parsedUser,
+          isAuthenticated: true,
+          isLoading: false
+        });
+      } catch (error) {
+        console.error('Failed to parse saved user:', error);
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('current_user');
+      }
+    }
+  }, []);
+
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
     
     try {
-      // Simulate API call - in real implementation, this would call your backend
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (db.isOnline()) {
+        // Try database authentication first
+        const authenticatedUser = await db.authenticate(email, password);
+        
+        // Store user data
+        localStorage.setItem('current_user', JSON.stringify(authenticatedUser));
+        
+        setAuthState({
+          user: authenticatedUser,
+          isAuthenticated: true,
+          isLoading: false
+        });
+
+        return { success: true };
+      } else {
+        // Offline mode - use demo users
+        const userRole = getUserRoleFromEmail(email);
+        
+        // Simple password check for demo
+        if (password === 'password') {
+          const user: User = {
+            id: crypto.randomUUID(),
+            email,
+            name: getNameFromEmail(email),
+            role: userRole,
+            isActive: true,
+            createdAt: new Date().toISOString(),
+            lastLogin: new Date().toISOString(),
+            permissions: ROLE_CONFIGS.find(r => r.role === userRole)?.permissions || []
+          };
+
+          // Store user data
+          localStorage.setItem('current_user', JSON.stringify(user));
+          localStorage.setItem('auth_token', 'offline_token');
+
+          setAuthState({
+            user,
+            isAuthenticated: true,
+            isLoading: false
+          });
+
+          return { success: true };
+        }
+      }
       
-      // For demo purposes, create a user based on email
-      const userRole = getUserRoleFromEmail(email);
-      const user: User = {
-        id: crypto.randomUUID(),
-        email,
-        name: getNameFromEmail(email),
-        role: userRole,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString(),
-        permissions: ROLE_CONFIGS.find(r => r.role === userRole)?.permissions || []
-      };
-
-      setAuthState({
-        user,
-        isAuthenticated: true,
-        isLoading: false
-      });
-
-      return { success: true };
+      throw new Error('Invalid credentials');
     } catch (error) {
       setAuthState(prev => ({ ...prev, isLoading: false }));
-      return { success: false, error: 'Invalid credentials' };
+      return { success: false, error: error instanceof Error ? error.message : 'Authentication failed' };
     }
   };
 
@@ -54,6 +98,13 @@ export function useAuth() {
       isAuthenticated: false,
       isLoading: false
     });
+    
+    // Clear stored data
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('current_user');
+    
+    // Logout from database
+    db.logout();
   };
 
   const hasPermission = (module: string, action: 'create' | 'read' | 'update' | 'delete'): boolean => {

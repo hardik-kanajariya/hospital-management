@@ -2,119 +2,92 @@
 
 ## Core Purpose & Success
 
-**Mission Statement**: Transform rural healthcare delivery through an intuitive, offline-capable hospital management system that works reliably in areas with limited internet connectivity.
+**Mission Statement**: Provide a comprehensive, offline-capable hospital management system specifically designed for rural healthcare facilities in India with limited internet connectivity.
 
 **Success Indicators**: 
-- 50+ rural hospitals deployed within first year
-- 95% uptime including offline operations
+- 50+ rural hospitals adopting the system in Year 1
+- 95% uptime with offline capabilities
 - 30% reduction in administrative overhead
-- Improved patient data accuracy and accessibility
+- Improved patient record accuracy and accessibility
 
 **Experience Qualities**: Reliable, Intuitive, Comprehensive
 
 ## Project Classification & Approach
 
-**Complexity Level**: Complex Application with offline-first architecture
-- Advanced multi-module functionality 
-- Role-based access control
-- Real-time sync capabilities
-- Comprehensive medical workflows
+**Complexity Level**: Complex Application (advanced functionality, role-based access, offline sync)
+**Primary User Activity**: Creating and Managing (patient records, appointments, billing, inventory)
 
-**Primary User Activity**: Creating and Managing medical data with seamless offline/online transitions
+## Core Problem Analysis
 
-## Technical Architecture
-
-### Database Strategy
-- **Primary Database**: MySQL 8.0+ for server-side data persistence
-- **Offline Storage**: IndexedDB for client-side data caching and offline operations
-- **Sync Engine**: Bidirectional sync with conflict resolution
-- **API Layer**: RESTful endpoints with authentication and authorization
-
-### Offline-First Design
-- All operations work offline by default
-- Automatic background sync when connectivity restored
-- Conflict resolution for concurrent edits
-- Visual indicators for sync status
+Rural hospitals face critical challenges:
+- Manual paper-based record keeping
+- No appointment scheduling system
+- Inefficient billing and insurance processing
+- Poor inventory management
+- Limited internet connectivity
+- Staff with varying technical literacy
 
 ## Essential Features
 
-### Core Medical Modules
-1. **Patient Management** - Complete patient records with offline access
-2. **Appointment Scheduling** - Calendar with real-time availability
-3. **Medical Records** - Electronic health records with history
-4. **Billing System** - Insurance claims and payment processing
-5. **Inventory Management** - Medicine and supply tracking
-6. **Lab Management** - Test ordering and result tracking
-7. **Bed Management** - Occupancy and room assignments
-8. **Doctor Scheduling** - Availability and shift management
+### Core Modules
+1. **Patient Management** - Complete patient records with vaccination tracking and chronic conditions
+2. **Appointment Scheduling** - Doctor availability tracking and appointment management
+3. **Medical Records** - Electronic health records with consultation notes
+4. **Billing System** - Insurance claim processing and automated reporting
+5. **Inventory Management** - Medicine and medical supplies tracking
+6. **Doctor Schedule** - Availability tracking and shift planning
+7. **Lab Management** - Test ordering, result tracking, and report generation
+8. **Bed Management** - Occupancy tracking and room assignments
+9. **Role-Based Authentication** - Multi-level access control for different staff
+10. **Offline Synchronization** - Local database with cloud sync when connected
 
 ### Authentication & Authorization
-- Role-based access (Super Admin, Doctor, Nurse, Staff, etc.)
-- Secure JWT authentication
-- Module-level permissions
-- Multi-tenant support
-
-### Sync & Connectivity
-- Automatic background synchronization
-- Manual sync triggers
-- Conflict resolution UI
-- Connection status monitoring
+- Super Admin: Full system access and user management
+- Doctor: Patient records, appointments, prescriptions
+- Nurse: Patient care, vital signs, medication administration
+- Billing Manager: Financial operations, insurance claims
+- Medical Store: Inventory management, stock tracking
+- Lab Technician: Lab tests and results
+- Receptionist: Appointments, patient registration
 
 ## Design Direction
 
 ### Visual Tone & Identity
-**Emotional Response**: Professional confidence with approachable warmth
-**Design Personality**: Clean, medical-grade precision with human touch
-**Visual Metaphors**: Healthcare symbolism with modern digital efficiency
+**Emotional Response**: Professional trust, medical reliability, calm efficiency
+**Design Personality**: Clean, professional, reassuring - like modern medical equipment
+**Visual Metaphors**: Healthcare iconography, medical forms, hospital environments
+**Simplicity Spectrum**: Minimal interface with progressive disclosure for complex functions
 
 ### Color Strategy
-**Color Scheme Type**: Professional medical palette with accessibility focus
-- **Primary Color**: Medical blue (#3B82F6) - trust and professionalism
-- **Secondary Colors**: Clean grays for structure and organization
-- **Accent Color**: Success green (#10B981) for positive actions
-- **Warning**: Medical red (#EF4444) for alerts and critical actions
+**Color Scheme Type**: Medical Professional Palette
+**Primary Color**: Medical Blue (oklch(0.6 0.12 240)) - conveys trust and professionalism
+**Secondary Colors**: Clean whites and light grays for sterile medical environment
+**Accent Color**: Success Green (oklch(0.7 0.15 140)) for positive actions
+**Destructive Color**: Medical Red (oklch(0.65 0.2 20)) for critical alerts
+**Color Psychology**: Blue builds trust, green indicates success/health, red signals urgency
 
 ### Typography System
-**Font Pairing**: Inter for comprehensive readability across medical contexts
-- Clean, modern sans-serif optimized for medical terminology
-- Excellent readability at various sizes
-- Professional appearance suitable for clinical environments
+**Font Selection**: Inter - highly legible, professional, works well at small sizes
+**Typographic Hierarchy**: Clear distinction between headers, body text, and form labels
+**Readability Focus**: High contrast, adequate spacing, larger text for older users
 
-### Component Design
-- Clean, accessible forms optimized for medical data entry
-- Clear visual hierarchy for critical vs. routine information
-- Touch-friendly controls for tablet/mobile use
-- Consistent spacing and visual rhythm
+### Technical Architecture
+**Database**: MySQL with offline IndexedDB synchronization
+**Backend**: Node.js with Express API endpoints
+**Frontend**: React with TypeScript
+**Authentication**: JWT-based with role permissions
+**Offline Support**: IndexedDB for local storage with automatic sync
 
-## Implementation Strategy
+## Implementation Considerations
 
-### Phase 1: Database & Sync Infrastructure
-- MySQL schema design and API endpoints
-- IndexedDB wrapper for offline storage
-- Sync engine with conflict resolution
-- Authentication system
+**Scalability**: Modular architecture supporting 10-300 bed hospitals
+**Offline Requirements**: Complete functionality without internet connection
+**Security**: HIPAA-compliant data encryption and access controls
+**Multi-language**: Support for Hindi, English, and regional languages
+**Mobile Responsive**: Touch-friendly interface for tablets and mobile devices
 
-### Phase 2: Core Medical Modules
-- Patient management with comprehensive records
-- Appointment scheduling with calendar integration
-- Medical records and consultation notes
-- Basic billing functionality
+## Market Differentiation
 
-### Phase 3: Advanced Features
-- Laboratory management system
-- Inventory tracking and alerts
-- Bed management and occupancy
-- Enhanced billing with insurance
-
-### Phase 4: Polish & Deployment
-- Performance optimization
-- Comprehensive testing
-- Documentation and training materials
-- Deployment packaging
-
-## Success Metrics
-- Data sync accuracy: >99.9%
-- Offline operation capability: 100% core functions
-- User adoption rate in rural hospitals
-- Administrative time savings
-- Patient data accuracy improvements
+**Target Market**: Small rural hospitals (10-50 beds) with limited technical infrastructure
+**Pricing Model**: One-time purchase ₹25,000-₹40,000 with optional maintenance
+**Unique Value**: Offline-first design, rural-specific features, affordable pricing

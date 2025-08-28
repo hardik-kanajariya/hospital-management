@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { usePatients } from '@/hooks/useData'
+import { usePatients } from '@/hooks/useDatabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -69,7 +69,7 @@ interface InsuranceInfo {
 }
 
 export default function PatientManagement() {
-  const [patients, patientOperations] = usePatients({ autoSync: true })
+  const { patients, loading, error, addPatient, updatePatient, deletePatient } = usePatients()
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
@@ -90,20 +90,23 @@ export default function PatientManagement() {
   })
 
   // Filter patients based on search
-  const filteredPatients = patients.search(searchTerm, ['name', 'phone', 'patient_id', 'email'])
+  const filteredPatients = patients.filter(patient => 
+    patient.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.phone?.includes(searchTerm) ||
+    patient.patient_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     try {
       if (selectedPatient) {
-        await patientOperations.update(selectedPatient.id, formData)
+        await updatePatient(selectedPatient.id, formData)
         toast.success('Patient updated successfully')
       } else {
-        const patientId = `PAT-${Date.now().toString().slice(-6)}`
-        await patientOperations.create({
+        await addPatient({
           ...formData,
-          patient_id: patientId,
           name: formData.name || '',
           phone: formData.phone || '',
           date_of_birth: formData.date_of_birth || '',
@@ -134,7 +137,7 @@ export default function PatientManagement() {
   const handleDelete = async (patient: Patient) => {
     if (window.confirm('Are you sure you want to delete this patient?')) {
       try {
-        await patientOperations.remove(patient.id)
+        await deletePatient(patient.id)
         toast.success('Patient deleted successfully')
       } catch (error) {
         toast.error('Failed to delete patient')
