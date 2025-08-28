@@ -27,30 +27,6 @@ interface Patient {
   local_changes: boolean;
 }
 
-// Core interfaces
-interface Patient {
-  id: string;
-  patient_id: string;
-  first_name: string;
-  last_name: string;
-  date_of_birth: string;
-  gender: 'male' | 'female' | 'other';
-  phone: string;
-  email?: string;
-  address: string;
-  emergency_contact: ContactInfo;
-  insurance_info?: InsuranceInfo;
-  medical_history: string[];
-  allergies: string[];
-  chronic_conditions: string[];
-  vaccination_records: VaccinationRecord[];
-  blood_group?: string;
-  created_at: string;
-  updated_at: string;
-  synced: boolean;
-  local_changes: boolean;
-}
-
 interface VaccinationRecord {
   vaccine_name: string;
   administered_date: string;
@@ -273,10 +249,10 @@ class DatabaseManager {
   private dbName = 'HospitalDB';
   private dbVersion = 2;
   private baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-  private syncInterval: NodeJS.Timeout | null = null;
+  private syncInterval: number | null = null;
 
   constructor() {
-    this.initialize();
+    // Don't call initialize in constructor to avoid race conditions
   }
 
   /**
