@@ -52,7 +52,13 @@ class ConnectionManager {
   private handleOnline() {
     console.log('Connection restored, attempting sync...')
     this.retryCount = 0
-    this.attemptSync()
+
+    // Debounce sync to prevent multiple rapid syncs
+    setTimeout(() => {
+      if (this.isOnline) {
+        this.attemptSync()
+      }
+    }, 2000)
   }
 
   private handleOffline() {
@@ -101,7 +107,7 @@ class ConnectionManager {
   private async performFullSync() {
     // Import db here to avoid circular dependency
     const { db } = await import('./database')
-    
+
     // Get all pending sync operations
     const pendingOps = await db.query('sync_queue', 'by-timestamp')
     const pending = pendingOps.filter(op => op.status === 'pending')
@@ -111,15 +117,15 @@ class ConnectionManager {
     for (const operation of pending) {
       try {
         await this.syncSingleOperation(operation)
-        
+
         // Mark as completed
-        await db.update('sync_queue', operation.id, { 
+        await db.update('sync_queue', operation.id, {
           status: 'completed',
           error_message: undefined
         })
       } catch (error) {
         console.error(`Failed to sync operation ${operation.id}:`, error)
-        
+
         // Update retry count and status
         const newRetryCount = operation.retry_count + 1
         await db.update('sync_queue', operation.id, {
@@ -182,7 +188,7 @@ class ConnectionManager {
 
   private async pullServerUpdates() {
     const tables = [
-      'patients', 'appointments', 'medical_records', 
+      'patients', 'appointments', 'medical_records',
       'billing', 'inventory', 'lab_tests', 'beds', 'doctors'
     ]
 
@@ -197,13 +203,13 @@ class ConnectionManager {
 
   private async syncTableFromServer(tableName: string) {
     const { db } = await import('./database')
-    
+
     // Get last sync timestamp for this table
     const lastSyncMeta = await db.get('metadata', `last_sync_${tableName}`)
     const lastSync = lastSyncMeta?.value || new Date(0).toISOString()
 
     const endpoint = `/api/${tableName.replace('_', '-')}?updated_since=${lastSync}`
-    
+
     const response = await fetch(endpoint, {
       headers: {
         'Authorization': `Bearer ${apiService.getToken()}`
@@ -231,9 +237,9 @@ class ConnectionManager {
 
   private async mergeServerRecord(tableName: string, serverRecord: any) {
     const { db } = await import('./database')
-    
+
     const localRecord = await db.get(tableName as any, serverRecord.id)
-    
+
     if (!localRecord) {
       // New record from server
       await db.create(tableName as any, {
@@ -245,7 +251,7 @@ class ConnectionManager {
       // Update if server record is newer and no local changes
       const serverTime = new Date(serverRecord.updated_at).getTime()
       const localTime = new Date(localRecord.updated_at).getTime()
-      
+
       if (serverTime > localTime) {
         await db.update(tableName as any, serverRecord.id, {
           ...serverRecord,
@@ -294,10 +300,10 @@ class ConnectionManager {
 
   private handleSyncError() {
     this.retryCount++
-    
+
     if (this.retryCount < this.maxRetries) {
       console.log(`Sync failed, retrying in ${this.retryDelay}ms (attempt ${this.retryCount}/${this.maxRetries})`)
-      
+
       setTimeout(() => {
         if (this.isOnline) {
           this.attemptSync()
@@ -321,7 +327,7 @@ class ConnectionManager {
     if (!this.isOnline) {
       throw new Error('Cannot sync while offline')
     }
-    
+
     this.retryCount = 0
     await this.attemptSync()
   }
@@ -329,7 +335,7 @@ class ConnectionManager {
   async getSyncConflicts(): Promise<SyncConflict[]> {
     const { db } = await import('./database')
     const conflicts = await db.getAll('metadata')
-    
+
     return conflicts
       .filter(item => item.key.startsWith('conflict_') && !item.value.resolved)
       .map(item => ({
@@ -345,13 +351,13 @@ class ConnectionManager {
   async resolveConflict(conflictId: string, resolution: 'local' | 'server'): Promise<void> {
     const { db } = await import('./database')
     const conflict = await db.get('metadata', conflictId)
-    
+
     if (!conflict) {
       throw new Error('Conflict not found')
     }
 
     const { table, recordId, localData, serverData } = conflict.value
-    
+
     if (resolution === 'server') {
       // Accept server version
       await db.update(table as any, recordId, {

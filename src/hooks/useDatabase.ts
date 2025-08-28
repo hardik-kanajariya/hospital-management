@@ -166,6 +166,7 @@ export const initializeOfflineDB = async (): Promise<void> => {
  * Generic hook for database operations with offline support
  */
 export function useDatabase(tableName: string) {
+  const { user } = useAuth();
   const token = localStorage.getItem('auth_token');
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -237,7 +238,12 @@ export function useDatabase(tableName: string) {
   // Sync offline changes when coming online
   useEffect(() => {
     if (isOnline && token) {
-      syncOfflineChanges();
+      // Use debounced sync instead of immediate sync
+      const timeoutId = setTimeout(() => {
+        syncOfflineChanges();
+      }, 1000);
+
+      return () => clearTimeout(timeoutId);
     }
   }, [isOnline, token]);
 
@@ -276,7 +282,10 @@ export function useDatabase(tableName: string) {
       // Refresh data after sync
       await fetchData();
 
-      toast.success('Data synchronized successfully');
+      // Only show sync success to admin and receptionist roles
+      if (user?.role === 'super_admin' || user?.role === 'receptionist') {
+        toast.success('Data synchronized successfully');
+      }
     } catch (err: any) {
       console.error('Sync failed:', err);
     }
@@ -314,7 +323,10 @@ export function useDatabase(tableName: string) {
 
         setData(prevData => [...prevData, savedRecord]);
 
-        toast.info(`${tableName.slice(0, -1)} saved offline - will sync when online`);
+        // Only show offline notifications to admin and receptionist roles
+        if (user?.role === 'super_admin' || user?.role === 'receptionist') {
+          toast.info(`${tableName.slice(0, -1)} saved offline - will sync when online`);
+        }
 
         return savedRecord;
       }
@@ -359,7 +371,10 @@ export function useDatabase(tableName: string) {
 
         setData(prevData => prevData.map(item => item.id === id ? updatedRecord : item));
 
-        toast.info(`${tableName.slice(0, -1)} updated offline - will sync when online`);
+        // Only show offline notifications to admin and receptionist roles
+        if (user?.role === 'super_admin' || user?.role === 'receptionist') {
+          toast.info(`${tableName.slice(0, -1)} updated offline - will sync when online`);
+        }
 
         return updatedRecord;
       }
@@ -394,7 +409,10 @@ export function useDatabase(tableName: string) {
         await offlineDB.addToSyncQueue('delete', tableName, { id });
         setData(prevData => prevData.filter(item => item.id !== id));
 
-        toast.info(`${tableName.slice(0, -1)} marked for deletion - will sync when online`);
+        // Only show offline notifications to admin and receptionist roles
+        if (user?.role === 'super_admin' || user?.role === 'receptionist') {
+          toast.info(`${tableName.slice(0, -1)} marked for deletion - will sync when online`);
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Error deleting record');

@@ -3,6 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/hooks/useAuth'
 import { useNotifications } from '@/hooks/useNotifications'
+import { useSyncManager } from '@/hooks/useSyncManager'
+import SyncStatus from '@/components/common/SyncStatus'
 import { Patient, Appointment, Bill, InventoryItem } from '@/types/hospital'
 import {
   UsersIcon,
@@ -470,6 +472,14 @@ export default function Dashboard() {
             )}
           </CardContent>
         </Card>
+      )}
+
+      {/* Sync Status for Admins and Receptionists */}
+      {(user?.role === 'super_admin' || user?.role === 'receptionist') && (
+        <div className="space-y-6">
+          <h3 className="text-lg font-semibold">System Status</h3>
+          <SyncStatus className="w-full" />
+        </div>
       )}
     </div>
   )

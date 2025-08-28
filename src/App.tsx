@@ -2,13 +2,28 @@ import React, { useState, useEffect } from 'react'
 import { db } from '@/lib/database'
 import { initializeOfflineDB } from '@/hooks/useDatabase'
 import { useNavigation } from '@/hooks/useNavigation'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
 import { useAuth } from '@/hooks/useAuth'
+import { useSyncManager } from '@/hooks/useSyncManager'
 import LoginForm from '@/components/auth/LoginForm'
 import RoleBasedAccess from '@/components/auth/RoleBasedAccess'
 import LandingPage from '@/components/landing/LandingPage'
+import { SyncStatusCard } from '@/components/common/SyncStatus'
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar'
 import {
   UsersIcon,
   CalendarIcon,
@@ -22,7 +37,6 @@ import {
   BedIcon,
   SignOutIcon,
   ShieldIcon,
-  GearIcon,
   BellIcon,
   HouseIcon,
   WifiSlashIcon,
@@ -43,9 +57,9 @@ import UserManagement from '@/components/auth/UserManagement'
 import NotificationCenter from '@/components/hospital/NotificationCenter'
 
 function App() {
-  const [isOnline, setIsOnline] = useState(navigator.onLine)
   const { user, isAuthenticated, logout, hasPermission } = useAuth()
   const { activeTab, setActiveTab } = useNavigation()
+  const { syncState } = useSyncManager()
 
   // Initialize database on app start
   useEffect(() => {
@@ -60,18 +74,6 @@ function App() {
     }
 
     initializeApp()
-
-    // Monitor online/offline status
-    const handleOnline = () => setIsOnline(true)
-    const handleOffline = () => setIsOnline(false)
-
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
-
-    return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
-    }
   }, [])
 
   // Show login form when not authenticated
@@ -85,9 +87,6 @@ function App() {
       </div>
     )
   }
-
-  // Debug info for authenticated state
-  console.log('App render - Authenticated:', isAuthenticated, 'Active Tab:', activeTab, 'User:', user?.name)
 
   // Filter tabs based on user permissions
   const availableTabs = [
@@ -116,231 +115,255 @@ function App() {
     return true;
   })
 
+  // Group navigation items by category
+  const navigationGroups = [
+    {
+      label: 'Overview',
+      items: availableTabs.filter(tab => ['landing', 'dashboard'].includes(tab.id))
+    },
+    {
+      label: 'Patient Care',
+      items: availableTabs.filter(tab => ['patients', 'appointments', 'records', 'lab'].includes(tab.id))
+    },
+    {
+      label: 'Operations',
+      items: availableTabs.filter(tab => ['doctors', 'beds', 'inventory'].includes(tab.id))
+    },
+    {
+      label: 'Administration',
+      items: availableTabs.filter(tab => ['billing', 'notifications', 'users'].includes(tab.id))
+    }
+  ].filter(group => group.items.length > 0)
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'landing':
+        return <LandingPage />
+      case 'dashboard':
+        return <Dashboard />
+      case 'patients':
+        return (
+          <RoleBasedAccess requiredModule="patients">
+            <PatientManagement />
+          </RoleBasedAccess>
+        )
+      case 'appointments':
+        return (
+          <RoleBasedAccess requiredModule="appointments">
+            <AppointmentScheduling />
+          </RoleBasedAccess>
+        )
+      case 'records':
+        return (
+          <RoleBasedAccess requiredModule="medical_records">
+            <MedicalRecords />
+          </RoleBasedAccess>
+        )
+      case 'doctors':
+        return (
+          <RoleBasedAccess requiredModule="doctors">
+            <DoctorSchedule />
+          </RoleBasedAccess>
+        )
+      case 'lab':
+        return (
+          <RoleBasedAccess requiredModule="lab_tests">
+            <LabManagement />
+          </RoleBasedAccess>
+        )
+      case 'beds':
+        return (
+          <RoleBasedAccess requiredModule="beds">
+            <BedManagement />
+          </RoleBasedAccess>
+        )
+      case 'billing':
+        return (
+          <RoleBasedAccess requiredModule="billing">
+            <EnhancedBillingSystem />
+          </RoleBasedAccess>
+        )
+      case 'inventory':
+        return (
+          <RoleBasedAccess requiredModule="inventory">
+            <InventoryManagement />
+          </RoleBasedAccess>
+        )
+      case 'notifications':
+        return <NotificationCenter />
+      case 'users':
+        return <UserManagement />
+      default:
+        return <Dashboard />
+    }
+  }
+
+  const getPageTitle = () => {
+    const currentTab = availableTabs.find(tab => tab.id === activeTab)
+    if (!currentTab) return 'Dashboard'
+
+    switch (activeTab) {
+      case 'dashboard': return 'Dashboard'
+      case 'patients': return 'Patient Management'
+      case 'appointments': return 'Appointment Scheduling'
+      case 'records': return 'Medical Records'
+      case 'doctors': return 'Doctor Schedule Management'
+      case 'lab': return 'Laboratory Management'
+      case 'beds': return 'Bed Management'
+      case 'billing': return 'Billing & Invoicing'
+      case 'inventory': return 'Inventory Management'
+      case 'notifications': return 'Notification Center'
+      case 'users': return 'User Management'
+      default: return currentTab.label
+    }
+  }
+
+  const getPageDescription = () => {
+    switch (activeTab) {
+      case 'dashboard': return 'Overview of hospital operations'
+      case 'patients': return 'Manage patient records and information'
+      case 'appointments': return 'Schedule and manage patient appointments'
+      case 'records': return 'Electronic medical records and consultation notes'
+      case 'doctors': return 'Manage doctor schedules, availability and shifts'
+      case 'lab': return 'Order tests, track results and generate reports'
+      case 'beds': return 'Track bed occupancy and room assignments'
+      case 'billing': return 'Manage billing, payments and financial records'
+      case 'inventory': return 'Track medical supplies and medications'
+      case 'notifications': return 'Send and track SMS and email notifications'
+      case 'users': return 'Manage hospital staff access and permissions'
+      default: return 'Hospital management system'
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 bg-primary text-primary-foreground rounded-lg">
-                <HeartIcon className="w-6 h-6" weight="fill" />
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        {/* Sidebar */}
+        <Sidebar variant="inset">
+          <SidebarHeader className="border-b">
+            <div className="flex items-center gap-3 px-3 py-3">
+              <div className="flex items-center justify-center w-8 h-8 bg-primary text-primary-foreground rounded-lg">
+                <HeartIcon className="w-5 h-5" weight="fill" />
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-foreground">MedCare Rural</h1>
-                <p className="text-sm text-muted-foreground">Hospital Management System</p>
+              <div className="min-w-0">
+                <h1 className="text-lg font-bold text-foreground truncate">MedCare Rural</h1>
+                <p className="text-xs text-muted-foreground truncate">Hospital Management</p>
               </div>
             </div>
+          </SidebarHeader>
 
-            {/* Connection Status Indicator */}
-            <div className="flex items-center gap-4">
-              <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${isOnline
-                ? 'bg-green-100 text-green-800'
-                : 'bg-orange-100 text-orange-800'
-                }`}>
-                {isOnline ? (
-                  <>
-                    <CloudArrowUpIcon className="w-3 h-3" />
-                    Online
-                  </>
-                ) : (
-                  <>
-                    <WifiSlashIcon className="w-3 h-3" />
-                    Offline
-                  </>
-                )}
+          <SidebarContent>
+            {navigationGroups.map((group) => (
+              <SidebarGroup key={group.label}>
+                <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {group.items.map((item) => {
+                      const Icon = item.icon
+                      return (
+                        <SidebarMenuItem key={item.id}>
+                          <SidebarMenuButton
+                            onClick={() => setActiveTab(item.id)}
+                            isActive={activeTab === item.id}
+                          >
+                            <Icon className="w-4 h-4" />
+                            <span>{item.label}</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      )
+                    })}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            ))}
+          </SidebarContent>
+
+          <SidebarFooter className="border-t">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <div className="px-3 py-2 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
+                      {user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U'}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium truncate">{user?.name || 'User'}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {user?.role ? user.role.replace('_', ' ').toUpperCase() : 'USER'}
+                      </p>
+                    </div>
+                  </div>
+                  {/* <SyncStatusCard /> */}
+                  <Button variant="outline" size="sm" onClick={logout} className="w-full">
+                    <SignOutIcon className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </div>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarFooter>
+        </Sidebar>
+
+        {/* Main Content */}
+        <div className="flex flex-col flex-1 min-w-0">
+          {/* Header */}
+          <header className="border-b bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50">
+            <div className="flex items-center justify-between h-16 px-6">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger className="lg:hidden" />
+                <div>
+                  <h1 className="text-xl font-semibold text-foreground">{getPageTitle()}</h1>
+                  <p className="text-sm text-muted-foreground">{getPageDescription()}</p>
+                </div>
               </div>
 
-              <div className="text-right">
-                <p className="text-sm font-medium">{user?.name || 'User'}</p>
-                <p className="text-xs text-muted-foreground">
-                  {user?.role ? user.role.replace('_', ' ').toUpperCase() : 'USER'}
+              {/* Connection Status for larger screens */}
+              <div className="hidden sm:flex items-center gap-4">
+                <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${syncState.isOnline
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-orange-100 text-orange-800'
+                  }`}>
+                  {syncState.isOnline ? (
+                    <>
+                      <CloudArrowUpIcon className="w-3 h-3" />
+                      Online
+                    </>
+                  ) : (
+                    <>
+                      <WifiSlashIcon className="w-3 h-3" />
+                      Offline
+                    </>
+                  )}
+                  {syncState.pendingSync > 0 && (
+                    <span className="ml-1">({syncState.pendingSync} pending)</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </header>
+
+          {/* Offline Warning Banner */}
+          {!syncState.isOnline && (
+            <div className="bg-orange-50 border-b border-orange-200 px-6 py-3">
+              <div className="flex items-center gap-2 text-orange-800">
+                <WifiSlashIcon className="w-4 h-4" />
+                <p className="text-sm">
+                  Working offline - Your changes are saved locally and will sync when connection is restored.
                 </p>
               </div>
-              <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
-                {user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U'}
-              </div>
-              <Button variant="outline" size="sm" onClick={logout}>
-                <SignOutIcon className="w-4 h-4" />
-              </Button>
             </div>
-          </div>
-        </div>
-      </header>
+          )}
 
-      {/* Quick Stats Bar */}
-      <div className="bg-muted/30 border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center gap-6 text-sm">
-            <div className="flex items-center gap-2">
-              <UsersIcon className="w-4 h-4 text-primary" />
-              <span className="font-medium">-</span>
-              <span className="text-muted-foreground">Total Patients</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CalendarIcon className="w-4 h-4 text-accent" />
-              <span className="font-medium">-</span>
-              <span className="text-muted-foreground">Today's Appointments</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <PulseIcon className="w-4 h-4 text-destructive" />
-              <span className="font-medium">-</span>
-              <span className="text-muted-foreground">Active Consultations</span>
-            </div>
-            {!isOnline && (
-              <div className="flex items-center gap-2 text-orange-600">
-                <WifiSlashIcon className="w-4 h-4" />
-                <span className="text-muted-foreground">Working Offline - Changes will sync when online</span>
-              </div>
-            )}
-          </div>
+          {/* Page Content */}
+          <main className="flex-1 p-6 space-y-6 overflow-auto">
+            {renderContent()}
+          </main>
         </div>
       </div>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-12 lg:w-fit">
-            {availableTabs.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
-                  <Icon className="w-4 h-4" />
-                  <span className="hidden sm:inline">{tab.label}</span>
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
-
-          <TabsContent value="landing" className="space-y-6">
-            <LandingPage />
-          </TabsContent>
-
-          <TabsContent value="dashboard" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
-                <p className="text-muted-foreground">Overview of hospital operations</p>
-              </div>
-            </div>
-            <Dashboard />
-          </TabsContent>
-
-          <TabsContent value="patients" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">Patient Management</h2>
-                <p className="text-muted-foreground">Manage patient records and information</p>
-              </div>
-            </div>
-            <RoleBasedAccess requiredModule="patients">
-              <PatientManagement />
-            </RoleBasedAccess>
-          </TabsContent>
-
-          <TabsContent value="appointments" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">Appointment Scheduling</h2>
-                <p className="text-muted-foreground">Schedule and manage patient appointments</p>
-              </div>
-            </div>
-            <RoleBasedAccess requiredModule="appointments">
-              <AppointmentScheduling />
-            </RoleBasedAccess>
-          </TabsContent>
-
-          <TabsContent value="records" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">Medical Records</h2>
-                <p className="text-muted-foreground">Electronic medical records and consultation notes</p>
-              </div>
-            </div>
-            <RoleBasedAccess requiredModule="medical_records">
-              <MedicalRecords />
-            </RoleBasedAccess>
-          </TabsContent>
-
-          <TabsContent value="doctors" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">Doctor Schedule Management</h2>
-                <p className="text-muted-foreground">Manage doctor schedules, availability and shifts</p>
-              </div>
-            </div>
-            <RoleBasedAccess requiredModule="doctors">
-              <DoctorSchedule />
-            </RoleBasedAccess>
-          </TabsContent>
-
-          <TabsContent value="lab" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">Laboratory Management</h2>
-                <p className="text-muted-foreground">Order tests, track results and generate reports</p>
-              </div>
-            </div>
-            <RoleBasedAccess requiredModule="lab_tests">
-              <LabManagement />
-            </RoleBasedAccess>
-          </TabsContent>
-
-          <TabsContent value="beds" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">Bed Management</h2>
-                <p className="text-muted-foreground">Track bed occupancy and room assignments</p>
-              </div>
-            </div>
-            <RoleBasedAccess requiredModule="beds">
-              <BedManagement />
-            </RoleBasedAccess>
-          </TabsContent>
-
-          <TabsContent value="billing" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">Billing & Invoicing</h2>
-                <p className="text-muted-foreground">Manage billing, payments and financial records</p>
-              </div>
-            </div>
-            <RoleBasedAccess requiredModule="billing">
-              <EnhancedBillingSystem />
-            </RoleBasedAccess>
-          </TabsContent>
-
-          <TabsContent value="inventory" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">Inventory Management</h2>
-                <p className="text-muted-foreground">Track medical supplies and medications</p>
-              </div>
-            </div>
-            <RoleBasedAccess requiredModule="inventory">
-              <InventoryManagement />
-            </RoleBasedAccess>
-          </TabsContent>
-
-          <TabsContent value="notifications" className="space-y-6">
-            <NotificationCenter />
-          </TabsContent>
-
-          <TabsContent value="users" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">User Management</h2>
-                <p className="text-muted-foreground">Manage hospital staff access and permissions</p>
-              </div>
-            </div>
-            <UserManagement />
-          </TabsContent>
-        </Tabs>
-      </main>
-
       {/* Toast notifications */}
       <Toaster />
-    </div>
+    </SidebarProvider>
   )
 }
 
