@@ -80,7 +80,7 @@ class OfflineDatabase {
     if (!this.db) throw new Error('Database not initialized');
     
     return new Promise((resolve, reject) => {
-      const transaction = this.db.createTransaction([tableName], 'readonly');
+      const transaction = this.db!.transaction([tableName], 'readonly');
       const store = transaction.objectStore(tableName);
       const request = store.getAll();
       
@@ -100,7 +100,7 @@ class OfflineDatabase {
     };
     
     return new Promise((resolve, reject) => {
-      const transaction = this.db.createTransaction([tableName], 'readwrite');
+      const transaction = this.db!.transaction([tableName], 'readwrite');
       const store = transaction.objectStore(tableName);
       const request = store.add(record);
       
@@ -116,7 +116,7 @@ class OfflineDatabase {
     if (!this.db) throw new Error('Database not initialized');
     
     return new Promise((resolve, reject) => {
-      const transaction = this.db.createTransaction([tableName], 'readwrite');
+      const transaction = this.db!.transaction([tableName], 'readwrite');
       const store = transaction.objectStore(tableName);
       const getRequest = store.get(id);
       
@@ -150,7 +150,7 @@ class OfflineDatabase {
     if (!this.db) throw new Error('Database not initialized');
     
     return new Promise((resolve, reject) => {
-      const transaction = this.db.createTransaction([tableName], 'readwrite');
+      const transaction = this.db!.transaction([tableName], 'readwrite');
       const store = transaction.objectStore(tableName);
       const request = store.delete(id);
       
@@ -174,7 +174,7 @@ class OfflineDatabase {
       status: 'pending'
     };
     
-    const transaction = this.db.createTransaction(['sync_queue'], 'readwrite');
+    const transaction = this.db!.transaction(['sync_queue'], 'readwrite');
     const store = transaction.objectStore('sync_queue');
     store.add(syncRecord);
   }
@@ -183,7 +183,7 @@ class OfflineDatabase {
     if (!this.db) return [];
     
     return new Promise((resolve, reject) => {
-      const transaction = this.db.createTransaction(['sync_queue'], 'readonly');
+      const transaction = this.db!.transaction(['sync_queue'], 'readonly');
       const store = transaction.objectStore('sync_queue');
       const request = store.getAll();
       
@@ -196,7 +196,7 @@ class OfflineDatabase {
     if (!this.db) return;
     
     return new Promise((resolve, reject) => {
-      const transaction = this.db.createTransaction(['sync_queue'], 'readwrite');
+      const transaction = this.db!.transaction(['sync_queue'], 'readwrite');
       const store = transaction.objectStore('sync_queue');
       const request = store.clear();
       
