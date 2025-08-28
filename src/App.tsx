@@ -8,22 +8,22 @@ import { useAuth } from '@/hooks/useAuth'
 import LoginForm from '@/components/auth/LoginForm'
 import RoleBasedAccess from '@/components/auth/RoleBasedAccess'
 import LandingPage from '@/components/landing/LandingPage'
-import { 
-  Users, 
-  Calendar, 
-  FileText, 
-  CreditCard, 
-  Package, 
-  Activity,
+import {
+  Users,
+  Calendar,
+  FileText,
+  CreditCard,
+  Package,
+  Pulse,
   Heart,
   UserCircle,
   TestTube,
   Bed,
   SignOut,
   Shield,
-  Settings,
+  Gear,
   Bell,
-  Home,
+  House,
   WifiSlash,
   CloudArrowUp
 } from '@phosphor-icons/react'
@@ -63,10 +63,10 @@ function App() {
     // Monitor online/offline status
     const handleOnline = () => setIsOnline(true)
     const handleOffline = () => setIsOnline(false)
-    
+
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
-    
+
     return () => {
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
@@ -93,8 +93,8 @@ function App() {
 
   // Filter tabs based on user permissions
   const availableTabs = [
-    { id: 'landing', label: 'Home', icon: Home, module: 'dashboard' },
-    { id: 'dashboard', label: 'Dashboard', icon: Activity, module: 'dashboard' },
+    { id: 'landing', label: 'Home', icon: House, module: 'dashboard' },
+    { id: 'dashboard', label: 'Dashboard', icon: Pulse, module: 'dashboard' },
     { id: 'patients', label: 'Patients', icon: Users, module: 'patients' },
     { id: 'appointments', label: 'Appointments', icon: Calendar, module: 'appointments' },
     { id: 'doctors', label: 'Doctors', icon: UserCircle, module: 'doctors' },
@@ -108,13 +108,13 @@ function App() {
   ].filter(tab => {
     // Always show landing page
     if (tab.id === 'landing') return true;
-    
+
     // Check module permission
     if (!hasPermission(tab.module, 'read')) return false;
-    
+
     // Check role requirement if specified
     if (tab.requiresRole && user?.role !== tab.requiresRole) return false;
-    
+
     return true;
   })
 
@@ -133,14 +133,13 @@ function App() {
                 <p className="text-sm text-muted-foreground">Hospital Management System</p>
               </div>
             </div>
-            
+
             {/* Connection Status Indicator */}
             <div className="flex items-center gap-4">
-              <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${
-                isOnline 
-                  ? 'bg-green-100 text-green-800' 
+              <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${isOnline
+                  ? 'bg-green-100 text-green-800'
                   : 'bg-orange-100 text-orange-800'
-              }`}>
+                }`}>
                 {isOnline ? (
                   <>
                     <CloudArrowUp className="w-3 h-3" />
@@ -153,7 +152,7 @@ function App() {
                   </>
                 )}
               </div>
-              
+
               <div className="text-right">
                 <p className="text-sm font-medium">{user?.name || 'User'}</p>
                 <p className="text-xs text-muted-foreground">
@@ -186,7 +185,7 @@ function App() {
               <span className="text-muted-foreground">Today's Appointments</span>
             </div>
             <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4 text-destructive" />
+              <Pulse className="w-4 h-4 text-destructive" />
               <span className="font-medium">-</span>
               <span className="text-muted-foreground">Active Consultations</span>
             </div>
@@ -340,7 +339,7 @@ function App() {
           </TabsContent>
         </Tabs>
       </main>
-      
+
       {/* Toast notifications */}
       <Toaster />
     </div>

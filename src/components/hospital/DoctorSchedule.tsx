@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useKV } from '@/hooks/useLocalStorage'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,7 +12,7 @@ import {
   UserCircle,
   Calendar,
   Clock,
-  Edit,
+  PencilSimple,
   CheckCircle,
   XCircle,
   MapPin,
@@ -58,7 +58,7 @@ interface Availability {
 }
 
 const specializations = [
-  'General Medicine', 'Cardiology', 'Pediatrics', 'Orthopedics', 
+  'General Medicine', 'Cardiology', 'Pediatrics', 'Orthopedics',
   'Gynecology', 'Surgery', 'Psychiatry', 'Dermatology', 'Neurology', 'Emergency Medicine'
 ]
 
@@ -74,16 +74,16 @@ export default function DoctorSchedule() {
   const [doctors, setDoctors] = useKV<Doctor[]>('hospital-doctors', [])
   const [schedules, setSchedules] = useKV<Schedule[]>('doctor-schedules', [])
   const [availability, setAvailability] = useKV<Availability[]>('doctor-availability', [])
-  
+
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null)
   const [isDoctorDialogOpen, setIsDoctorDialogOpen] = useState(false)
   const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false)
   const [isAvailabilityDialogOpen, setIsAvailabilityDialogOpen] = useState(false)
-  
+
   const [doctorFormData, setDoctorFormData] = useState<Partial<Doctor>>({
     status: 'active'
   })
-  
+
   const [scheduleFormData, setScheduleFormData] = useState<Partial<Schedule>>({
     status: 'active',
     type: 'regular'
@@ -132,12 +132,12 @@ export default function DoctorSchedule() {
     }
 
     // Check for schedule conflicts
-    const existingSchedule = schedules.find(s => 
-      s.doctorId === scheduleFormData.doctorId && 
+    const existingSchedule = schedules.find(s =>
+      s.doctorId === scheduleFormData.doctorId &&
       s.dayOfWeek === scheduleFormData.dayOfWeek &&
       s.status === 'active' &&
       ((scheduleFormData.startTime! >= s.startTime && scheduleFormData.startTime! < s.endTime) ||
-       (scheduleFormData.endTime! > s.startTime && scheduleFormData.endTime! <= s.endTime))
+        (scheduleFormData.endTime! > s.startTime && scheduleFormData.endTime! <= s.endTime))
     )
 
     if (existingSchedule) {
@@ -177,7 +177,7 @@ export default function DoctorSchedule() {
     }
 
     // Remove existing availability for same doctor and date
-    setAvailability(current => 
+    setAvailability(current =>
       current.filter(a => !(a.doctorId === availabilityFormData.doctorId && a.date === availabilityFormData.date))
     )
 
@@ -212,7 +212,7 @@ export default function DoctorSchedule() {
           <h3 className="text-lg font-semibold">Doctor Schedule Management</h3>
           <p className="text-muted-foreground">Manage doctor schedules, availability and shifts</p>
         </div>
-        
+
         <div className="flex gap-2">
           <Dialog open={isDoctorDialogOpen} onOpenChange={setIsDoctorDialogOpen}>
             <DialogTrigger asChild>
@@ -226,7 +226,7 @@ export default function DoctorSchedule() {
                 <DialogTitle>Add New Doctor</DialogTitle>
                 <DialogDescription>Enter doctor information and credentials</DialogDescription>
               </DialogHeader>
-              
+
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -234,13 +234,13 @@ export default function DoctorSchedule() {
                     <Input
                       id="doctorName"
                       value={doctorFormData.name || ''}
-                      onChange={(e) => setDoctorFormData({...doctorFormData, name: e.target.value})}
+                      onChange={(e) => setDoctorFormData({ ...doctorFormData, name: e.target.value })}
                       placeholder="Dr. John Smith"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="specialization">Specialization *</Label>
-                    <Select value={doctorFormData.specialization} onValueChange={(value) => setDoctorFormData({...doctorFormData, specialization: value})}>
+                    <Select value={doctorFormData.specialization} onValueChange={(value) => setDoctorFormData({ ...doctorFormData, specialization: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select specialization" />
                       </SelectTrigger>
@@ -259,7 +259,7 @@ export default function DoctorSchedule() {
                     <Input
                       id="phone"
                       value={doctorFormData.phone || ''}
-                      onChange={(e) => setDoctorFormData({...doctorFormData, phone: e.target.value})}
+                      onChange={(e) => setDoctorFormData({ ...doctorFormData, phone: e.target.value })}
                       placeholder="Phone number"
                     />
                   </div>
@@ -269,7 +269,7 @@ export default function DoctorSchedule() {
                       id="email"
                       type="email"
                       value={doctorFormData.email || ''}
-                      onChange={(e) => setDoctorFormData({...doctorFormData, email: e.target.value})}
+                      onChange={(e) => setDoctorFormData({ ...doctorFormData, email: e.target.value })}
                       placeholder="Email address"
                     />
                   </div>
@@ -281,7 +281,7 @@ export default function DoctorSchedule() {
                     <Input
                       id="license"
                       value={doctorFormData.licenseNumber || ''}
-                      onChange={(e) => setDoctorFormData({...doctorFormData, licenseNumber: e.target.value})}
+                      onChange={(e) => setDoctorFormData({ ...doctorFormData, licenseNumber: e.target.value })}
                       placeholder="Medical license number"
                     />
                   </div>
@@ -291,7 +291,7 @@ export default function DoctorSchedule() {
                       id="experience"
                       type="number"
                       value={doctorFormData.experience || ''}
-                      onChange={(e) => setDoctorFormData({...doctorFormData, experience: Number(e.target.value)})}
+                      onChange={(e) => setDoctorFormData({ ...doctorFormData, experience: Number(e.target.value) })}
                       placeholder="Years of experience"
                     />
                   </div>
@@ -304,13 +304,13 @@ export default function DoctorSchedule() {
                       id="fee"
                       type="number"
                       value={doctorFormData.consultationFee || ''}
-                      onChange={(e) => setDoctorFormData({...doctorFormData, consultationFee: Number(e.target.value)})}
+                      onChange={(e) => setDoctorFormData({ ...doctorFormData, consultationFee: Number(e.target.value) })}
                       placeholder="Consultation fee"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="department">Department</Label>
-                    <Select value={doctorFormData.department} onValueChange={(value) => setDoctorFormData({...doctorFormData, department: value})}>
+                    <Select value={doctorFormData.department} onValueChange={(value) => setDoctorFormData({ ...doctorFormData, department: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select department" />
                       </SelectTrigger>
@@ -343,11 +343,11 @@ export default function DoctorSchedule() {
                 <DialogTitle>Add Schedule</DialogTitle>
                 <DialogDescription>Create a new schedule for a doctor</DialogDescription>
               </DialogHeader>
-              
+
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
                   <Label htmlFor="scheduleDoctor">Doctor *</Label>
-                  <Select value={scheduleFormData.doctorId} onValueChange={(value) => setScheduleFormData({...scheduleFormData, doctorId: value})}>
+                  <Select value={scheduleFormData.doctorId} onValueChange={(value) => setScheduleFormData({ ...scheduleFormData, doctorId: value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select doctor" />
                     </SelectTrigger>
@@ -364,7 +364,7 @@ export default function DoctorSchedule() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="dayOfWeek">Day of Week *</Label>
-                    <Select value={scheduleFormData.dayOfWeek} onValueChange={(value) => setScheduleFormData({...scheduleFormData, dayOfWeek: value})}>
+                    <Select value={scheduleFormData.dayOfWeek} onValueChange={(value) => setScheduleFormData({ ...scheduleFormData, dayOfWeek: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select day" />
                       </SelectTrigger>
@@ -377,7 +377,7 @@ export default function DoctorSchedule() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="scheduleType">Type</Label>
-                    <Select value={scheduleFormData.type} onValueChange={(value) => setScheduleFormData({...scheduleFormData, type: value as any})}>
+                    <Select value={scheduleFormData.type} onValueChange={(value) => setScheduleFormData({ ...scheduleFormData, type: value as any })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Schedule type" />
                       </SelectTrigger>
@@ -397,7 +397,7 @@ export default function DoctorSchedule() {
                       id="startTime"
                       type="time"
                       value={scheduleFormData.startTime || ''}
-                      onChange={(e) => setScheduleFormData({...scheduleFormData, startTime: e.target.value})}
+                      onChange={(e) => setScheduleFormData({ ...scheduleFormData, startTime: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
@@ -406,7 +406,7 @@ export default function DoctorSchedule() {
                       id="endTime"
                       type="time"
                       value={scheduleFormData.endTime || ''}
-                      onChange={(e) => setScheduleFormData({...scheduleFormData, endTime: e.target.value})}
+                      onChange={(e) => setScheduleFormData({ ...scheduleFormData, endTime: e.target.value })}
                     />
                   </div>
                 </div>
@@ -417,7 +417,7 @@ export default function DoctorSchedule() {
                     <Input
                       id="location"
                       value={scheduleFormData.location || ''}
-                      onChange={(e) => setScheduleFormData({...scheduleFormData, location: e.target.value})}
+                      onChange={(e) => setScheduleFormData({ ...scheduleFormData, location: e.target.value })}
                       placeholder="Room/Department"
                     />
                   </div>
@@ -427,7 +427,7 @@ export default function DoctorSchedule() {
                       id="maxPatients"
                       type="number"
                       value={scheduleFormData.maxPatients || ''}
-                      onChange={(e) => setScheduleFormData({...scheduleFormData, maxPatients: Number(e.target.value)})}
+                      onChange={(e) => setScheduleFormData({ ...scheduleFormData, maxPatients: Number(e.target.value) })}
                       placeholder="Maximum patients"
                     />
                   </div>
@@ -453,11 +453,11 @@ export default function DoctorSchedule() {
                 <DialogTitle>Update Availability</DialogTitle>
                 <DialogDescription>Mark doctor availability for specific dates</DialogDescription>
               </DialogHeader>
-              
+
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
                   <Label htmlFor="availabilityDoctor">Doctor *</Label>
-                  <Select value={availabilityFormData.doctorId} onValueChange={(value) => setAvailabilityFormData({...availabilityFormData, doctorId: value})}>
+                  <Select value={availabilityFormData.doctorId} onValueChange={(value) => setAvailabilityFormData({ ...availabilityFormData, doctorId: value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select doctor" />
                     </SelectTrigger>
@@ -477,15 +477,15 @@ export default function DoctorSchedule() {
                     id="availabilityDate"
                     type="date"
                     value={availabilityFormData.date || ''}
-                    onChange={(e) => setAvailabilityFormData({...availabilityFormData, date: e.target.value})}
+                    onChange={(e) => setAvailabilityFormData({ ...availabilityFormData, date: e.target.value })}
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="isAvailable">Availability Status</Label>
-                  <Select 
-                    value={availabilityFormData.isAvailable ? 'true' : 'false'} 
-                    onValueChange={(value) => setAvailabilityFormData({...availabilityFormData, isAvailable: value === 'true'})}
+                  <Select
+                    value={availabilityFormData.isAvailable ? 'true' : 'false'}
+                    onValueChange={(value) => setAvailabilityFormData({ ...availabilityFormData, isAvailable: value === 'true' })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -504,14 +504,14 @@ export default function DoctorSchedule() {
                       <Input
                         id="reason"
                         value={availabilityFormData.reason || ''}
-                        onChange={(e) => setAvailabilityFormData({...availabilityFormData, reason: e.target.value})}
+                        onChange={(e) => setAvailabilityFormData({ ...availabilityFormData, reason: e.target.value })}
                         placeholder="Leave, Conference, Emergency, etc."
                       />
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="replacement">Replacement Doctor</Label>
-                      <Select value={availabilityFormData.replacement} onValueChange={(value) => setAvailabilityFormData({...availabilityFormData, replacement: value})}>
+                      <Select value={availabilityFormData.replacement} onValueChange={(value) => setAvailabilityFormData({ ...availabilityFormData, replacement: value })}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select replacement doctor" />
                         </SelectTrigger>
@@ -685,7 +685,7 @@ export default function DoctorSchedule() {
                         </div>
                       </div>
                       <Button variant="outline" size="sm">
-                        <Edit className="h-4 w-4" />
+                        <PencilSimple className="h-4 w-4" />
                       </Button>
                     </div>
                   ))
@@ -719,7 +719,7 @@ export default function DoctorSchedule() {
                           <p className="text-sm text-muted-foreground">{doctor.specialization}</p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center gap-3">
                         {isAvailable ? (
                           <div className="flex items-center gap-2 text-green-600">

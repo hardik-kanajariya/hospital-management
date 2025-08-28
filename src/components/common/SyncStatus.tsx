@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { useSyncStatus } from '@/hooks/useData'
-import { CloudArrowUp, WifiSlash, Activity, Warning, CheckCircle } from '@phosphor-icons/react'
+import { CloudArrowUp, WifiSlash, Pulse, Warning, CheckCircle } from '@phosphor-icons/react'
 
 interface SyncStatusProps {
   onSyncNow?: () => void
@@ -23,7 +23,7 @@ export default function SyncStatus({ onSyncNow, className }: SyncStatusProps) {
 
   const getStatusIcon = () => {
     if (!status.isOnline) return <WifiSlash className="w-3 h-3 mr-1" />
-    if (status.syncInProgress) return <Activity className="w-3 h-3 mr-1 animate-spin" />
+    if (status.syncInProgress) return <Pulse className="w-3 h-3 mr-1 animate-spin" />
     if (status.pendingSync > 0) return <Warning className="w-3 h-3 mr-1" />
     return <CheckCircle className="w-3 h-3 mr-1" />
   }
@@ -41,7 +41,7 @@ export default function SyncStatus({ onSyncNow, className }: SyncStatusProps) {
         {getStatusIcon()}
         {getStatusText()}
       </Badge>
-      
+
       {status.lastSync && (
         <span className="text-xs text-muted-foreground">
           Last: {status.lastSync.toLocaleTimeString()}
@@ -49,9 +49,9 @@ export default function SyncStatus({ onSyncNow, className }: SyncStatusProps) {
       )}
 
       {onSyncNow && status.isOnline && !status.syncInProgress && (
-        <Button 
-          variant="ghost" 
-          size="sm" 
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={onSyncNow}
           className="h-6 px-2"
         >
@@ -79,7 +79,7 @@ export function ConnectivityIndicator() {
           Offline
         </div>
       )}
-      
+
       {status.pendingSync > 0 && (
         <div className="text-yellow-600">
           ({status.pendingSync} pending)
@@ -101,7 +101,7 @@ export function DetailedSyncStatus() {
             <h3 className="font-medium">Sync Status</h3>
             <SyncStatus />
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="text-muted-foreground">Connection:</span>
@@ -109,12 +109,12 @@ export function DetailedSyncStatus() {
                 {status.isOnline ? 'Online' : 'Offline'}
               </p>
             </div>
-            
+
             <div>
               <span className="text-muted-foreground">Pending Sync:</span>
               <p className="font-medium">{status.pendingSync} operations</p>
             </div>
-            
+
             {status.lastSync && (
               <div className="col-span-2">
                 <span className="text-muted-foreground">Last Sync:</span>
@@ -124,7 +124,7 @@ export function DetailedSyncStatus() {
               </div>
             )}
           </div>
-          
+
           {!status.isOnline && (
             <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
               <div className="flex items-start gap-2">
@@ -138,7 +138,7 @@ export function DetailedSyncStatus() {
               </div>
             </div>
           )}
-          
+
           {status.pendingSync > 0 && status.isOnline && (
             <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
               <div className="flex items-start gap-2">

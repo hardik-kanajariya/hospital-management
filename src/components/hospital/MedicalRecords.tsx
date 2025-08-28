@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useKV } from '@/hooks/useLocalStorage'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,13 +9,13 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  FileText, 
-  Plus, 
-  Search, 
-  Stethoscope, 
-  Pill, 
-  Activity, 
+import {
+  FileText,
+  Plus,
+  MagnifyingGlass,
+  Stethoscope,
+  Pill,
+  Pulse,
   Eye,
   Heart,
   TestTube,
@@ -24,6 +24,7 @@ import {
   Thermometer
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import { Patient, Doctor } from '@/types/hospital'
 
 interface MedicalRecord {
   id: string
@@ -99,7 +100,7 @@ interface Prescription {
 const medicationRoutes = ['Oral', 'Injection', 'Topical', 'Inhalation', 'IV', 'IM', 'Sublingual']
 const medicationFrequencies = ['Once daily', 'Twice daily', 'Three times daily', 'Four times daily', 'Every 6 hours', 'Every 8 hours', 'Every 12 hours', 'As needed', 'Before meals', 'After meals']
 const commonMedications = [
-  'Paracetamol', 'Ibuprofen', 'Amoxicillin', 'Azithromycin', 'Metformin', 'Amlodipine', 
+  'Paracetamol', 'Ibuprofen', 'Amoxicillin', 'Azithromycin', 'Metformin', 'Amlodipine',
   'Atorvastatin', 'Pantoprazole', 'Cetirizine', 'Salbutamol', 'Insulin', 'Aspirin'
 ]
 
@@ -112,8 +113,8 @@ const commonTests = [
 export default function MedicalRecords() {
   const [records, setRecords] = useKV<MedicalRecord[]>('medical-records', [])
   const [prescriptions, setPrescriptions] = useKV<Prescription[]>('prescriptions', [])
-  const [patients] = useKV('hospital-patients', [])
-  const [doctors] = useKV('hospital-doctors', [])
+  const [patients] = useKV<Patient[]>('hospital-patients', [])
+  const [doctors] = useKV<Doctor[]>('hospital-doctors', [])
 
   const [isRecordDialogOpen, setIsRecordDialogOpen] = useState(false)
   const [isPrescriptionDialogOpen, setIsPrescriptionDialogOpen] = useState(false)
@@ -166,7 +167,7 @@ export default function MedicalRecords() {
     const newRecord: MedicalRecord = {
       id: `MR${Date.now()}`,
       patientId: recordFormData.patientId!,
-      patientName: patient.name,
+      patientName: `${patient?.firstName || ''} ${patient?.lastName || ''}`.trim(),
       doctor: recordFormData.doctor!,
       date: recordFormData.date!,
       type: recordFormData.type as any,
@@ -211,7 +212,7 @@ export default function MedicalRecords() {
 
     const patient = patients?.find(p => p.id === prescriptionFormData.patientId)
     const doctor = doctors?.find(d => d.id === prescriptionFormData.doctorId)
-    
+
     if (!patient || !doctor) {
       toast.error('Patient or doctor not found')
       return
@@ -220,9 +221,9 @@ export default function MedicalRecords() {
     const newPrescription: Prescription = {
       id: `RX${Date.now()}`,
       patientId: prescriptionFormData.patientId!,
-      patientName: patient.name,
+      patientName: `${patient?.firstName || ''} ${patient?.lastName || ''}`.trim(),
       doctorId: prescriptionFormData.doctorId!,
-      doctorName: doctor.name,
+      doctorName: doctor?.name || '',
       date: prescriptionFormData.date!,
       medications: prescriptionFormData.medications!.filter(med => med.name),
       diagnosis: prescriptionFormData.diagnosis || '',
@@ -268,7 +269,7 @@ export default function MedicalRecords() {
   const updateMedication = (index: number, field: string, value: string) => {
     setPrescriptionFormData(prev => ({
       ...prev,
-      medications: prev.medications?.map((med, i) => 
+      medications: prev.medications?.map((med, i) =>
         i === index ? { ...med, [field]: value } : med
       )
     }))
@@ -300,7 +301,7 @@ export default function MedicalRecords() {
   const updateLabTest = (index: number, field: string, value: string) => {
     setRecordFormData(prev => ({
       ...prev,
-      labTests: prev.labTests?.map((test, i) => 
+      labTests: prev.labTests?.map((test, i) =>
         i === index ? { ...test, [field]: value } : test
       )
     }))
@@ -315,12 +316,12 @@ export default function MedicalRecords() {
 
   const filteredRecords = records.filter(record => {
     const matchesSearch = record.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         record.doctor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         record.diagnosis.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         record.id.toLowerCase().includes(searchTerm.toLowerCase())
-    
+      record.doctor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      record.diagnosis.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      record.id.toLowerCase().includes(searchTerm.toLowerCase())
+
     const matchesType = filterType === 'all' || record.type === filterType
-    
+
     return matchesSearch && matchesType
   })
 
@@ -337,7 +338,7 @@ export default function MedicalRecords() {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-1">
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Search medical records..."
               value={searchTerm}
@@ -345,7 +346,7 @@ export default function MedicalRecords() {
               className="pl-10"
             />
           </div>
-          
+
           <Select value={filterType} onValueChange={setFilterType}>
             <SelectTrigger className="w-[140px]">
               <SelectValue />
@@ -361,7 +362,7 @@ export default function MedicalRecords() {
             </SelectContent>
           </Select>
         </div>
-        
+
         <div className="flex gap-2">
           <Dialog open={isPrescriptionDialogOpen} onOpenChange={setIsPrescriptionDialogOpen}>
             <DialogTrigger asChild>
@@ -375,14 +376,14 @@ export default function MedicalRecords() {
                 <DialogTitle>Create Prescription</DialogTitle>
                 <DialogDescription>Generate a prescription for patient medication</DialogDescription>
               </DialogHeader>
-              
+
               <div className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Patient *</Label>
                     <Select value={prescriptionFormData.patientId} onValueChange={(value) => {
                       const patient = patients.find(p => p.id === value)
-                      setPrescriptionFormData({...prescriptionFormData, patientId: value, patientName: patient?.name})
+                      setPrescriptionFormData({ ...prescriptionFormData, patientId: value, patientName: `${patient?.firstName || ''} ${patient?.lastName || ''}`.trim() })
                     }}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select patient" />
@@ -390,7 +391,7 @@ export default function MedicalRecords() {
                       <SelectContent>
                         {patients.map((patient) => (
                           <SelectItem key={patient.id} value={patient.id}>
-                            {patient.name} - {patient.id}
+                            {`${patient.firstName || ''} ${patient.lastName || ''}`.trim()} - {patient.id}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -398,12 +399,12 @@ export default function MedicalRecords() {
                   </div>
                   <div className="space-y-2">
                     <Label>Doctor *</Label>
-                    <Select value={prescriptionFormData.doctorId} onValueChange={(value) => setPrescriptionFormData({...prescriptionFormData, doctorId: value})}>
+                    <Select value={prescriptionFormData.doctorId} onValueChange={(value) => setPrescriptionFormData({ ...prescriptionFormData, doctorId: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select doctor" />
                       </SelectTrigger>
                       <SelectContent>
-                        {doctors.filter(d => d.status === 'active').map((doctor) => (
+                        {doctors.filter(d => d.isActive).map((doctor) => (
                           <SelectItem key={doctor.id} value={doctor.id}>
                             Dr. {doctor.name} - {doctor.specialization}
                           </SelectItem>
@@ -419,14 +420,14 @@ export default function MedicalRecords() {
                     <Input
                       type="date"
                       value={prescriptionFormData.date}
-                      onChange={(e) => setPrescriptionFormData({...prescriptionFormData, date: e.target.value})}
+                      onChange={(e) => setPrescriptionFormData({ ...prescriptionFormData, date: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>Diagnosis</Label>
                     <Input
                       value={prescriptionFormData.diagnosis}
-                      onChange={(e) => setPrescriptionFormData({...prescriptionFormData, diagnosis: e.target.value})}
+                      onChange={(e) => setPrescriptionFormData({ ...prescriptionFormData, diagnosis: e.target.value })}
                       placeholder="Primary diagnosis"
                     />
                   </div>
@@ -471,7 +472,7 @@ export default function MedicalRecords() {
                               />
                             </div>
                           </div>
-                          
+
                           <div className="grid grid-cols-3 gap-4">
                             <div className="space-y-2">
                               <Label>Frequency</Label>
@@ -514,7 +515,7 @@ export default function MedicalRecords() {
                               </Select>
                             </div>
                           </div>
-                          
+
                           <div className="space-y-2">
                             <Label>Instructions</Label>
                             <Input
@@ -523,7 +524,7 @@ export default function MedicalRecords() {
                               placeholder="Special instructions for taking the medication"
                             />
                           </div>
-                          
+
                           {prescriptionFormData.medications!.length > 1 && (
                             <div className="flex justify-end">
                               <Button
@@ -546,7 +547,7 @@ export default function MedicalRecords() {
                   <Label>Pharmacy Notes</Label>
                   <Textarea
                     value={prescriptionFormData.pharmacyNotes}
-                    onChange={(e) => setPrescriptionFormData({...prescriptionFormData, pharmacyNotes: e.target.value})}
+                    onChange={(e) => setPrescriptionFormData({ ...prescriptionFormData, pharmacyNotes: e.target.value })}
                     placeholder="Additional notes for pharmacy"
                     rows={2}
                   />
@@ -572,7 +573,7 @@ export default function MedicalRecords() {
                 <DialogTitle>Create Medical Record</DialogTitle>
                 <DialogDescription>Document patient consultation and treatment details</DialogDescription>
               </DialogHeader>
-              
+
               <div className="space-y-6">
                 {/* Basic Information */}
                 <div className="grid grid-cols-2 gap-4">
@@ -580,7 +581,7 @@ export default function MedicalRecords() {
                     <Label>Patient *</Label>
                     <Select value={recordFormData.patientId} onValueChange={(value) => {
                       const patient = patients.find(p => p.id === value)
-                      setRecordFormData({...recordFormData, patientId: value, patientName: patient?.name})
+                      setRecordFormData({ ...recordFormData, patientId: value, patientName: `${patient?.firstName || ''} ${patient?.lastName || ''}`.trim() })
                     }}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select patient" />
@@ -588,7 +589,7 @@ export default function MedicalRecords() {
                       <SelectContent>
                         {patients.map((patient) => (
                           <SelectItem key={patient.id} value={patient.id}>
-                            {patient.name} - {patient.id}
+                            {`${patient.firstName || ''} ${patient.lastName || ''}`.trim()} - {patient.id}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -596,12 +597,12 @@ export default function MedicalRecords() {
                   </div>
                   <div className="space-y-2">
                     <Label>Doctor *</Label>
-                    <Select value={recordFormData.doctor} onValueChange={(value) => setRecordFormData({...recordFormData, doctor: value})}>
+                    <Select value={recordFormData.doctor} onValueChange={(value) => setRecordFormData({ ...recordFormData, doctor: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select doctor" />
                       </SelectTrigger>
                       <SelectContent>
-                        {doctors.filter(d => d.status === 'active').map((doctor) => (
+                        {doctors.filter(d => d.isActive).map((doctor) => (
                           <SelectItem key={doctor.id} value={`Dr. ${doctor.name}`}>
                             Dr. {doctor.name} - {doctor.specialization}
                           </SelectItem>
@@ -617,12 +618,12 @@ export default function MedicalRecords() {
                     <Input
                       type="date"
                       value={recordFormData.date}
-                      onChange={(e) => setRecordFormData({...recordFormData, date: e.target.value})}
+                      onChange={(e) => setRecordFormData({ ...recordFormData, date: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>Record Type</Label>
-                    <Select value={recordFormData.type} onValueChange={(value) => setRecordFormData({...recordFormData, type: value as any})}>
+                    <Select value={recordFormData.type} onValueChange={(value) => setRecordFormData({ ...recordFormData, type: value as any })}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -641,7 +642,7 @@ export default function MedicalRecords() {
                     <Input
                       type="date"
                       value={recordFormData.followUpDate}
-                      onChange={(e) => setRecordFormData({...recordFormData, followUpDate: e.target.value})}
+                      onChange={(e) => setRecordFormData({ ...recordFormData, followUpDate: e.target.value })}
                     />
                   </div>
                 </div>
@@ -652,7 +653,7 @@ export default function MedicalRecords() {
                     <Label>Chief Complaint *</Label>
                     <Input
                       value={recordFormData.chiefComplaint}
-                      onChange={(e) => setRecordFormData({...recordFormData, chiefComplaint: e.target.value})}
+                      onChange={(e) => setRecordFormData({ ...recordFormData, chiefComplaint: e.target.value })}
                       placeholder="Primary reason for visit"
                     />
                   </div>
@@ -661,7 +662,7 @@ export default function MedicalRecords() {
                     <Label>Symptoms</Label>
                     <Textarea
                       value={recordFormData.symptoms}
-                      onChange={(e) => setRecordFormData({...recordFormData, symptoms: e.target.value})}
+                      onChange={(e) => setRecordFormData({ ...recordFormData, symptoms: e.target.value })}
                       placeholder="Patient's symptoms and history"
                       rows={3}
                     />
@@ -677,8 +678,8 @@ export default function MedicalRecords() {
                       <Input
                         value={recordFormData.vitals?.temperature}
                         onChange={(e) => setRecordFormData({
-                          ...recordFormData, 
-                          vitals: {...recordFormData.vitals!, temperature: e.target.value}
+                          ...recordFormData,
+                          vitals: { ...recordFormData.vitals!, temperature: e.target.value }
                         })}
                         placeholder="98.6"
                       />
@@ -688,8 +689,8 @@ export default function MedicalRecords() {
                       <Input
                         value={recordFormData.vitals?.bloodPressure}
                         onChange={(e) => setRecordFormData({
-                          ...recordFormData, 
-                          vitals: {...recordFormData.vitals!, bloodPressure: e.target.value}
+                          ...recordFormData,
+                          vitals: { ...recordFormData.vitals!, bloodPressure: e.target.value }
                         })}
                         placeholder="120/80"
                       />
@@ -699,8 +700,8 @@ export default function MedicalRecords() {
                       <Input
                         value={recordFormData.vitals?.heartRate}
                         onChange={(e) => setRecordFormData({
-                          ...recordFormData, 
-                          vitals: {...recordFormData.vitals!, heartRate: e.target.value}
+                          ...recordFormData,
+                          vitals: { ...recordFormData.vitals!, heartRate: e.target.value }
                         })}
                         placeholder="72"
                       />
@@ -710,8 +711,8 @@ export default function MedicalRecords() {
                       <Input
                         value={recordFormData.vitals?.respiratoryRate}
                         onChange={(e) => setRecordFormData({
-                          ...recordFormData, 
-                          vitals: {...recordFormData.vitals!, respiratoryRate: e.target.value}
+                          ...recordFormData,
+                          vitals: { ...recordFormData.vitals!, respiratoryRate: e.target.value }
                         })}
                         placeholder="16"
                       />
@@ -721,8 +722,8 @@ export default function MedicalRecords() {
                       <Input
                         value={recordFormData.vitals?.weight}
                         onChange={(e) => setRecordFormData({
-                          ...recordFormData, 
-                          vitals: {...recordFormData.vitals!, weight: e.target.value}
+                          ...recordFormData,
+                          vitals: { ...recordFormData.vitals!, weight: e.target.value }
                         })}
                         placeholder="70"
                       />
@@ -732,8 +733,8 @@ export default function MedicalRecords() {
                       <Input
                         value={recordFormData.vitals?.height}
                         onChange={(e) => setRecordFormData({
-                          ...recordFormData, 
-                          vitals: {...recordFormData.vitals!, height: e.target.value}
+                          ...recordFormData,
+                          vitals: { ...recordFormData.vitals!, height: e.target.value }
                         })}
                         placeholder="170"
                       />
@@ -743,8 +744,8 @@ export default function MedicalRecords() {
                       <Input
                         value={recordFormData.vitals?.oxygenSaturation}
                         onChange={(e) => setRecordFormData({
-                          ...recordFormData, 
-                          vitals: {...recordFormData.vitals!, oxygenSaturation: e.target.value}
+                          ...recordFormData,
+                          vitals: { ...recordFormData.vitals!, oxygenSaturation: e.target.value }
                         })}
                         placeholder="98"
                       />
@@ -758,7 +759,7 @@ export default function MedicalRecords() {
                     <Label>Diagnosis</Label>
                     <Textarea
                       value={recordFormData.diagnosis}
-                      onChange={(e) => setRecordFormData({...recordFormData, diagnosis: e.target.value})}
+                      onChange={(e) => setRecordFormData({ ...recordFormData, diagnosis: e.target.value })}
                       placeholder="Primary and secondary diagnoses"
                       rows={3}
                     />
@@ -767,7 +768,7 @@ export default function MedicalRecords() {
                     <Label>Treatment Plan</Label>
                     <Textarea
                       value={recordFormData.treatment}
-                      onChange={(e) => setRecordFormData({...recordFormData, treatment: e.target.value})}
+                      onChange={(e) => setRecordFormData({ ...recordFormData, treatment: e.target.value })}
                       placeholder="Treatment recommendations and procedures"
                       rows={3}
                     />
@@ -783,7 +784,7 @@ export default function MedicalRecords() {
                       Add Test
                     </Button>
                   </div>
-                  
+
                   <div className="space-y-3">
                     {recordFormData.labTests?.map((test, index) => (
                       <div key={index} className="grid grid-cols-4 gap-4 items-end">
@@ -848,7 +849,7 @@ export default function MedicalRecords() {
                   <Label>Additional Notes</Label>
                   <Textarea
                     value={recordFormData.notes}
-                    onChange={(e) => setRecordFormData({...recordFormData, notes: e.target.value})}
+                    onChange={(e) => setRecordFormData({ ...recordFormData, notes: e.target.value })}
                     placeholder="Additional clinical notes and observations"
                     rows={3}
                   />
@@ -889,7 +890,7 @@ export default function MedicalRecords() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Follow-ups Due</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
+            <Pulse className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeRecords.length}</div>
@@ -939,7 +940,7 @@ export default function MedicalRecords() {
                           <Badge variant="outline">{record.id}</Badge>
                           <Badge variant={
                             record.type === 'emergency' ? 'destructive' :
-                            record.type === 'surgery' ? 'secondary' : 'default'
+                              record.type === 'surgery' ? 'secondary' : 'default'
                           }>
                             {record.type}
                           </Badge>
@@ -947,10 +948,10 @@ export default function MedicalRecords() {
                             <Badge variant="outline" className="text-blue-600">Follow-up Due</Badge>
                           )}
                         </div>
-                        
+
                         <div className="flex items-center gap-2">
-                          <Button 
-                            variant="outline" 
+                          <Button
+                            variant="outline"
                             size="sm"
                             onClick={() => {
                               setSelectedRecord(record)
@@ -1061,7 +1062,7 @@ export default function MedicalRecords() {
                           <Badge variant="outline">{prescription.id}</Badge>
                           <Badge variant={
                             prescription.status === 'active' ? 'default' :
-                            prescription.status === 'completed' ? 'secondary' : 'destructive'
+                              prescription.status === 'completed' ? 'secondary' : 'destructive'
                           }>
                             {prescription.status}
                           </Badge>
@@ -1130,7 +1131,7 @@ export default function MedicalRecords() {
               {selectedRecord && `Record ${selectedRecord.id} for ${selectedRecord.patientName}`}
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedRecord && (
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
@@ -1220,7 +1221,7 @@ export default function MedicalRecords() {
                           <div className="font-medium">{test.test}</div>
                           <Badge variant={
                             test.status === 'completed' ? 'default' :
-                            test.status === 'pending' ? 'secondary' : 'outline'
+                              test.status === 'pending' ? 'secondary' : 'outline'
                           }>
                             {test.status}
                           </Badge>

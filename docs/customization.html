@@ -1,133 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customization Guide - MedCare Rural</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/docs.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customization Guide - MedCare Rural</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/docs.css">
 </head>
+
 <body>
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <div class="logo-icon">M</div>
-                    <span>MedCare Rural</span>
-                </div>
-                <div class="version">v1.0.0</div>
-            </div>
-        </div>
-    </header>
-
-    <nav class="nav">
-        <div class="container">
-            <ul class="nav-links">
-                <li><a href="index.html">Overview</a></li>
-                <li><a href="installation.html">Installation</a></li>
-                <li><a href="api-reference.html">API Reference</a></li>
-                <li><a href="user-guide.html">User Guide</a></li>
-                <li><a href="customization.html" class="active">Customization</a></li>
-            </ul>
-        </div>
-    </nav>
-
+  <header class="header">
     <div class="container">
-        <div class="main-content">
-            <aside class="sidebar">
-                <h3>Customization Guide</h3>
-                <ul>
-                    <li><a href="#overview">Overview</a></li>
-                    <li><a href="#theming">Theming & Branding</a></li>
-                    <li><a href="#configuration">Configuration</a></li>
-                    <li><a href="#custom-fields">Custom Fields</a></li>
-                    <li><a href="#workflows">Custom Workflows</a></li>
-                    <li><a href="#reports">Custom Reports</a></li>
-                    <li><a href="#integrations">Third-party Integrations</a></li>
-                    <li><a href="#modules">Module Development</a></li>
-                    <li><a href="#api-extensions">API Extensions</a></li>
-                    <li><a href="#deployment">Custom Deployment</a></li>
-                    <li><a href="#best-practices">Best Practices</a></li>
-                    <li><a href="#support">Development Support</a></li>
-                </ul>
-            </aside>
+      <div class="header-content">
+        <div class="logo">
+          <div class="logo-icon">M</div>
+          <span>MedCare Rural</span>
+        </div>
+        <div class="version">v1.0.0</div>
+      </div>
+    </div>
+  </header>
 
-            <main class="content">
-                <h1>Customization Guide</h1>
-                <p class="lead">Complete guide to customizing MedCare Rural for your specific hospital needs.</p>
+  <nav class="nav">
+    <div class="container">
+      <ul class="nav-links">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="installation.html">Installation</a></li>
+        <li><a href="api-reference.html">API Reference</a></li>
+        <li><a href="user-guide.html">User Guide</a></li>
+        <li><a href="customization.html" class="active">Customization</a></li>
+      </ul>
+    </div>
+  </nav>
 
-                <section id="overview">
-                    <h2>Customization Overview</h2>
-                    
-                    <div class="alert alert-info">
-                        <strong>Flexible Architecture:</strong> MedCare Rural is built with customization in mind, allowing you to adapt the system to your specific requirements.
-                    </div>
+  <div class="container">
+    <div class="main-content">
+      <aside class="sidebar">
+        <h3>Customization Guide</h3>
+        <ul>
+          <li><a href="#overview">Overview</a></li>
+          <li><a href="#theming">Theming & Branding</a></li>
+          <li><a href="#configuration">Configuration</a></li>
+          <li><a href="#custom-fields">Custom Fields</a></li>
+          <li><a href="#workflows">Custom Workflows</a></li>
+          <li><a href="#reports">Custom Reports</a></li>
+          <li><a href="#integrations">Third-party Integrations</a></li>
+          <li><a href="#modules">Module Development</a></li>
+          <li><a href="#api-extensions">API Extensions</a></li>
+          <li><a href="#deployment">Custom Deployment</a></li>
+          <li><a href="#best-practices">Best Practices</a></li>
+          <li><a href="#support">Development Support</a></li>
+        </ul>
+      </aside>
 
-                    <h3>Customization Levels</h3>
-                    <div class="feature-grid">
-                        <div class="feature-card">
-                            <h4>🎨 Visual Customization</h4>
-                            <ul>
-                                <li>Hospital branding and colors</li>
-                                <li>Logo and imagery</li>
-                                <li>Layout modifications</li>
-                                <li>Print templates</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="feature-card">
-                            <h4>⚙️ Configuration</h4>
-                            <ul>
-                                <li>Module enable/disable</li>
-                                <li>Field visibility</li>
-                                <li>Workflow adjustments</li>
-                                <li>User permissions</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="feature-card">
-                            <h4>🔧 Development</h4>
-                            <ul>
-                                <li>Custom components</li>
-                                <li>New modules</li>
-                                <li>API integrations</li>
-                                <li>Database modifications</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="feature-card">
-                            <h4>🚀 Enterprise</h4>
-                            <ul>
-                                <li>Multi-hospital setup</li>
-                                <li>Advanced integrations</li>
-                                <li>Custom development</li>
-                                <li>Dedicated support</li>
-                            </ul>
-                        </div>
-                    </div>
+      <main class="content">
+        <h1>Customization Guide</h1>
+        <p class="lead">Complete guide to customizing MedCare Rural for your specific hospital needs.</p>
 
-                    <h3>What Can Be Customized</h3>
-                    <ul>
-                        <li><strong>User Interface:</strong> Colors, fonts, layouts, and components</li>
-                        <li><strong>Forms and Fields:</strong> Add custom fields and validation rules</li>
-                        <li><strong>Reports:</strong> Create custom reports and dashboards</li>
-                        <li><strong>Workflows:</strong> Modify business logic and processes</li>
-                        <li><strong>Integrations:</strong> Connect with external systems</li>
-                        <li><strong>Modules:</strong> Add new functionality or modify existing</li>
-                        <li><strong>Permissions:</strong> Create custom user roles and access levels</li>
-                        <li><strong>Notifications:</strong> Custom email and SMS templates</li>
-                    </ul>
-                </section>
+        <section id="overview">
+          <h2>Customization Overview</h2>
 
-                <section id="theming">
-                    <h2>Theming & Branding</h2>
-                    
-                    <h3>Hospital Branding</h3>
-                    <p>Customize the visual appearance to match your hospital's brand identity.</p>
+          <div class="alert alert-info">
+            <strong>Flexible Architecture:</strong> MedCare Rural is built with customization in mind, allowing you to
+            adapt the system to your specific requirements.
+          </div>
 
-                    <h4>Logo and Images</h4>
-                    <div class="code-block">
-                        <code>
+          <h3>Customization Levels</h3>
+          <div class="feature-grid">
+            <div class="feature-card">
+              <h4>🎨 Visual Customization</h4>
+              <ul>
+                <li>Hospital branding and colors</li>
+                <li>Logo and imagery</li>
+                <li>Layout modifications</li>
+                <li>Print templates</li>
+              </ul>
+            </div>
+
+            <div class="feature-card">
+              <h4>⚙️ Configuration</h4>
+              <ul>
+                <li>Module enable/disable</li>
+                <li>Field visibility</li>
+                <li>Workflow adjustments</li>
+                <li>User permissions</li>
+              </ul>
+            </div>
+
+            <div class="feature-card">
+              <h4>🔧 Development</h4>
+              <ul>
+                <li>Custom components</li>
+                <li>New modules</li>
+                <li>API integrations</li>
+                <li>Database modifications</li>
+              </ul>
+            </div>
+
+            <div class="feature-card">
+              <h4>🚀 Enterprise</h4>
+              <ul>
+                <li>Multi-hospital setup</li>
+                <li>Advanced integrations</li>
+                <li>Custom development</li>
+                <li>Dedicated support</li>
+              </ul>
+            </div>
+          </div>
+
+          <h3>What Can Be Customized</h3>
+          <ul>
+            <li><strong>User Interface:</strong> Colors, fonts, layouts, and components</li>
+            <li><strong>Forms and Fields:</strong> Add custom fields and validation rules</li>
+            <li><strong>Reports:</strong> Create custom reports and dashboards</li>
+            <li><strong>Workflows:</strong> Modify business logic and processes</li>
+            <li><strong>Integrations:</strong> Connect with external systems</li>
+            <li><strong>Modules:</strong> Add new functionality or modify existing</li>
+            <li><strong>Permissions:</strong> Create custom user roles and access levels</li>
+            <li><strong>Notifications:</strong> Custom email and SMS templates</li>
+          </ul>
+        </section>
+
+        <section id="theming">
+          <h2>Theming & Branding</h2>
+
+          <h3>Hospital Branding</h3>
+          <p>Customize the visual appearance to match your hospital's brand identity.</p>
+
+          <h4>Logo and Images</h4>
+          <div class="code-block">
+            <code>
 // Update hospital logo
 // Place your logo file in src/assets/images/
 import hospitalLogo from '@/assets/images/hospital-logo.png'
@@ -138,12 +141,12 @@ import hospitalLogo from '@/assets/images/hospital-logo.png'
   &lt;span&gt;Your Hospital Name&lt;/span&gt;
 &lt;/div&gt;
                         </code>
-                    </div>
+          </div>
 
-                    <h4>Color Scheme</h4>
-                    <p>Modify the color palette in <code>src/index.css</code>:</p>
-                    <div class="code-block">
-                        <code>
+          <h4>Color Scheme</h4>
+          <p>Modify the color palette in <code>src/index.css</code>:</p>
+          <div class="code-block">
+            <code>
 :root {
   /* Primary brand color - your hospital's main color */
   --primary: oklch(0.6 0.12 240); /* Professional blue */
@@ -170,12 +173,12 @@ import hospitalLogo from '@/assets/images/hospital-logo.png'
   --color-hospital-accent: var(--hospital-accent);
 }
                         </code>
-                    </div>
+          </div>
 
-                    <h4>Typography</h4>
-                    <p>Update fonts in <code>index.html</code> and <code>index.css</code>:</p>
-                    <div class="code-block">
-                        <code>
+          <h4>Typography</h4>
+          <p>Update fonts in <code>index.html</code> and <code>index.css</code>:</p>
+          <div class="code-block">
+            <code>
 &lt;!-- In index.html head section --&gt;
 &lt;link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet"&gt;
 
@@ -190,12 +193,12 @@ body {
   font-weight: 600;
 }
                         </code>
-                    </div>
+          </div>
 
-                    <h3>Print Templates</h3>
-                    <p>Customize printed documents like invoices and reports:</p>
-                    <div class="code-block">
-                        <code>
+          <h3>Print Templates</h3>
+          <p>Customize printed documents like invoices and reports:</p>
+          <div class="code-block">
+            <code>
 // Create custom print styles
 @media print {
   .invoice-header {
@@ -215,17 +218,17 @@ body {
   }
 }
                         </code>
-                    </div>
-                </section>
+          </div>
+        </section>
 
-                <section id="configuration">
-                    <h2>System Configuration</h2>
-                    
-                    <h3>Module Configuration</h3>
-                    <p>Enable or disable modules based on your hospital's needs:</p>
+        <section id="configuration">
+          <h2>System Configuration</h2>
 
-                    <div class="code-block">
-                        <code>
+          <h3>Module Configuration</h3>
+          <p>Enable or disable modules based on your hospital's needs:</p>
+
+          <div class="code-block">
+            <code>
 // In src/config/modules.ts
 export const MODULE_CONFIG = {
   // Core modules
@@ -254,12 +257,12 @@ export const MODULE_PERMISSIONS = {
   inventory: ['read', 'update']
 }
                         </code>
-                    </div>
+          </div>
 
-                    <h3>Field Configuration</h3>
-                    <p>Customize form fields and validation:</p>
-                    <div class="code-block">
-                        <code>
+          <h3>Field Configuration</h3>
+          <p>Customize form fields and validation:</p>
+          <div class="code-block">
+            <code>
 // In src/config/fields.ts
 export const PATIENT_FIELDS = {
   required: ['name', 'age', 'gender', 'phone'],
@@ -281,11 +284,11 @@ export const PATIENT_FIELDS = {
   ]
 }
                         </code>
-                    </div>
+          </div>
 
-                    <h3>Workflow Configuration</h3>
-                    <div class="code-block">
-                        <code>
+          <h3>Workflow Configuration</h3>
+          <div class="code-block">
+            <code>
 // In src/config/workflows.ts
 export const APPOINTMENT_WORKFLOW = {
   states: ['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed'],
@@ -303,15 +306,15 @@ export const APPOINTMENT_WORKFLOW = {
   }
 }
                         </code>
-                    </div>
-                </section>
+          </div>
+        </section>
 
-                <section id="custom-fields">
-                    <h2>Custom Fields</h2>
-                    
-                    <h3>Adding Custom Patient Fields</h3>
-                    <div class="code-block">
-                        <code>
+        <section id="custom-fields">
+          <h2>Custom Fields</h2>
+
+          <h3>Adding Custom Patient Fields</h3>
+          <div class="code-block">
+            <code>
 // In src/components/hospital/PatientManagement.tsx
 const customFields = [
   {
@@ -367,11 +370,11 @@ const customFields = [
   &lt;/div&gt;
 ))}
                         </code>
-                    </div>
+          </div>
 
-                    <h3>Custom Medical History Fields</h3>
-                    <div class="code-block">
-                        <code>
+          <h3>Custom Medical History Fields</h3>
+          <div class="code-block">
+            <code>
 // Add custom medical history fields
 const customMedicalFields = [
   {
@@ -392,15 +395,15 @@ const customMedicalFields = [
   }
 ]
                         </code>
-                    </div>
-                </section>
+          </div>
+        </section>
 
-                <section id="workflows">
-                    <h2>Custom Workflows</h2>
-                    
-                    <h3>Patient Registration Workflow</h3>
-                    <div class="code-block">
-                        <code>
+        <section id="workflows">
+          <h2>Custom Workflows</h2>
+
+          <h3>Patient Registration Workflow</h3>
+          <div class="code-block">
+            <code>
 // Custom patient registration process
 const customRegistrationWorkflow = {
   steps: [
@@ -449,11 +452,11 @@ const customRegistrationWorkflow = {
   }
 }
                         </code>
-                    </div>
+          </div>
 
-                    <h3>Billing Workflow Customization</h3>
-                    <div class="code-block">
-                        <code>
+          <h3>Billing Workflow Customization</h3>
+          <div class="code-block">
+            <code>
 // Custom billing process for rural hospitals
 const ruralBillingWorkflow = {
   // Automatic government scheme detection
@@ -507,18 +510,18 @@ const ruralBillingWorkflow = {
   }
 }
                         </code>
-                    </div>
-                </section>
+          </div>
+        </section>
 
-                <section id="reports">
-                    <h2>Custom Reports</h2>
-                    
-                    <h3>Creating Custom Report Components</h3>
-                    <div class="code-block">
-                        <code>
+        <section id="reports">
+          <h2>Custom Reports</h2>
+
+          <h3>Creating Custom Report Components</h3>
+          <div class="code-block">
+            <code>
 // Custom report for rural health statistics
 import React from 'react';
-import { useKV } from '@github/spark/hooks';
+import { useKV } from '@/hooks/useLocalStorage';
 
 const RuralHealthReport = () => {
   const [patients] = useKV('hospital-patients', []);
@@ -581,11 +584,11 @@ const calculateDiseasePrevalence = (patients) => {
   }));
 };
                         </code>
-                    </div>
+          </div>
 
-                    <h3>Government Compliance Reports</h3>
-                    <div class="code-block">
-                        <code>
+          <h3>Government Compliance Reports</h3>
+          <div class="code-block">
+            <code>
 // HMIS (Health Management Information System) Report
 const HMISReport = () => {
   const generateHMISData = () => {
@@ -624,15 +627,15 @@ const HMISReport = () => {
   );
 };
                         </code>
-                    </div>
-                </section>
+          </div>
+        </section>
 
-                <section id="integrations">
-                    <h2>Third-party Integrations</h2>
-                    
-                    <h3>Payment Gateway Integration</h3>
-                    <div class="code-block">
-                        <code>
+        <section id="integrations">
+          <h2>Third-party Integrations</h2>
+
+          <h3>Payment Gateway Integration</h3>
+          <div class="code-block">
+            <code>
 // Razorpay integration for online payments
 import { loadScript } from '@/utils/loadScript';
 
@@ -672,11 +675,11 @@ const PaymentIntegration = {
   }
 };
                         </code>
-                    </div>
+          </div>
 
-                    <h3>SMS Gateway Integration</h3>
-                    <div class="code-block">
-                        <code>
+          <h3>SMS Gateway Integration</h3>
+          <div class="code-block">
+            <code>
 // Custom SMS service integration
 const SMSService = {
   async sendSMS(phone, message, template = 'default') {
@@ -724,11 +727,11 @@ const SMSService = {
   }
 };
                         </code>
-                    </div>
+          </div>
 
-                    <h3>Government Database Integration</h3>
-                    <div class="code-block">
-                        <code>
+          <h3>Government Database Integration</h3>
+          <div class="code-block">
+            <code>
 // Ayushman Bharat integration
 const AyushmanIntegration = {
   async verifyBeneficiary(aadhaarNumber, mobileNumber) {
@@ -773,15 +776,15 @@ const AyushmanIntegration = {
   }
 };
                         </code>
-                    </div>
-                </section>
+          </div>
+        </section>
 
-                <section id="deployment">
-                    <h2>Custom Deployment</h2>
-                    
-                    <h3>Environment-Specific Configuration</h3>
-                    <div class="code-block">
-                        <code>
+        <section id="deployment">
+          <h2>Custom Deployment</h2>
+
+          <h3>Environment-Specific Configuration</h3>
+          <div class="code-block">
+            <code>
 // config/environments/production.ts
 export const productionConfig = {
   api: {
@@ -825,11 +828,11 @@ export const productionConfig = {
   }
 };
                         </code>
-                    </div>
+          </div>
 
-                    <h3>Multi-Hospital Setup</h3>
-                    <div class="code-block">
-                        <code>
+          <h3>Multi-Hospital Setup</h3>
+          <div class="code-block">
+            <code>
 // Multi-tenant configuration
 const MultiHospitalConfig = {
   hospitals: [
@@ -870,125 +873,127 @@ const MultiHospitalConfig = {
   }
 };
                         </code>
-                    </div>
-                </section>
+          </div>
+        </section>
 
-                <section id="best-practices">
-                    <h2>Best Practices</h2>
-                    
-                    <h3>Code Organization</h3>
-                    <ul>
-                        <li><strong>Modular Structure:</strong> Keep customizations in separate modules</li>
-                        <li><strong>Configuration Files:</strong> Use dedicated config files for easy maintenance</li>
-                        <li><strong>Environment Variables:</strong> Store sensitive data in environment variables</li>
-                        <li><strong>Version Control:</strong> Track all customizations in version control</li>
-                        <li><strong>Documentation:</strong> Document all custom changes and configurations</li>
-                    </ul>
+        <section id="best-practices">
+          <h2>Best Practices</h2>
 
-                    <h3>Performance Considerations</h3>
-                    <ul>
-                        <li><strong>Lazy Loading:</strong> Load custom components only when needed</li>
-                        <li><strong>Caching:</strong> Implement appropriate caching for custom data</li>
-                        <li><strong>Database Optimization:</strong> Index custom fields properly</li>
-                        <li><strong>Asset Optimization:</strong> Optimize custom images and assets</li>
-                        <li><strong>Bundle Size:</strong> Monitor bundle size when adding custom features</li>
-                    </ul>
+          <h3>Code Organization</h3>
+          <ul>
+            <li><strong>Modular Structure:</strong> Keep customizations in separate modules</li>
+            <li><strong>Configuration Files:</strong> Use dedicated config files for easy maintenance</li>
+            <li><strong>Environment Variables:</strong> Store sensitive data in environment variables</li>
+            <li><strong>Version Control:</strong> Track all customizations in version control</li>
+            <li><strong>Documentation:</strong> Document all custom changes and configurations</li>
+          </ul>
 
-                    <h3>Security Guidelines</h3>
-                    <ul>
-                        <li><strong>Input Validation:</strong> Validate all custom form inputs</li>
-                        <li><strong>Access Control:</strong> Implement proper permissions for custom features</li>
-                        <li><strong>Data Encryption:</strong> Encrypt sensitive custom data</li>
-                        <li><strong>Audit Trails:</strong> Log custom operations for compliance</li>
-                        <li><strong>Regular Updates:</strong> Keep custom integrations updated</li>
-                    </ul>
+          <h3>Performance Considerations</h3>
+          <ul>
+            <li><strong>Lazy Loading:</strong> Load custom components only when needed</li>
+            <li><strong>Caching:</strong> Implement appropriate caching for custom data</li>
+            <li><strong>Database Optimization:</strong> Index custom fields properly</li>
+            <li><strong>Asset Optimization:</strong> Optimize custom images and assets</li>
+            <li><strong>Bundle Size:</strong> Monitor bundle size when adding custom features</li>
+          </ul>
 
-                    <h3>Maintenance Guidelines</h3>
-                    <ul>
-                        <li><strong>Backup Strategy:</strong> Regular backups before major customizations</li>
-                        <li><strong>Testing:</strong> Thoroughly test all customizations</li>
-                        <li><strong>Staging Environment:</strong> Test customizations in staging first</li>
-                        <li><strong>Rollback Plan:</strong> Have a rollback strategy for failed customizations</li>
-                        <li><strong>Documentation:</strong> Maintain detailed customization documentation</li>
-                    </ul>
-                </section>
+          <h3>Security Guidelines</h3>
+          <ul>
+            <li><strong>Input Validation:</strong> Validate all custom form inputs</li>
+            <li><strong>Access Control:</strong> Implement proper permissions for custom features</li>
+            <li><strong>Data Encryption:</strong> Encrypt sensitive custom data</li>
+            <li><strong>Audit Trails:</strong> Log custom operations for compliance</li>
+            <li><strong>Regular Updates:</strong> Keep custom integrations updated</li>
+          </ul>
 
-                <section id="support">
-                    <h2>Development Support</h2>
-                    
-                    <h3>Available Support Services</h3>
-                    <div class="feature-grid">
-                        <div class="feature-card">
-                            <h4>🛠️ Technical Consultation</h4>
-                            <ul>
-                                <li>Architecture planning</li>
-                                <li>Integration guidance</li>
-                                <li>Performance optimization</li>
-                                <li>Security review</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="feature-card">
-                            <h4>💻 Custom Development</h4>
-                            <ul>
-                                <li>New module development</li>
-                                <li>Complex integrations</li>
-                                <li>Custom workflows</li>
-                                <li>API development</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="feature-card">
-                            <h4>🎓 Training & Workshops</h4>
-                            <ul>
-                                <li>Developer training</li>
-                                <li>Best practices workshops</li>
-                                <li>Code review sessions</li>
-                                <li>Architecture discussions</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="feature-card">
-                            <h4>🚀 Deployment Support</h4>
-                            <ul>
-                                <li>Production deployment</li>
-                                <li>Server configuration</li>
-                                <li>Performance tuning</li>
-                                <li>Monitoring setup</li>
-                            </ul>
-                        </div>
-                    </div>
+          <h3>Maintenance Guidelines</h3>
+          <ul>
+            <li><strong>Backup Strategy:</strong> Regular backups before major customizations</li>
+            <li><strong>Testing:</strong> Thoroughly test all customizations</li>
+            <li><strong>Staging Environment:</strong> Test customizations in staging first</li>
+            <li><strong>Rollback Plan:</strong> Have a rollback strategy for failed customizations</li>
+            <li><strong>Documentation:</strong> Maintain detailed customization documentation</li>
+          </ul>
+        </section>
 
-                    <h3>Contact Development Team</h3>
-                    <ul>
-                        <li><strong>Email:</strong> dev-support@medcare-rural.com</li>
-                        <li><strong>Slack:</strong> Join our developer community</li>
-                        <li><strong>GitHub:</strong> Contribute to the project</li>
-                        <li><strong>Documentation:</strong> Access developer wiki</li>
-                    </ul>
+        <section id="support">
+          <h2>Development Support</h2>
 
-                    <h3>Community Resources</h3>
-                    <ul>
-                        <li><strong>Developer Forum:</strong> Ask questions and share solutions</li>
-                        <li><strong>Code Examples:</strong> Browse community-contributed examples</li>
-                        <li><strong>Plugin Repository:</strong> Download and share custom plugins</li>
-                        <li><strong>Video Tutorials:</strong> Step-by-step customization guides</li>
-                    </ul>
+          <h3>Available Support Services</h3>
+          <div class="feature-grid">
+            <div class="feature-card">
+              <h4>🛠️ Technical Consultation</h4>
+              <ul>
+                <li>Architecture planning</li>
+                <li>Integration guidance</li>
+                <li>Performance optimization</li>
+                <li>Security review</li>
+              </ul>
+            </div>
 
-                    <div class="alert alert-info">
-                        <strong>Enterprise Support:</strong> For complex customizations and dedicated support, consider our Enterprise Support package with priority assistance and custom development services.
-                    </div>
-                </section>
-            </main>
-        </div>
+            <div class="feature-card">
+              <h4>💻 Custom Development</h4>
+              <ul>
+                <li>New module development</li>
+                <li>Complex integrations</li>
+                <li>Custom workflows</li>
+                <li>API development</li>
+              </ul>
+            </div>
+
+            <div class="feature-card">
+              <h4>🎓 Training & Workshops</h4>
+              <ul>
+                <li>Developer training</li>
+                <li>Best practices workshops</li>
+                <li>Code review sessions</li>
+                <li>Architecture discussions</li>
+              </ul>
+            </div>
+
+            <div class="feature-card">
+              <h4>🚀 Deployment Support</h4>
+              <ul>
+                <li>Production deployment</li>
+                <li>Server configuration</li>
+                <li>Performance tuning</li>
+                <li>Monitoring setup</li>
+              </ul>
+            </div>
+          </div>
+
+          <h3>Contact Development Team</h3>
+          <ul>
+            <li><strong>Email:</strong> dev-support@medcare-rural.com</li>
+            <li><strong>Slack:</strong> Join our developer community</li>
+            <li><strong>GitHub:</strong> Contribute to the project</li>
+            <li><strong>Documentation:</strong> Access developer wiki</li>
+          </ul>
+
+          <h3>Community Resources</h3>
+          <ul>
+            <li><strong>Developer Forum:</strong> Ask questions and share solutions</li>
+            <li><strong>Code Examples:</strong> Browse community-contributed examples</li>
+            <li><strong>Plugin Repository:</strong> Download and share custom plugins</li>
+            <li><strong>Video Tutorials:</strong> Step-by-step customization guides</li>
+          </ul>
+
+          <div class="alert alert-info">
+            <strong>Enterprise Support:</strong> For complex customizations and dedicated support, consider our
+            Enterprise Support package with priority assistance and custom development services.
+          </div>
+        </section>
+      </main>
     </div>
+  </div>
 
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2024 MedCare Rural. All rights reserved.</p>
-        </div>
-    </footer>
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2024 MedCare Rural. All rights reserved.</p>
+    </div>
+  </footer>
 
-    <script src="assets/js/docs.js"></script>
+  <script src="assets/js/docs.js"></script>
 </body>
+
 </html>

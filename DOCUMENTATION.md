@@ -38,7 +38,7 @@
 - **Frontend**: React 18+ with TypeScript
 - **UI Framework**: Shadcn/UI Components
 - **Styling**: Tailwind CSS
-- **State Management**: React Hooks with Spark KV
+- **State Management**: React Hooks with Local Storage
 - **Icons**: Phosphor Icons
 - **Build Tool**: Vite
 - **Package Manager**: npm

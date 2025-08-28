@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useKV } from '@/hooks/useLocalStorage'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Calendar, CalendarPlus, Search, Clock, User, FileText } from '@phosphor-icons/react';
+import { Calendar, CalendarPlus, MagnifyingGlass, Clock, User, FileText } from '@phosphor-icons/react';
 import { toast } from 'sonner'
 import { useNotifications } from '@/hooks/useNotifications'
 import { Appointment, Patient } from '@/types/hospital'
@@ -47,11 +47,11 @@ export default function AppointmentScheduling() {
   const [sendReminder, setSendReminder] = useState(true)
   const { sendAppointmentReminder, isLoading: isNotificationLoading } = useNotifications()
   const [todayAppointments, setTodayAppointments] = useKV<Appointment[]>('today-appointments', [])
-  
+
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterDate, setFilterDate] = useState('all')
   const [selectedDate, setSelectedDate] = useState(new Date())
-  
+
   const [newAppointment, setNewAppointment] = useState({
     patientId: '',
     patientName: '',
@@ -69,11 +69,11 @@ export default function AppointmentScheduling() {
   const filteredAppointments = appointments.filter(appointment => {
     const patient = patients.find(p => p.id === appointment.patientId);
     const patientName = patient ? `${patient.firstName} ${patient.lastName}` : '';
-    
+
     const matchesSearch = patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         appointment.doctorId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         appointment.id?.toLowerCase().includes(searchTerm.toLowerCase())
-    
+      appointment.doctorId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      appointment.id?.toLowerCase().includes(searchTerm.toLowerCase())
+
     return matchesSearch
   })
 
@@ -82,13 +82,13 @@ export default function AppointmentScheduling() {
     const bookedSlots = appointments
       .filter(apt => apt.appointmentDate === date && apt.doctorId === doctorId && apt.status !== 'cancelled')
       .map(apt => apt.appointmentTime)
-    
+
     return timeSlots.filter(slot => !bookedSlots.includes(slot))
   }
 
   const handleScheduleAppointment = async () => {
-    if (!formData.patientId || !formData.doctorId || !formData.type || 
-        !formData.appointmentDate || !formData.appointmentTime) {
+    if (!formData.patientId || !formData.doctorId || !formData.type ||
+      !formData.appointmentDate || !formData.appointmentTime) {
       toast.error('Please fill in all required fields')
       return
     }
@@ -101,11 +101,11 @@ export default function AppointmentScheduling() {
 
     // Check if time slot is already booked
     const bookedSlots = appointments
-      .filter(apt => apt.appointmentDate === formData.appointmentDate && 
-                     apt.doctorId === formData.doctorId && 
-                     apt.status !== 'cancelled')
+      .filter(apt => apt.appointmentDate === formData.appointmentDate &&
+        apt.doctorId === formData.doctorId &&
+        apt.status !== 'cancelled')
       .map(apt => apt.appointmentTime)
-    
+
     if (bookedSlots.includes(formData.appointmentTime)) {
       toast.error('This time slot is already booked. Please choose a different time.')
       return
@@ -160,12 +160,12 @@ export default function AppointmentScheduling() {
   const updateAppointmentStatus = (appointmentId: string, newStatus: Appointment['status']) => {
     setAppointments(currentAppointments =>
       currentAppointments.map(appointment =>
-        appointment.id === appointmentId 
+        appointment.id === appointmentId
           ? { ...appointment, status: newStatus }
           : appointment
       )
     )
-    
+
     // Update today's appointments if needed
     setTodayAppointments(current =>
       current.map(appointment =>
@@ -174,7 +174,7 @@ export default function AppointmentScheduling() {
           : appointment
       )
     )
-    
+
     toast.success(`Appointment status updated to ${newStatus}`)
   }
 
@@ -182,7 +182,7 @@ export default function AppointmentScheduling() {
     switch (status) {
       case 'scheduled':
         return <Badge variant="outline" className="text-blue-600">Scheduled</Badge>
-      case 'in-progress':
+      case 'in_progress':
         return <Badge variant="default" className="bg-yellow-500">In Progress</Badge>
       case 'completed':
         return <Badge variant="default" className="bg-green-500">Completed</Badge>
@@ -194,10 +194,10 @@ export default function AppointmentScheduling() {
   }
 
   const todayStats = {
-    total: appointments?.filter(apt => apt.date === today).length,
-    completed: appointments?.filter(apt => apt.date === today && apt.status === 'completed').length,
-    inProgress: appointments?.filter(apt => apt.date === today && apt.status === 'in-progress').length,
-    scheduled: appointments?.filter(apt => apt.date === today && apt.status === 'scheduled').length
+    total: appointments?.filter(apt => apt.appointmentDate === today).length,
+    completed: appointments?.filter(apt => apt.appointmentDate === today && apt.status === 'completed').length,
+    inProgress: appointments?.filter(apt => apt.appointmentDate === today && apt.status === 'in_progress').length,
+    scheduled: appointments?.filter(apt => apt.appointmentDate === today && apt.status === 'scheduled').length
   }
 
   return (
@@ -206,7 +206,7 @@ export default function AppointmentScheduling() {
       <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-1">
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Search appointments..."
               value={searchTerm}
@@ -214,7 +214,7 @@ export default function AppointmentScheduling() {
               className="pl-10"
             />
           </div>
-          
+
           <div className="flex gap-2">
             <Select value={filterStatus} onValueChange={setFilterStatus}>
               <SelectTrigger className="w-[140px]">
@@ -223,12 +223,12 @@ export default function AppointmentScheduling() {
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="scheduled">Scheduled</SelectItem>
-                <SelectItem value="in-progress">In Progress</SelectItem>
+                <SelectItem value="in_progress">In Progress</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
                 <SelectItem value="cancelled">Cancelled</SelectItem>
               </SelectContent>
             </Select>
-            
+
             <Select value={filterDate} onValueChange={setFilterDate}>
               <SelectTrigger className="w-[140px]">
                 <SelectValue />
@@ -265,9 +265,9 @@ export default function AppointmentScheduling() {
                   onValueChange={(value) => {
                     const patient = patients.find(p => p.id === value)
                     setNewAppointment({
-                      ...newAppointment, 
+                      ...newAppointment,
                       patientId: value,
-                      patientName: patient?.name || ''
+                      patientName: `${patient?.firstName} ${patient?.lastName}` || ''
                     })
                   }}
                 >
@@ -277,7 +277,7 @@ export default function AppointmentScheduling() {
                   <SelectContent>
                     {patients.map((patient) => (
                       <SelectItem key={patient.id} value={patient.id}>
-                        {patient.name} - {patient.phone}
+                        {patient.firstName} {patient.lastName} - {patient.phoneNumber}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -289,7 +289,7 @@ export default function AppointmentScheduling() {
                   <Label htmlFor="doctor">Select Doctor *</Label>
                   <Select
                     value={newAppointment.doctor}
-                    onValueChange={(value) => setNewAppointment({...newAppointment, doctor: value})}
+                    onValueChange={(value) => setNewAppointment({ ...newAppointment, doctor: value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Choose a doctor" />
@@ -308,7 +308,7 @@ export default function AppointmentScheduling() {
                   <Label htmlFor="type">Appointment Type *</Label>
                   <Select
                     value={newAppointment.type}
-                    onValueChange={(value) => setNewAppointment({...newAppointment, type: value})}
+                    onValueChange={(value) => setNewAppointment({ ...newAppointment, type: value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select type" />
@@ -330,7 +330,7 @@ export default function AppointmentScheduling() {
                   <Input
                     type="date"
                     value={newAppointment.date}
-                    onChange={(e) => setNewAppointment({...newAppointment, date: e.target.value})}
+                    onChange={(e) => setNewAppointment({ ...newAppointment, date: e.target.value })}
                     min={today}
                   />
                 </div>
@@ -339,14 +339,16 @@ export default function AppointmentScheduling() {
                   <Label htmlFor="time">Time *</Label>
                   <Select
                     value={newAppointment.time}
-                    onValueChange={(value) => setNewAppointment({...newAppointment, time: value})}
+                    onValueChange={(value) => setNewAppointment({ ...newAppointment, time: value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select time" />
                     </SelectTrigger>
                     <SelectContent>
                       {timeSlots.map((time) => {
-                        const bookedSlots = getBookedSlots(newAppointment.date, newAppointment.doctor)
+                        const bookedSlots = appointments
+                          .filter(apt => apt.appointmentDate === newAppointment.date && apt.doctorId === newAppointment.doctor && apt.status !== 'cancelled')
+                          .map(apt => apt.appointmentTime)
                         const isBooked = bookedSlots.includes(time)
                         return (
                           <SelectItem key={time} value={time} disabled={isBooked}>
@@ -364,7 +366,7 @@ export default function AppointmentScheduling() {
                 <Input
                   placeholder="Add any special notes or requirements..."
                   value={newAppointment.notes}
-                  onChange={(e) => setNewAppointment({...newAppointment, notes: e.target.value})}
+                  onChange={(e) => setNewAppointment({ ...newAppointment, notes: e.target.value })}
                 />
               </div>
             </div>
@@ -428,26 +430,31 @@ export default function AppointmentScheduling() {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-4 mb-2">
-                      <h3 className="text-lg font-semibold">{appointment.patientName}</h3>
+                      <h3 className="text-lg font-semibold">
+                        {(() => {
+                          const patient = patients.find(p => p.id === appointment.patientId);
+                          return patient ? `${patient.firstName} ${patient.lastName}` : 'Unknown Patient';
+                        })()}
+                      </h3>
                       {getStatusBadge(appointment.status)}
                       <Badge variant="secondary">{appointment.type}</Badge>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <User className="w-4 h-4" />
-                        <span>{appointment.doctor}</span>
+                        <span>{appointment.doctorId}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
-                        <span>{appointment.date}</span>
+                        <span>{appointment.appointmentDate}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4" />
-                        <span>{appointment.time}</span>
+                        <span>{appointment.appointmentTime}</span>
                       </div>
                     </div>
-                    
+
                     {appointment.notes && (
                       <div className="flex items-center gap-2 mt-2 text-sm">
                         <FileText className="w-4 h-4 text-muted-foreground" />
@@ -462,7 +469,7 @@ export default function AppointmentScheduling() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => updateAppointmentStatus(appointment.id, 'in-progress')}
+                          onClick={() => updateAppointmentStatus(appointment.id, 'in_progress')}
                         >
                           Start
                         </Button>
@@ -475,7 +482,7 @@ export default function AppointmentScheduling() {
                         </Button>
                       </>
                     )}
-                    {appointment.status === 'in-progress' && (
+                    {appointment.status === 'in_progress' && (
                       <Button
                         size="sm"
                         onClick={() => updateAppointmentStatus(appointment.id, 'completed')}

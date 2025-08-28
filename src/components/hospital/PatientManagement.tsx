@@ -11,20 +11,20 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { toast } from 'sonner'
-import { 
-  Users, 
-  Plus, 
-  Search, 
-  Edit, 
-  Eye, 
+import {
+  Users,
+  Plus,
+  MagnifyingGlass,
+  PencilSimple,
+  Eye,
   Calendar,
   Phone,
-  Mail,
+  Envelope,
   MapPin,
   Heart,
   Shield,
   FileText,
-  Activity,
+  Pulse,
   Pill,
   Warning,
   CloudArrowUp,
@@ -69,7 +69,7 @@ interface InsuranceInfo {
 }
 
 export default function PatientManagement() {
-  const { patients, loading, error, addPatient, updatePatient, deletePatient } = usePatients()
+  const { patients, loading, error, addPatient, updatePatient, deletePatient, refreshPatients } = usePatients()
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
@@ -90,7 +90,7 @@ export default function PatientManagement() {
   })
 
   // Filter patients based on search
-  const filteredPatients = patients.filter(patient => 
+  const filteredPatients = patients.filter(patient =>
     patient.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     patient.phone?.includes(searchTerm) ||
     patient.patient_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -99,7 +99,7 @@ export default function PatientManagement() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     try {
       if (selectedPatient) {
         await updatePatient(selectedPatient.id, formData)
@@ -119,7 +119,7 @@ export default function PatientManagement() {
         })
         toast.success('Patient created successfully')
       }
-      
+
       resetForm()
       setIsDialogOpen(false)
     } catch (error) {
@@ -225,7 +225,7 @@ export default function PatientManagement() {
   const updateVaccination = (index: number, field: keyof VaccinationRecord, value: string) => {
     setFormData(prev => ({
       ...prev,
-      vaccination_records: prev.vaccination_records?.map((vaccination, i) => 
+      vaccination_records: prev.vaccination_records?.map((vaccination, i) =>
         i === index ? { ...vaccination, [field]: value } : vaccination
       ) || []
     }))
@@ -247,7 +247,7 @@ export default function PatientManagement() {
             <Users className="w-6 h-6 text-primary" />
             <h1 className="text-2xl font-bold">Patient Management</h1>
           </div>
-          
+
           {/* Sync Status */}
           <div className="flex items-center gap-2">
             {patients.isOnline ? (
@@ -261,10 +261,10 @@ export default function PatientManagement() {
                 Offline
               </Badge>
             )}
-            
+
             {patients.syncing && (
               <Badge variant="outline" className="text-blue-600 border-blue-600">
-                <Activity className="w-3 h-3 mr-1 animate-spin" />
+                <Pulse className="w-3 h-3 mr-1 animate-spin" />
                 Syncing
               </Badge>
             )}
@@ -272,15 +272,15 @@ export default function PatientManagement() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button 
-            variant="outline" 
-            onClick={patientOperations.sync}
-            disabled={patients.syncing || !patients.isOnline}
+          <Button
+            variant="outline"
+            onClick={refreshPatients}
+            disabled={loading}
           >
             <CloudArrowUp className="w-4 h-4 mr-2" />
             Sync Now
           </Button>
-          
+
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button onClick={resetForm}>
@@ -294,7 +294,7 @@ export default function PatientManagement() {
                   {selectedPatient ? 'Edit Patient' : 'Add New Patient'}
                 </DialogTitle>
               </DialogHeader>
-              
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 <Tabs defaultValue="basic" className="w-full">
                   <TabsList className="grid w-full grid-cols-4">
@@ -303,7 +303,7 @@ export default function PatientManagement() {
                     <TabsTrigger value="vaccination">Vaccinations</TabsTrigger>
                     <TabsTrigger value="insurance">Insurance</TabsTrigger>
                   </TabsList>
-                  
+
                   <TabsContent value="basic" className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -315,7 +315,7 @@ export default function PatientManagement() {
                           required
                         />
                       </div>
-                      
+
                       <div>
                         <Label htmlFor="phone">Phone Number *</Label>
                         <Input
@@ -325,7 +325,7 @@ export default function PatientManagement() {
                           required
                         />
                       </div>
-                      
+
                       <div>
                         <Label htmlFor="email">Email</Label>
                         <Input
@@ -335,7 +335,7 @@ export default function PatientManagement() {
                           onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                         />
                       </div>
-                      
+
                       <div>
                         <Label htmlFor="dob">Date of Birth *</Label>
                         <Input
@@ -346,12 +346,12 @@ export default function PatientManagement() {
                           required
                         />
                       </div>
-                      
+
                       <div>
                         <Label htmlFor="gender">Gender *</Label>
-                        <Select 
-                          value={formData.gender} 
-                          onValueChange={(value: 'male' | 'female' | 'other') => 
+                        <Select
+                          value={formData.gender}
+                          onValueChange={(value: 'male' | 'female' | 'other') =>
                             setFormData(prev => ({ ...prev, gender: value }))
                           }
                         >
@@ -365,11 +365,11 @@ export default function PatientManagement() {
                           </SelectContent>
                         </Select>
                       </div>
-                      
+
                       <div>
                         <Label htmlFor="blood_group">Blood Group</Label>
-                        <Select 
-                          value={formData.blood_group || ''} 
+                        <Select
+                          value={formData.blood_group || ''}
                           onValueChange={(value) => setFormData(prev => ({ ...prev, blood_group: value }))}
                         >
                           <SelectTrigger>
@@ -388,7 +388,7 @@ export default function PatientManagement() {
                         </Select>
                       </div>
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="address">Address *</Label>
                       <Textarea
@@ -398,7 +398,7 @@ export default function PatientManagement() {
                         required
                       />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="emergency_contact">Emergency Contact *</Label>
                       <Input
@@ -410,7 +410,7 @@ export default function PatientManagement() {
                       />
                     </div>
                   </TabsContent>
-                  
+
                   <TabsContent value="medical" className="space-y-4">
                     <div>
                       <div className="flex items-center justify-between mb-2">
@@ -428,9 +428,9 @@ export default function PatientManagement() {
                               onChange={(e) => updateAllergy(index, e.target.value)}
                               placeholder="Enter allergy"
                             />
-                            <Button 
-                              type="button" 
-                              variant="outline" 
+                            <Button
+                              type="button"
+                              variant="outline"
                               size="sm"
                               onClick={() => removeAllergy(index)}
                             >
@@ -440,7 +440,7 @@ export default function PatientManagement() {
                         ))}
                       </div>
                     </div>
-                    
+
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <Label>Chronic Conditions</Label>
@@ -457,9 +457,9 @@ export default function PatientManagement() {
                               onChange={(e) => updateChronicCondition(index, e.target.value)}
                               placeholder="Enter chronic condition"
                             />
-                            <Button 
-                              type="button" 
-                              variant="outline" 
+                            <Button
+                              type="button"
+                              variant="outline"
                               size="sm"
                               onClick={() => removeChronicCondition(index)}
                             >
@@ -470,7 +470,7 @@ export default function PatientManagement() {
                       </div>
                     </div>
                   </TabsContent>
-                  
+
                   <TabsContent value="vaccination" className="space-y-4">
                     <div className="flex items-center justify-between">
                       <Label>Vaccination Records</Label>
@@ -479,7 +479,7 @@ export default function PatientManagement() {
                         Add Vaccination
                       </Button>
                     </div>
-                    
+
                     <div className="space-y-4">
                       {formData.vaccination_records?.map((vaccination, index) => (
                         <Card key={index} className="p-4">
@@ -492,7 +492,7 @@ export default function PatientManagement() {
                                 placeholder="e.g., COVID-19, Hepatitis B"
                               />
                             </div>
-                            
+
                             <div>
                               <Label>Date Administered</Label>
                               <Input
@@ -501,7 +501,7 @@ export default function PatientManagement() {
                                 onChange={(e) => updateVaccination(index, 'date_administered', e.target.value)}
                               />
                             </div>
-                            
+
                             <div>
                               <Label>Next Due Date</Label>
                               <Input
@@ -510,7 +510,7 @@ export default function PatientManagement() {
                                 onChange={(e) => updateVaccination(index, 'next_due_date', e.target.value)}
                               />
                             </div>
-                            
+
                             <div>
                               <Label>Administered By</Label>
                               <Input
@@ -520,11 +520,11 @@ export default function PatientManagement() {
                               />
                             </div>
                           </div>
-                          
-                          <Button 
-                            type="button" 
-                            variant="destructive" 
-                            size="sm" 
+
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
                             className="mt-2"
                             onClick={() => removeVaccination(index)}
                           >
@@ -534,7 +534,7 @@ export default function PatientManagement() {
                       ))}
                     </div>
                   </TabsContent>
-                  
+
                   <TabsContent value="insurance" className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -554,7 +554,7 @@ export default function PatientManagement() {
                           placeholder="e.g., Star Health, HDFC ERGO"
                         />
                       </div>
-                      
+
                       <div>
                         <Label>Policy Number</Label>
                         <Input
@@ -571,7 +571,7 @@ export default function PatientManagement() {
                           }))}
                         />
                       </div>
-                      
+
                       <div>
                         <Label>Coverage Amount</Label>
                         <Input
@@ -589,7 +589,7 @@ export default function PatientManagement() {
                           }))}
                         />
                       </div>
-                      
+
                       <div>
                         <Label>Expiry Date</Label>
                         <Input
@@ -610,7 +610,7 @@ export default function PatientManagement() {
                     </div>
                   </TabsContent>
                 </Tabs>
-                
+
                 <div className="flex justify-end gap-3 pt-4 border-t">
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                     Cancel
@@ -628,7 +628,7 @@ export default function PatientManagement() {
       {/* Search */}
       <div className="flex gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             placeholder="Search patients by name, phone, or patient ID..."
             value={searchTerm}
@@ -653,7 +653,7 @@ export default function PatientManagement() {
         <CardContent>
           {patients.loading ? (
             <div className="text-center py-8">
-              <Activity className="w-8 h-8 animate-spin mx-auto mb-2" />
+              <Pulse className="w-8 h-8 animate-spin mx-auto mb-2" />
               <p>Loading patients...</p>
             </div>
           ) : filteredPatients.length === 0 ? (
@@ -687,8 +687,8 @@ export default function PatientManagement() {
                     </TableCell>
                     <TableCell>{patient.phone}</TableCell>
                     <TableCell>
-                      {patient.date_of_birth ? 
-                        Math.floor((Date.now() - new Date(patient.date_of_birth).getTime()) / (1000 * 60 * 60 * 24 * 365)) 
+                      {patient.date_of_birth ?
+                        Math.floor((Date.now() - new Date(patient.date_of_birth).getTime()) / (1000 * 60 * 60 * 24 * 365))
                         : 'N/A'
                       }
                     </TableCell>
@@ -732,7 +732,7 @@ export default function PatientManagement() {
                           size="sm"
                           onClick={() => handleEdit(patient)}
                         >
-                          <Edit className="w-4 h-4" />
+                          <PencilSimple className="w-4 h-4" />
                         </Button>
                         <Button
                           variant="outline"
@@ -758,7 +758,7 @@ export default function PatientManagement() {
           <DialogHeader>
             <DialogTitle>Patient Details</DialogTitle>
           </DialogHeader>
-          
+
           {selectedPatient && (
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-6">
@@ -789,7 +789,7 @@ export default function PatientManagement() {
                       <div>
                         <Label className="text-sm font-medium">Email</Label>
                         <p className="text-sm flex items-center gap-1">
-                          <Mail className="w-3 h-3" />
+                          <Envelope className="w-3 h-3" />
                           {selectedPatient.email}
                         </p>
                       </div>
@@ -856,7 +856,7 @@ export default function PatientManagement() {
                         </div>
                       </div>
                     )}
-                    
+
                     {selectedPatient.chronic_conditions.length > 0 && (
                       <div>
                         <Label className="text-sm font-medium">Chronic Conditions</Label>

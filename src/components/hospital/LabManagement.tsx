@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useKV } from '@/hooks/useLocalStorage'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,15 +12,16 @@ import { Textarea } from '@/components/ui/textarea'
 import {
   TestTube,
   Plus,
-  Search,
+  MagnifyingGlass,
   FileText,
   Clock,
-  AlertTriangle,
+  Warning,
   Download,
   User,
   Calendar,
 } from '@phosphor-icons/react';
 import { toast } from 'sonner'
+import { Patient, Doctor } from '@/types/hospital'
 
 interface LabTest {
   id: string
@@ -66,7 +67,7 @@ interface LabResult {
 }
 
 const labTestCategories = [
-  'Hematology', 'Biochemistry', 'Microbiology', 'Pathology', 
+  'Hematology', 'Biochemistry', 'Microbiology', 'Pathology',
   'Radiology', 'Cardiology', 'Immunology', 'Endocrinology'
 ]
 
@@ -88,23 +89,23 @@ const commonTests = [
 ]
 
 export default function LabManagement() {
-  const [patients] = useKV('hospital-patients', [])
-  const [doctors] = useKV('hospital-doctors', [])
+  const [patients] = useKV<Patient[]>('hospital-patients', [])
+  const [doctors] = useKV<Doctor[]>('hospital-doctors', [])
   const [labTests, setLabTests] = useKV<LabTest[]>('lab-tests', [])
   const [labOrders, setLabOrders] = useKV<LabOrder[]>('lab-orders', [])
   const [labResults, setLabResults] = useKV<LabResult[]>('lab-results', [])
-  
+
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedOrder, setSelectedOrder] = useState<LabOrder | null>(null)
   const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false)
   const [isResultDialogOpen, setIsResultDialogOpen] = useState(false)
   const [isTestDialogOpen, setIsTestDialogOpen] = useState(false)
-  
+
   const [orderFormData, setOrderFormData] = useState<Partial<LabOrder>>({
     priority: 'normal',
     status: 'ordered'
   })
-  
+
   const [testFormData, setTestFormData] = useState<Partial<LabTest>>({
     status: 'active'
   })
@@ -165,7 +166,7 @@ export default function LabManagement() {
     const patient = patients.find(p => p.id === orderFormData.patientId)
     const doctor = doctors.find(d => d.id === orderFormData.doctorId)
     const selectedTests = labTests.filter(test => orderFormData.tests!.includes(test.id))
-    
+
     if (!patient || !doctor) {
       toast.error('Patient or doctor not found')
       return
@@ -176,9 +177,9 @@ export default function LabManagement() {
     const newOrder: LabOrder = {
       id: `LO${Date.now()}`,
       patientId: orderFormData.patientId!,
-      patientName: patient.name,
+      patientName: `${patient?.firstName || ''} ${patient?.lastName || ''}`.trim(),
       doctorId: orderFormData.doctorId!,
-      doctorName: doctor.name,
+      doctorName: `Dr. ${doctor?.name || ''}`,
       tests: orderFormData.tests!,
       testNames: selectedTests.map(test => test.name),
       orderDate: new Date().toISOString().split('T')[0],
@@ -221,16 +222,16 @@ export default function LabManagement() {
     }
 
     setLabResults(current => [...current, newResult])
-    
+
     // Check if all tests for this order are completed
     const orderResults = [...labResults, newResult].filter(r => r.orderId === selectedOrder.id)
     const orderTests = selectedOrder.tests
-    
+
     if (orderResults.length === orderTests.length) {
       // Update order status to completed
-      setLabOrders(current => 
-        current.map(order => 
-          order.id === selectedOrder.id 
+      setLabOrders(current =>
+        current.map(order =>
+          order.id === selectedOrder.id
             ? { ...order, status: 'completed' }
             : order
         )
@@ -243,9 +244,9 @@ export default function LabManagement() {
   }
 
   const updateOrderStatus = (orderId: string, newStatus: LabOrder['status']) => {
-    setLabOrders(current => 
-      current.map(order => 
-        order.id === orderId 
+    setLabOrders(current =>
+      current.map(order =>
+        order.id === orderId
           ? { ...order, status: newStatus }
           : order
       )
@@ -268,7 +269,7 @@ export default function LabManagement() {
       {/* Header Actions */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
             placeholder="Search orders by patient, test, or order ID..."
             value={searchTerm}
@@ -276,7 +277,7 @@ export default function LabManagement() {
             className="pl-10"
           />
         </div>
-        
+
         <div className="flex gap-2">
           <Dialog open={isTestDialogOpen} onOpenChange={setIsTestDialogOpen}>
             <DialogTrigger asChild>
@@ -290,14 +291,14 @@ export default function LabManagement() {
                 <DialogTitle>Add New Lab Test</DialogTitle>
                 <DialogDescription>Create a new lab test type</DialogDescription>
               </DialogHeader>
-              
+
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
                   <Label htmlFor="testName">Test Name *</Label>
                   <Input
                     id="testName"
                     value={testFormData.name || ''}
-                    onChange={(e) => setTestFormData({...testFormData, name: e.target.value})}
+                    onChange={(e) => setTestFormData({ ...testFormData, name: e.target.value })}
                     placeholder="Enter test name"
                   />
                 </div>
@@ -305,7 +306,7 @@ export default function LabManagement() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="category">Category *</Label>
-                    <Select value={testFormData.category} onValueChange={(value) => setTestFormData({...testFormData, category: value})}>
+                    <Select value={testFormData.category} onValueChange={(value) => setTestFormData({ ...testFormData, category: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
@@ -318,7 +319,7 @@ export default function LabManagement() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="sampleType">Sample Type</Label>
-                    <Select value={testFormData.sampleType} onValueChange={(value) => setTestFormData({...testFormData, sampleType: value})}>
+                    <Select value={testFormData.sampleType} onValueChange={(value) => setTestFormData({ ...testFormData, sampleType: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select sample type" />
                       </SelectTrigger>
@@ -338,7 +339,7 @@ export default function LabManagement() {
                       id="price"
                       type="number"
                       value={testFormData.price || ''}
-                      onChange={(e) => setTestFormData({...testFormData, price: Number(e.target.value)})}
+                      onChange={(e) => setTestFormData({ ...testFormData, price: Number(e.target.value) })}
                       placeholder="Price"
                     />
                   </div>
@@ -347,7 +348,7 @@ export default function LabManagement() {
                     <Input
                       id="unit"
                       value={testFormData.unit || ''}
-                      onChange={(e) => setTestFormData({...testFormData, unit: e.target.value})}
+                      onChange={(e) => setTestFormData({ ...testFormData, unit: e.target.value })}
                       placeholder="mg/dL, mmol/L, etc."
                     />
                   </div>
@@ -356,7 +357,7 @@ export default function LabManagement() {
                     <Input
                       id="reportTime"
                       value={testFormData.reportTime || ''}
-                      onChange={(e) => setTestFormData({...testFormData, reportTime: e.target.value})}
+                      onChange={(e) => setTestFormData({ ...testFormData, reportTime: e.target.value })}
                       placeholder="Hours"
                     />
                   </div>
@@ -367,7 +368,7 @@ export default function LabManagement() {
                   <Input
                     id="normalRange"
                     value={testFormData.normalRange || ''}
-                    onChange={(e) => setTestFormData({...testFormData, normalRange: e.target.value})}
+                    onChange={(e) => setTestFormData({ ...testFormData, normalRange: e.target.value })}
                     placeholder="Normal range values"
                   />
                 </div>
@@ -377,7 +378,7 @@ export default function LabManagement() {
                   <Textarea
                     id="preparation"
                     value={testFormData.preparationInstructions || ''}
-                    onChange={(e) => setTestFormData({...testFormData, preparationInstructions: e.target.value})}
+                    onChange={(e) => setTestFormData({ ...testFormData, preparationInstructions: e.target.value })}
                     placeholder="Any special preparation needed"
                     rows={2}
                   />
@@ -403,19 +404,19 @@ export default function LabManagement() {
                 <DialogTitle>Create Lab Order</DialogTitle>
                 <DialogDescription>Order lab tests for a patient</DialogDescription>
               </DialogHeader>
-              
+
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="patient">Patient *</Label>
-                    <Select value={orderFormData.patientId} onValueChange={(value) => setOrderFormData({...orderFormData, patientId: value})}>
+                    <Select value={orderFormData.patientId} onValueChange={(value) => setOrderFormData({ ...orderFormData, patientId: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select patient" />
                       </SelectTrigger>
                       <SelectContent>
                         {patients.map((patient) => (
                           <SelectItem key={patient.id} value={patient.id}>
-                            {patient.name} - {patient.id}
+                            {`${patient.firstName || ''} ${patient.lastName || ''}`.trim()} - {patient.id}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -423,12 +424,12 @@ export default function LabManagement() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="doctor">Ordering Doctor *</Label>
-                    <Select value={orderFormData.doctorId} onValueChange={(value) => setOrderFormData({...orderFormData, doctorId: value})}>
+                    <Select value={orderFormData.doctorId} onValueChange={(value) => setOrderFormData({ ...orderFormData, doctorId: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select doctor" />
                       </SelectTrigger>
                       <SelectContent>
-                        {doctors.filter(d => d.status === 'active').map((doctor) => (
+                        {doctors.map((doctor) => (
                           <SelectItem key={doctor.id} value={doctor.id}>
                             Dr. {doctor.name} - {doctor.specialization}
                           </SelectItem>
@@ -449,9 +450,9 @@ export default function LabManagement() {
                           onChange={(e) => {
                             const tests = orderFormData.tests || []
                             if (e.target.checked) {
-                              setOrderFormData({...orderFormData, tests: [...tests, test.id]})
+                              setOrderFormData({ ...orderFormData, tests: [...tests, test.id] })
                             } else {
-                              setOrderFormData({...orderFormData, tests: tests.filter(id => id !== test.id)})
+                              setOrderFormData({ ...orderFormData, tests: tests.filter(id => id !== test.id) })
                             }
                           }}
                           className="rounded"
@@ -475,7 +476,7 @@ export default function LabManagement() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="priority">Priority</Label>
-                    <Select value={orderFormData.priority} onValueChange={(value) => setOrderFormData({...orderFormData, priority: value as any})}>
+                    <Select value={orderFormData.priority} onValueChange={(value) => setOrderFormData({ ...orderFormData, priority: value as any })}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -488,7 +489,7 @@ export default function LabManagement() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="status">Status</Label>
-                    <Select value={orderFormData.status} onValueChange={(value) => setOrderFormData({...orderFormData, status: value as any})}>
+                    <Select value={orderFormData.status} onValueChange={(value) => setOrderFormData({ ...orderFormData, status: value as any })}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -506,7 +507,7 @@ export default function LabManagement() {
                   <Textarea
                     id="notes"
                     value={orderFormData.notes || ''}
-                    onChange={(e) => setOrderFormData({...orderFormData, notes: e.target.value})}
+                    onChange={(e) => setOrderFormData({ ...orderFormData, notes: e.target.value })}
                     placeholder="Additional notes or instructions"
                     rows={2}
                   />
@@ -547,7 +548,7 @@ export default function LabManagement() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Urgent Orders</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            <Warning className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-destructive">{urgentOrders.length}</div>
@@ -597,23 +598,23 @@ export default function LabManagement() {
                         <div className="flex items-center gap-3">
                           <Badge variant="outline">{order.id}</Badge>
                           <Badge variant={
-                            order.status === 'completed' ? 'default' : 
-                            order.status === 'in_progress' ? 'secondary' : 'outline'
+                            order.status === 'completed' ? 'default' :
+                              order.status === 'in_progress' ? 'secondary' : 'outline'
                           }>
                             {order.status?.replace('_', ' ') || 'Unknown'}
                           </Badge>
                           <Badge variant={
                             order.priority === 'stat' ? 'destructive' :
-                            order.priority === 'urgent' ? 'destructive' : 'outline'
+                              order.priority === 'urgent' ? 'destructive' : 'outline'
                           }>
                             {order.priority}
                           </Badge>
                         </div>
-                        
+
                         <div className="flex items-center gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => {
                               setSelectedOrder(order)
                               setIsResultDialogOpen(true)
@@ -622,8 +623,8 @@ export default function LabManagement() {
                             <Plus className="h-4 w-4" />
                             Add Result
                           </Button>
-                          <Select 
-                            value={order.status} 
+                          <Select
+                            value={order.status}
                             onValueChange={(value) => updateOrderStatus(order.id, value as any)}
                           >
                             <SelectTrigger className="w-32">
@@ -739,7 +740,7 @@ export default function LabManagement() {
                             <Badge variant="outline">{result.orderId}</Badge>
                             <Badge variant={
                               result.status === 'critical' ? 'destructive' :
-                              result.status === 'abnormal' ? 'destructive' : 'default'
+                                result.status === 'abnormal' ? 'destructive' : 'default'
                             }>
                               {result.status}
                             </Badge>
@@ -798,11 +799,11 @@ export default function LabManagement() {
               {selectedOrder && `Adding result for order ${selectedOrder.id} - ${selectedOrder.patientName}`}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="resultTest">Select Test *</Label>
-              <Select value={resultFormData.testId} onValueChange={(value) => setResultFormData({...resultFormData, testId: value})}>
+              <Select value={resultFormData.testId} onValueChange={(value) => setResultFormData({ ...resultFormData, testId: value })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select test" />
                 </SelectTrigger>
@@ -812,7 +813,7 @@ export default function LabManagement() {
                     // Check if result already exists for this test
                     const existingResult = labResults.find(r => r.orderId === selectedOrder.id && r.testId === testId)
                     if (existingResult) return null
-                    
+
                     return test ? (
                       <SelectItem key={test.id} value={test.id}>
                         {test.name}
@@ -829,13 +830,13 @@ export default function LabManagement() {
                 <Input
                   id="resultValue"
                   value={resultFormData.value || ''}
-                  onChange={(e) => setResultFormData({...resultFormData, value: e.target.value})}
+                  onChange={(e) => setResultFormData({ ...resultFormData, value: e.target.value })}
                   placeholder="Enter result value"
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="resultStatus">Status</Label>
-                <Select value={resultFormData.status} onValueChange={(value) => setResultFormData({...resultFormData, status: value as any})}>
+                <Select value={resultFormData.status} onValueChange={(value) => setResultFormData({ ...resultFormData, status: value as any })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -853,7 +854,7 @@ export default function LabManagement() {
               <Textarea
                 id="resultRemarks"
                 value={resultFormData.remarks || ''}
-                onChange={(e) => setResultFormData({...resultFormData, remarks: e.target.value})}
+                onChange={(e) => setResultFormData({ ...resultFormData, remarks: e.target.value })}
                 placeholder="Additional remarks or observations"
                 rows={2}
               />

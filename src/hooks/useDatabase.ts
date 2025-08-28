@@ -17,23 +17,23 @@ class OfflineDB {
   async initialize(): Promise<void> {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
-      
+
       request.onerror = () => reject(request.error);
       request.onsuccess = () => {
         this.db = request.result;
         resolve();
       };
-      
+
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
-        
+
         // Create object stores for each table
         const tables = [
-          'patients', 'appointments', 'doctors', 'medical_records', 
-          'billing', 'inventory', 'lab_tests', 'beds', 'users', 
+          'patients', 'appointments', 'doctors', 'medical_records',
+          'billing', 'inventory', 'lab_tests', 'beds', 'users',
           'notifications', 'sync_queue'
         ];
-        
+
         tables.forEach(tableName => {
           if (!db.objectStoreNames.contains(tableName)) {
             const store = db.createObjectStore(tableName, { keyPath: 'id', autoIncrement: true });
@@ -41,7 +41,7 @@ class OfflineDB {
             store.createIndex('updated_at', 'updated_at');
           }
         });
-        
+
         // Sync queue for offline changes
         if (!db.objectStoreNames.contains('sync_queue')) {
           const syncStore = db.createObjectStore('sync_queue', { keyPath: 'id', autoIncrement: true });
@@ -55,12 +55,12 @@ class OfflineDB {
 
   async getAll(tableName: string): Promise<any[]> {
     if (!this.db) throw new Error('Database not initialized');
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction([tableName], 'readonly');
       const store = transaction.objectStore(tableName);
       const request = store.getAll();
-      
+
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve(request.result);
     });
@@ -68,12 +68,12 @@ class OfflineDB {
 
   async add(tableName: string, data: any): Promise<any> {
     if (!this.db) throw new Error('Database not initialized');
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction([tableName], 'readwrite');
       const store = transaction.objectStore(tableName);
       const request = store.add(data);
-      
+
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve({ ...data, id: request.result });
     });
@@ -81,12 +81,12 @@ class OfflineDB {
 
   async update(tableName: string, data: any): Promise<any> {
     if (!this.db) throw new Error('Database not initialized');
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction([tableName], 'readwrite');
       const store = transaction.objectStore(tableName);
       const request = store.put(data);
-      
+
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve(data);
     });
@@ -94,12 +94,12 @@ class OfflineDB {
 
   async delete(tableName: string, id: number): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction([tableName], 'readwrite');
       const store = transaction.objectStore(tableName);
       const request = store.delete(id);
-      
+
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve();
     });
@@ -107,19 +107,19 @@ class OfflineDB {
 
   async addToSyncQueue(operation: string, tableName: string, data: any): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');
-    
+
     const syncItem = {
       operation,
       table_name: tableName,
       data,
       timestamp: new Date().toISOString()
     };
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction(['sync_queue'], 'readwrite');
       const store = transaction.objectStore('sync_queue');
       const request = store.add(syncItem);
-      
+
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve();
     });
@@ -127,12 +127,12 @@ class OfflineDB {
 
   async getSyncQueue(): Promise<any[]> {
     if (!this.db) throw new Error('Database not initialized');
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction(['sync_queue'], 'readonly');
       const store = transaction.objectStore('sync_queue');
       const request = store.getAll();
-      
+
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve(request.result);
     });
@@ -140,12 +140,12 @@ class OfflineDB {
 
   async clearSyncQueue(): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction(['sync_queue'], 'readwrite');
       const store = transaction.objectStore('sync_queue');
       const request = store.clear();
-      
+
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve();
     });
@@ -166,7 +166,7 @@ export const initializeOfflineDB = async (): Promise<void> => {
  * Generic hook for database operations with offline support
  */
 export function useDatabase(tableName: string) {
-  const { token } = useAuth();
+  const token = localStorage.getItem('auth_token');
   const { addNotification } = useNotifications();
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -177,10 +177,10 @@ export function useDatabase(tableName: string) {
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
-    
+
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
@@ -191,14 +191,14 @@ export function useDatabase(tableName: string) {
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       if (isOnline && token) {
         // Try to fetch from API
         const response = await axios.get(`${API_BASE_URL}/${tableName}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        
+
         // Store in offline DB
         for (const item of response.data) {
           try {
@@ -207,7 +207,7 @@ export function useDatabase(tableName: string) {
             await offlineDB.add(tableName, item);
           }
         }
-        
+
         setData(response.data);
       } else {
         // Fetch from offline storage
@@ -223,10 +223,10 @@ export function useDatabase(tableName: string) {
       } catch (offlineErr) {
         setError(err.message || 'Error fetching data');
       }
-      
-      addNotification({ 
-        message: `Error fetching ${tableName}: ${err.message}`, 
-        type: 'error' 
+
+      addNotification({
+        message: `Error fetching ${tableName}: ${err.message}`,
+        type: 'error'
       });
     } finally {
       setLoading(false);
@@ -249,7 +249,7 @@ export function useDatabase(tableName: string) {
   const syncOfflineChanges = useCallback(async () => {
     try {
       const syncQueue = await offlineDB.getSyncQueue();
-      
+
       for (const item of syncQueue) {
         try {
           switch (item.operation) {
@@ -273,16 +273,16 @@ export function useDatabase(tableName: string) {
           console.error('Sync error for item:', item, syncError);
         }
       }
-      
+
       // Clear sync queue after successful sync
       await offlineDB.clearSyncQueue();
-      
+
       // Refresh data after sync
       await fetchData();
-      
-      addNotification({ 
-        message: 'Data synchronized successfully', 
-        type: 'success' 
+
+      addNotification({
+        message: 'Data synchronized successfully',
+        type: 'success'
       });
     } catch (err: any) {
       console.error('Sync failed:', err);
@@ -293,7 +293,7 @@ export function useDatabase(tableName: string) {
   const addRecord = useCallback(async (record: any) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const newRecord = {
         ...record,
@@ -306,36 +306,36 @@ export function useDatabase(tableName: string) {
         const response = await axios.post(`${API_BASE_URL}/${tableName}`, newRecord, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        
+
         // Update local storage
         await offlineDB.update(tableName, response.data);
         setData(prevData => [...prevData, response.data]);
-        
-        addNotification({ 
-          message: `${tableName.slice(0, -1)} added successfully`, 
-          type: 'success' 
+
+        addNotification({
+          message: `${tableName.slice(0, -1)} added successfully`,
+          type: 'success'
         });
-        
+
         return response.data;
       } else {
         // Add to offline storage
         const savedRecord = await offlineDB.add(tableName, newRecord);
         await offlineDB.addToSyncQueue('create', tableName, savedRecord);
-        
+
         setData(prevData => [...prevData, savedRecord]);
-        
-        addNotification({ 
-          message: `${tableName.slice(0, -1)} saved offline - will sync when online`, 
-          type: 'info' 
+
+        addNotification({
+          message: `${tableName.slice(0, -1)} saved offline - will sync when online`,
+          type: 'info'
         });
-        
+
         return savedRecord;
       }
     } catch (err: any) {
       setError(err.message || 'Error adding record');
-      addNotification({ 
-        message: `Error adding to ${tableName}: ${err.message}`, 
-        type: 'error' 
+      addNotification({
+        message: `Error adding to ${tableName}: ${err.message}`,
+        type: 'error'
       });
       throw err;
     } finally {
@@ -347,7 +347,7 @@ export function useDatabase(tableName: string) {
   const updateRecord = useCallback(async (id: number, updates: any) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const updatedRecord = {
         ...updates,
@@ -360,36 +360,36 @@ export function useDatabase(tableName: string) {
         const response = await axios.put(`${API_BASE_URL}/${tableName}/${id}`, updatedRecord, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        
+
         // Update local storage
         await offlineDB.update(tableName, response.data);
         setData(prevData => prevData.map(item => item.id === id ? response.data : item));
-        
-        addNotification({ 
-          message: `${tableName.slice(0, -1)} updated successfully`, 
-          type: 'success' 
+
+        addNotification({
+          message: `${tableName.slice(0, -1)} updated successfully`,
+          type: 'success'
         });
-        
+
         return response.data;
       } else {
         // Update offline storage
         await offlineDB.update(tableName, updatedRecord);
         await offlineDB.addToSyncQueue('update', tableName, updatedRecord);
-        
+
         setData(prevData => prevData.map(item => item.id === id ? updatedRecord : item));
-        
-        addNotification({ 
-          message: `${tableName.slice(0, -1)} updated offline - will sync when online`, 
-          type: 'info' 
+
+        addNotification({
+          message: `${tableName.slice(0, -1)} updated offline - will sync when online`,
+          type: 'info'
         });
-        
+
         return updatedRecord;
       }
     } catch (err: any) {
       setError(err.message || 'Error updating record');
-      addNotification({ 
-        message: `Error updating ${tableName}: ${err.message}`, 
-        type: 'error' 
+      addNotification({
+        message: `Error updating ${tableName}: ${err.message}`,
+        type: 'error'
       });
       throw err;
     } finally {
@@ -401,37 +401,37 @@ export function useDatabase(tableName: string) {
   const deleteRecord = useCallback(async (id: number) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       if (isOnline && token) {
         // Delete from server
         await axios.delete(`${API_BASE_URL}/${tableName}/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        
+
         // Remove from local storage
         await offlineDB.delete(tableName, id);
         setData(prevData => prevData.filter(item => item.id !== id));
-        
-        addNotification({ 
-          message: `${tableName.slice(0, -1)} deleted successfully`, 
-          type: 'success' 
+
+        addNotification({
+          message: `${tableName.slice(0, -1)} deleted successfully`,
+          type: 'success'
         });
       } else {
         // Mark for deletion in offline storage
         await offlineDB.addToSyncQueue('delete', tableName, { id });
         setData(prevData => prevData.filter(item => item.id !== id));
-        
-        addNotification({ 
-          message: `${tableName.slice(0, -1)} marked for deletion - will sync when online`, 
-          type: 'info' 
+
+        addNotification({
+          message: `${tableName.slice(0, -1)} marked for deletion - will sync when online`,
+          type: 'info'
         });
       }
     } catch (err: any) {
       setError(err.message || 'Error deleting record');
-      addNotification({ 
-        message: `Error deleting from ${tableName}: ${err.message}`, 
-        type: 'error' 
+      addNotification({
+        message: `Error deleting from ${tableName}: ${err.message}`,
+        type: 'error'
       });
       throw err;
     } finally {
@@ -481,7 +481,7 @@ export function usePatients() {
     return addRecord(patient);
   }, [addRecord]);
 
-  const updatePatient = useCallback(async (id: number, updates: any) => {
+  const updatePatient = useCallback(async (id: string, updates: any) => {
     return updateRecord(id, updates);
   }, [updateRecord]);
 
@@ -811,7 +811,7 @@ export function useNotificationsData() {
   }, [addRecord]);
 
   const markAsRead = useCallback(async (id: number) => {
-    return updateRecord(id, { 
+    return updateRecord(id, {
       status: 'read',
       read_at: new Date().toISOString()
     });

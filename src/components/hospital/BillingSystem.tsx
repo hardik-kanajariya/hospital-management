@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useKV } from '@/hooks/useLocalStorage'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -7,9 +7,9 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Receipt, Plus, Search, CreditCard, Eye, Printer, DollarSign, TrendingUp } from '@phosphor-icons/react';
+import { Receipt, Plus, MagnifyingGlass, CreditCard, Eye, Printer, CurrencyDollar, TrendUp } from '@phosphor-icons/react';
 import { toast } from 'sonner'
-import { Bill, BillItem } from '@/types/hospital';
+import { Bill, BillItem, Patient } from '@/types/hospital';
 
 const serviceItems = [
   { description: 'General Consultation', rate: 500 },
@@ -50,9 +50,9 @@ const insuranceProviders = [
 ]
 
 export default function BillingSystem() {
-  const [bills, setBills] = useKV('hospital-bills', [])
-  const [patients] = useKV('hospital-patients', [])
-  
+  const [bills, setBills] = useKV<Bill[]>('hospital-bills', [])
+  const [patients] = useKV<Patient[]>('hospital-patients', [])
+
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null)
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false)
@@ -102,7 +102,7 @@ export default function BillingSystem() {
       try {
         const context = JSON.parse(billingContext)
         const patient = patients.find(p => p.id === context.patientId)
-        
+
         setNewBill(prev => ({
           ...prev,
           patientId: context.patientId,
@@ -110,10 +110,10 @@ export default function BillingSystem() {
         }))
 
         // Pre-populate insurance if patient has it
-        if (patient?.insurance) {
+        if (patient?.insuranceInfo) {
           setInsuranceClaim({
-            provider: patient.insurance.provider,
-            policyNumber: patient.insurance.policyNumber,
+            provider: patient.insuranceInfo.provider,
+            policyNumber: patient.insuranceInfo.policyNumber,
             claimAmount: 0,
             hasInsurance: true
           })
@@ -121,12 +121,12 @@ export default function BillingSystem() {
 
         // Add consultation service based on appointment type
         if (context.appointmentType) {
-          const consultationRate = context.appointmentType === 'Emergency' ? 1000 : 
-                                 context.appointmentType === 'Specialist Consultation' ? 800 : 500
+          const consultationRate = context.appointmentType === 'Emergency' ? 1000 :
+            context.appointmentType === 'Specialist Consultation' ? 800 : 500
           setBillItems([{
             id: '1',
-            description: context.appointmentType === 'Emergency' ? 'Emergency Consultation' : 
-                        context.appointmentType === 'Specialist Consultation' ? 'Specialist Consultation' : 'General Consultation',
+            description: context.appointmentType === 'Emergency' ? 'Emergency Consultation' :
+              context.appointmentType === 'Specialist Consultation' ? 'Specialist Consultation' : 'General Consultation',
             quantity: 1,
             rate: consultationRate,
             amount: consultationRate
@@ -144,17 +144,17 @@ export default function BillingSystem() {
 
   const filteredBills = bills.filter(bill => {
     const matchesSearch = bill.patientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         bill.id?.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesStatus = filterStatus === 'all' || bill.paymentStatus === filterStatus
-    
+      bill.id?.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const matchesStatus = filterStatus === 'all' || bill.status === filterStatus
+
     let matchesDate = true
     if (filterDate === 'today') {
-      matchesDate = bill.date === today
+      matchesDate = bill.billDate === today
     } else if (filterDate === 'month') {
-      matchesDate = bill.date.startsWith(currentMonth)
+      matchesDate = bill.billDate.startsWith(currentMonth)
     }
-    
+
     return matchesSearch && matchesStatus && matchesDate
   })
 
@@ -187,7 +187,7 @@ export default function BillingSystem() {
   }
 
   const updateBillItem = (id: string, field: keyof BillItem, value: any) => {
-    setBillItems(items => 
+    setBillItems(items =>
       items.map(item => {
         if (item.id === id) {
           const updated = { ...item, [field]: value }
@@ -238,7 +238,7 @@ export default function BillingSystem() {
     }
 
     setBills(currentBills => [...currentBills, bill])
-    
+
     // Reset form
     setNewBill({
       patientId: '',
@@ -261,7 +261,7 @@ export default function BillingSystem() {
       rate: 0,
       amount: 0
     }])
-    
+
     setIsDialogOpen(false)
     toast.success(`Bill ${bill.id} created successfully`)
   }
@@ -279,7 +279,7 @@ export default function BillingSystem() {
 
     const newPaidAmount = selectedBill.paidAmount + paymentData.amount
     const newDueAmount = selectedBill.total - newPaidAmount
-    
+
     let newStatus: Bill['paymentStatus'] = 'partial'
     if (newDueAmount === 0) {
       newStatus = 'paid'
@@ -291,12 +291,12 @@ export default function BillingSystem() {
       currentBills.map(bill =>
         bill.id === selectedBill.id
           ? {
-              ...bill,
-              paidAmount: newPaidAmount,
-              dueAmount: newDueAmount,
-              paymentStatus: newStatus,
-              paymentMethod: paymentData.method
-            }
+            ...bill,
+            paidAmount: newPaidAmount,
+            dueAmount: newDueAmount,
+            paymentStatus: newStatus,
+            paymentMethod: paymentData.method
+          }
           : bill
       )
     )
@@ -311,14 +311,14 @@ export default function BillingSystem() {
       currentBills.map(bill =>
         bill.id === billId && bill.insuranceClaim
           ? {
-              ...bill,
-              insuranceClaim: {
-                ...bill.insuranceClaim,
-                claimStatus: action === 'approve' ? 'approved' : 'rejected',
-                approvedDate: action === 'approve' ? new Date().toISOString() : undefined,
-                rejectionReason: action === 'reject' ? rejectionReason : undefined
-              }
+            ...bill,
+            insuranceClaim: {
+              ...bill.insuranceClaim,
+              claimStatus: action === 'approve' ? 'approved' : 'rejected',
+              approvedDate: action === 'approve' ? new Date().toISOString() : undefined,
+              rejectionReason: action === 'reject' ? rejectionReason : undefined
             }
+          }
           : bill
       )
     )
@@ -368,7 +368,7 @@ export default function BillingSystem() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Today's Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CurrencyDollar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">₹{todayRevenue.toLocaleString()}</div>
@@ -381,7 +381,7 @@ export default function BillingSystem() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <TrendUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">₹{monthlyRevenue.toLocaleString()}</div>
@@ -422,7 +422,7 @@ export default function BillingSystem() {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-1">
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Search bills by patient or invoice ID..."
               value={searchTerm}
@@ -430,7 +430,7 @@ export default function BillingSystem() {
               className="pl-10"
             />
           </div>
-          
+
           <div className="flex gap-2">
             <Select value={filterStatus} onValueChange={setFilterStatus}>
               <SelectTrigger className="w-[120px]">
@@ -443,7 +443,7 @@ export default function BillingSystem() {
                 <SelectItem value="paid">Paid</SelectItem>
               </SelectContent>
             </Select>
-            
+
             <Select value={filterDate} onValueChange={setFilterDate}>
               <SelectTrigger className="w-[120px]">
                 <SelectValue />
@@ -477,13 +477,13 @@ export default function BillingSystem() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Select Patient *</Label>
-                  <Select 
+                  <Select
                     onValueChange={(value) => {
                       const patient = patients.find(p => p.id === value)
                       setNewBill({
-                        ...newBill, 
+                        ...newBill,
                         patientId: value,
-                        patientName: patient?.name || ''
+                        patientName: `${patient?.firstName || ''} ${patient?.lastName || ''}`.trim()
                       })
                     }}
                   >
@@ -493,7 +493,7 @@ export default function BillingSystem() {
                     <SelectContent>
                       {patients.map((patient) => (
                         <SelectItem key={patient.id} value={patient.id}>
-                          {patient.name} - {patient.id}
+                          {`${patient.firstName || ''} ${patient.lastName || ''}`.trim()} - {patient.id}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -505,7 +505,7 @@ export default function BillingSystem() {
                   <Input
                     type="date"
                     value={newBill.date}
-                    onChange={(e) => setNewBill({...newBill, date: e.target.value})}
+                    onChange={(e) => setNewBill({ ...newBill, date: e.target.value })}
                   />
                 </div>
               </div>
@@ -601,7 +601,7 @@ export default function BillingSystem() {
                       <input
                         type="checkbox"
                         checked={insuranceClaim.hasInsurance}
-                        onChange={(e) => setInsuranceClaim({...insuranceClaim, hasInsurance: e.target.checked})}
+                        onChange={(e) => setInsuranceClaim({ ...insuranceClaim, hasInsurance: e.target.checked })}
                         className="rounded"
                       />
                       <Label className="text-sm">Has Insurance</Label>
@@ -612,9 +612,9 @@ export default function BillingSystem() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>Insurance Provider *</Label>
-                        <Select 
-                          value={insuranceClaim.provider} 
-                          onValueChange={(value) => setInsuranceClaim({...insuranceClaim, provider: value})}
+                        <Select
+                          value={insuranceClaim.provider}
+                          onValueChange={(value) => setInsuranceClaim({ ...insuranceClaim, provider: value })}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select provider" />
@@ -632,7 +632,7 @@ export default function BillingSystem() {
                         <Label>Policy Number *</Label>
                         <Input
                           value={insuranceClaim.policyNumber}
-                          onChange={(e) => setInsuranceClaim({...insuranceClaim, policyNumber: e.target.value})}
+                          onChange={(e) => setInsuranceClaim({ ...insuranceClaim, policyNumber: e.target.value })}
                           placeholder="Enter policy number"
                         />
                       </div>
@@ -642,7 +642,7 @@ export default function BillingSystem() {
                           type="number"
                           min="0"
                           value={insuranceClaim.claimAmount}
-                          onChange={(e) => setInsuranceClaim({...insuranceClaim, claimAmount: parseFloat(e.target.value) || 0})}
+                          onChange={(e) => setInsuranceClaim({ ...insuranceClaim, claimAmount: parseFloat(e.target.value) || 0 })}
                           placeholder="Amount to claim"
                         />
                       </div>
@@ -662,7 +662,7 @@ export default function BillingSystem() {
                         min="0"
                         max="100"
                         value={newBill.discount}
-                        onChange={(e) => setNewBill({...newBill, discount: parseFloat(e.target.value) || 0})}
+                        onChange={(e) => setNewBill({ ...newBill, discount: parseFloat(e.target.value) || 0 })}
                       />
                     </div>
                     <div className="space-y-2">
@@ -671,14 +671,14 @@ export default function BillingSystem() {
                         type="number"
                         min="0"
                         value={newBill.tax}
-                        onChange={(e) => setNewBill({...newBill, tax: parseFloat(e.target.value) || 0})}
+                        onChange={(e) => setNewBill({ ...newBill, tax: parseFloat(e.target.value) || 0 })}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label>Notes</Label>
                       <Input
                         value={newBill.notes}
-                        onChange={(e) => setNewBill({...newBill, notes: e.target.value})}
+                        onChange={(e) => setNewBill({ ...newBill, notes: e.target.value })}
                         placeholder="Additional notes"
                       />
                     </div>
@@ -764,20 +764,20 @@ export default function BillingSystem() {
                         )}
                         {bill.insuranceClaim && (
                           <p className="text-sm text-muted-foreground">
-                            <strong>Insurance:</strong> {bill.insuranceClaim.provider} • 
-                            <strong> Policy:</strong> {bill.insuranceClaim.policyNumber} • 
+                            <strong>Insurance:</strong> {bill.insuranceClaim.provider} •
+                            <strong> Policy:</strong> {bill.insuranceClaim.policyNumber} •
                             <strong> Claim:</strong> ₹{bill.insuranceClaim.claimAmount.toLocaleString()}
                           </p>
                         )}
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => setSelectedBill(bill)}
                         >
@@ -792,7 +792,7 @@ export default function BillingSystem() {
                             Invoice {bill.id} for {bill.patientName}
                           </DialogDescription>
                         </DialogHeader>
-                        
+
                         {selectedBill && (
                           <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
@@ -813,7 +813,7 @@ export default function BillingSystem() {
                                 <p>{getStatusBadge(selectedBill.paymentStatus)}</p>
                               </div>
                             </div>
-                            
+
                             <div>
                               <Label className="text-sm font-medium text-muted-foreground mb-2 block">Bill Items</Label>
                               <div className="space-y-2">
@@ -830,7 +830,7 @@ export default function BillingSystem() {
                                 ))}
                               </div>
                             </div>
-                            
+
                             <div className="border-t pt-4">
                               <div className="space-y-1 text-sm">
                                 <div className="flex justify-between">
@@ -851,7 +851,7 @@ export default function BillingSystem() {
                                 </div>
                               </div>
                             </div>
-                            
+
                             <div className="border-t pt-4">
                               <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
@@ -872,7 +872,7 @@ export default function BillingSystem() {
                     {bill.dueAmount > 0 && (
                       <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
                         <DialogTrigger asChild>
-                          <Button 
+                          <Button
                             size="sm"
                             onClick={() => {
                               setSelectedBill(bill)
@@ -915,7 +915,7 @@ export default function BillingSystem() {
                                 max={bill.dueAmount}
                                 value={paymentData.amount}
                                 onChange={(e) => setPaymentData({
-                                  ...paymentData, 
+                                  ...paymentData,
                                   amount: parseFloat(e.target.value) || 0
                                 })}
                                 placeholder="Enter payment amount"
@@ -924,9 +924,9 @@ export default function BillingSystem() {
 
                             <div className="space-y-2">
                               <Label>Payment Method *</Label>
-                              <Select 
-                                value={paymentData.method} 
-                                onValueChange={(value) => setPaymentData({...paymentData, method: value})}
+                              <Select
+                                value={paymentData.method}
+                                onValueChange={(value) => setPaymentData({ ...paymentData, method: value })}
                               >
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select payment method" />
@@ -945,7 +945,7 @@ export default function BillingSystem() {
                               <Label>Notes</Label>
                               <Input
                                 value={paymentData.notes}
-                                onChange={(e) => setPaymentData({...paymentData, notes: e.target.value})}
+                                onChange={(e) => setPaymentData({ ...paymentData, notes: e.target.value })}
                                 placeholder="Payment notes (optional)"
                               />
                             </div>

@@ -1,15 +1,16 @@
-import { useKV } from '@github/spark/hooks'
+import { useKV } from '@/hooks/useLocalStorage'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/hooks/useAuth'
 import { useNotifications } from '@/hooks/useNotifications'
+import { Patient, Appointment, Bill, InventoryItem } from '@/types/hospital'
 import {
   Users,
   Calendar,
   CreditCard,
   Heart,
   Clock,
-  AlertTriangle,
+  Warning,
   Bell,
   Stethoscope,
   TestTube,
@@ -18,34 +19,34 @@ import {
 export default function Dashboard() {
   const { user } = useAuth()
   const { getNotificationHistory } = useNotifications()
-  const [patients] = useKV('hospital-patients', [])
-  const [appointments] = useKV('hospital-appointments', [])
-  const [bills] = useKV('hospital-bills', [])
-  const [inventory] = useKV('hospital-inventory', [])
-  
+  const [patients] = useKV<Patient[]>('hospital-patients', [])
+  const [appointments] = useKV<Appointment[]>('hospital-appointments', [])
+  const [bills] = useKV<Bill[]>('hospital-bills', [])
+  const [inventory] = useKV<InventoryItem[]>('hospital-inventory', [])
+
   const notifications = getNotificationHistory()
   const recentNotifications = notifications.slice(0, 5)
 
   // Calculate dashboard statistics
   const today = new Date().toISOString().split('T')[0]
-  const todayAppointments = appointments.filter(apt => 
+  const todayAppointments = appointments.filter(apt =>
     apt.appointmentDate === today
   )
-  
-  const todayBills = bills.filter(bill => 
+
+  const todayBills = bills.filter(bill =>
     bill.billDate?.startsWith(today)
   )
-  
+
   const todayRevenue = todayBills.reduce((sum, bill) => sum + (bill.totalAmount || 0), 0)
-  
-  const lowStockItems = inventory.filter(item => 
+
+  const lowStockItems = inventory.filter(item =>
     item.quantity <= item.reorderLevel
   )
-  
+
   const upcomingAppointments = appointments
     .filter(apt => apt.appointmentDate >= today && apt.status === 'scheduled')
-    .sort((a, b) => new Date(a.appointmentDate + ' ' + a.appointmentTime).getTime() - 
-                    new Date(b.appointmentDate + ' ' + b.appointmentTime).getTime())
+    .sort((a, b) => new Date(a.appointmentDate + ' ' + a.appointmentTime).getTime() -
+      new Date(b.appointmentDate + ' ' + b.appointmentTime).getTime())
     .slice(0, 5)
 
   const recentPatients = patients
@@ -64,11 +65,11 @@ export default function Dashboard() {
         </div>
         <div className="text-right">
           <p className="text-sm text-muted-foreground">
-            {new Date().toLocaleDateString('en-IN', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
+            {new Date().toLocaleDateString('en-IN', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
             })}
           </p>
         </div>
@@ -118,7 +119,7 @@ export default function Dashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Low Stock Items</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            <Warning className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{lowStockItems.length}</div>
@@ -139,7 +140,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {appointments.filter(apt => 
+                {appointments.filter(apt =>
                   apt.appointmentDate === today && apt.doctorId === user.id
                 ).length}
               </div>
@@ -241,8 +242,8 @@ export default function Dashboard() {
                         </p>
                       </div>
                       <Badge variant={
-                        appointment.status === 'scheduled' ? 'default' : 
-                        appointment.status === 'in_progress' ? 'destructive' : 'secondary'
+                        appointment.status === 'scheduled' ? 'default' :
+                          appointment.status === 'in_progress' ? 'destructive' : 'secondary'
                       }>
                         {appointment.status}
                       </Badge>
@@ -282,8 +283,8 @@ export default function Dashboard() {
                       </p>
                     </div>
                     <Badge variant={
-                      notification.status === 'sent' ? 'default' : 
-                      notification.status === 'failed' ? 'destructive' : 'secondary'
+                      notification.status === 'sent' ? 'default' :
+                        notification.status === 'failed' ? 'destructive' : 'secondary'
                     } className="text-xs">
                       {notification.status}
                     </Badge>
@@ -300,7 +301,7 @@ export default function Dashboard() {
         <Card className="border-destructive">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
-              <AlertTriangle className="h-5 w-5" />
+              <Warning className="h-5 w-5" />
               Low Stock Alert
             </CardTitle>
             <CardDescription>

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useKV } from '@/hooks/useLocalStorage'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,24 +9,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
+import { Patient, Doctor } from '@/types/hospital'
 import {
   Bed,
   Plus,
-  Search,
+  MagnifyingGlass,
   Users,
   CheckCircle,
-  AlertTriangle,
+  Warning,
   MapPin,
   Calendar,
   User,
-  Home,
+  House,
 } from '@phosphor-icons/react';
 import { toast } from 'sonner'
 
 interface Room {
   id: string
   number: string
-  type: 'general' | 'private' | 'icu' | 'emergency' | 'maternity' | 'pediatric'
+  type: 'general' | 'private' | 'icu' | 'emergency'
   department: string
   floor: number
   capacity: number
@@ -40,7 +41,7 @@ interface BedInfo {
   roomId: string
   roomNumber: string
   bedNumber: string
-  type: 'general' | 'icu' | 'emergency' | 'maternity' | 'pediatric'
+  type: 'general' | 'private' | 'icu' | 'emergency'
   status: 'available' | 'occupied' | 'maintenance' | 'reserved'
   patientId?: string
   patientName?: string
@@ -90,25 +91,25 @@ const amenities = [
 ]
 
 export default function BedManagement() {
-  const [patients] = useKV('hospital-patients', [])
-  const [doctors] = useKV('hospital-doctors', [])
+  const [patients] = useKV<Patient[]>('hospital-patients', [])
+  const [doctors] = useKV<Doctor[]>('hospital-doctors', [])
   const [rooms, setRooms] = useKV<Room[]>('hospital-rooms', [])
   const [beds, setBeds] = useKV<BedInfo[]>('hospital-beds', [])
   const [admissions, setAdmissions] = useKV<Admission[]>('hospital-admissions', [])
-  
+
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
   const [selectedBed, setSelectedBed] = useState<BedInfo | null>(null)
   const [isRoomDialogOpen, setIsRoomDialogOpen] = useState(false)
   const [isBedDialogOpen, setIsBedDialogOpen] = useState(false)
   const [isAdmissionDialogOpen, setIsAdmissionDialogOpen] = useState(false)
-  
+
   const [roomFormData, setRoomFormData] = useState<Partial<Room>>({
     status: 'active',
     floor: 1,
     amenities: []
   })
-  
+
   const [bedFormData, setBedFormData] = useState<Partial<BedInfo>>({
     status: 'available'
   })
@@ -137,7 +138,7 @@ export default function BedManagement() {
     }
 
     const roomTypeInfo = roomTypes.find(rt => rt.value === roomFormData.type)
-    
+
     const newRoom: Room = {
       id: `RM${Date.now()}`,
       number: roomFormData.number!,
@@ -151,7 +152,7 @@ export default function BedManagement() {
     }
 
     setRooms(current => [...current, newRoom])
-    
+
     // Create beds for the room
     const newBeds: BedInfo[] = []
     for (let i = 1; i <= newRoom.capacity; i++) {
@@ -165,7 +166,7 @@ export default function BedManagement() {
         lastCleaned: new Date().toISOString().split('T')[0]
       })
     }
-    
+
     setBeds(current => [...current, ...newBeds])
     setRoomFormData({ status: 'active', floor: 1, amenities: [] })
     setIsRoomDialogOpen(false)
@@ -180,7 +181,7 @@ export default function BedManagement() {
 
     const patient = patients.find(p => p.id === admissionFormData.patientId)
     const bed = beds.find(b => b.id === admissionFormData.bedId)
-    
+
     if (!patient || !bed) {
       toast.error('Patient or bed not found')
       return
@@ -194,7 +195,7 @@ export default function BedManagement() {
     const newAdmission: Admission = {
       id: `ADM${Date.now()}`,
       patientId: admissionFormData.patientId!,
-      patientName: patient.name,
+      patientName: `${patient.firstName} ${patient.lastName}`,
       bedId: admissionFormData.bedId!,
       roomNumber: bed.roomNumber,
       bedNumber: bed.bedNumber,
@@ -208,23 +209,23 @@ export default function BedManagement() {
     }
 
     // Update bed status to occupied
-    setBeds(current => 
-      current.map(b => 
-        b.id === bed.id 
-          ? { 
-              ...b, 
-              status: 'occupied', 
-              patientId: patient.id,
-              patientName: patient.name,
-              admissionDate: newAdmission.admissionDate,
-              expectedDischarge: newAdmission.expectedDischarge
-            }
+    setBeds(current =>
+      current.map(b =>
+        b.id === bed.id
+          ? {
+            ...b,
+            status: 'occupied',
+            patientId: patient.id,
+            patientName: `${patient.firstName} ${patient.lastName}`,
+            admissionDate: newAdmission.admissionDate,
+            expectedDischarge: newAdmission.expectedDischarge
+          }
           : b
       )
     )
 
     setAdmissions(current => [...current, newAdmission])
-    setAdmissionFormData({ 
+    setAdmissionFormData({
       status: 'active',
       charges: {
         roomCharges: 0,
@@ -239,27 +240,27 @@ export default function BedManagement() {
 
   const handleDischargePatient = (admission: Admission) => {
     // Update admission status
-    setAdmissions(current => 
-      current.map(a => 
-        a.id === admission.id 
+    setAdmissions(current =>
+      current.map(a =>
+        a.id === admission.id
           ? { ...a, status: 'discharged', actualDischarge: new Date().toISOString().split('T')[0] }
           : a
       )
     )
 
     // Update bed status to available
-    setBeds(current => 
-      current.map(b => 
-        b.id === admission.bedId 
-          ? { 
-              ...b, 
-              status: 'available', 
-              patientId: undefined,
-              patientName: undefined,
-              admissionDate: undefined,
-              expectedDischarge: undefined,
-              lastCleaned: new Date().toISOString().split('T')[0]
-            }
+    setBeds(current =>
+      current.map(b =>
+        b.id === admission.bedId
+          ? {
+            ...b,
+            status: 'available',
+            patientId: undefined,
+            patientName: undefined,
+            admissionDate: undefined,
+            expectedDischarge: undefined,
+            lastCleaned: new Date().toISOString().split('T')[0]
+          }
           : b
       )
     )
@@ -268,9 +269,9 @@ export default function BedManagement() {
   }
 
   const handleBedStatusUpdate = (bedId: string, newStatus: BedInfo['status']) => {
-    setBeds(current => 
-      current.map(b => 
-        b.id === bedId 
+    setBeds(current =>
+      current.map(b =>
+        b.id === bedId
           ? { ...b, status: newStatus }
           : b
       )
@@ -301,7 +302,7 @@ export default function BedManagement() {
       {/* Header Actions */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
             placeholder="Search beds by room, bed number, or patient..."
             value={searchTerm}
@@ -309,12 +310,12 @@ export default function BedManagement() {
             className="pl-10"
           />
         </div>
-        
+
         <div className="flex gap-2">
           <Dialog open={isRoomDialogOpen} onOpenChange={setIsRoomDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2">
-                <Home className="h-4 w-4" />
+                <House className="h-4 w-4" />
                 Add Room
               </Button>
             </DialogTrigger>
@@ -323,7 +324,7 @@ export default function BedManagement() {
                 <DialogTitle>Add New Room</DialogTitle>
                 <DialogDescription>Create a new room with beds</DialogDescription>
               </DialogHeader>
-              
+
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -331,13 +332,13 @@ export default function BedManagement() {
                     <Input
                       id="roomNumber"
                       value={roomFormData.number || ''}
-                      onChange={(e) => setRoomFormData({...roomFormData, number: e.target.value})}
+                      onChange={(e) => setRoomFormData({ ...roomFormData, number: e.target.value })}
                       placeholder="e.g., 101, A-23"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="roomType">Room Type *</Label>
-                    <Select value={roomFormData.type} onValueChange={(value) => setRoomFormData({...roomFormData, type: value as any})}>
+                    <Select value={roomFormData.type} onValueChange={(value) => setRoomFormData({ ...roomFormData, type: value as any })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select room type" />
                       </SelectTrigger>
@@ -355,7 +356,7 @@ export default function BedManagement() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="department">Department *</Label>
-                    <Select value={roomFormData.department} onValueChange={(value) => setRoomFormData({...roomFormData, department: value})}>
+                    <Select value={roomFormData.department} onValueChange={(value) => setRoomFormData({ ...roomFormData, department: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select department" />
                       </SelectTrigger>
@@ -372,7 +373,7 @@ export default function BedManagement() {
                       id="floor"
                       type="number"
                       value={roomFormData.floor || ''}
-                      onChange={(e) => setRoomFormData({...roomFormData, floor: Number(e.target.value)})}
+                      onChange={(e) => setRoomFormData({ ...roomFormData, floor: Number(e.target.value) })}
                       placeholder="Floor number"
                     />
                   </div>
@@ -385,7 +386,7 @@ export default function BedManagement() {
                       id="capacity"
                       type="number"
                       value={roomFormData.capacity || ''}
-                      onChange={(e) => setRoomFormData({...roomFormData, capacity: Number(e.target.value)})}
+                      onChange={(e) => setRoomFormData({ ...roomFormData, capacity: Number(e.target.value) })}
                       placeholder="Number of beds"
                     />
                   </div>
@@ -395,7 +396,7 @@ export default function BedManagement() {
                       id="dailyRate"
                       type="number"
                       value={roomFormData.dailyRate || ''}
-                      onChange={(e) => setRoomFormData({...roomFormData, dailyRate: Number(e.target.value)})}
+                      onChange={(e) => setRoomFormData({ ...roomFormData, dailyRate: Number(e.target.value) })}
                       placeholder="Daily charges"
                     />
                   </div>
@@ -412,9 +413,9 @@ export default function BedManagement() {
                           onChange={(e) => {
                             const currentAmenities = roomFormData.amenities || []
                             if (e.target.checked) {
-                              setRoomFormData({...roomFormData, amenities: [...currentAmenities, amenity]})
+                              setRoomFormData({ ...roomFormData, amenities: [...currentAmenities, amenity] })
                             } else {
-                              setRoomFormData({...roomFormData, amenities: currentAmenities.filter(a => a !== amenity)})
+                              setRoomFormData({ ...roomFormData, amenities: currentAmenities.filter(a => a !== amenity) })
                             }
                           }}
                           className="rounded"
@@ -445,19 +446,19 @@ export default function BedManagement() {
                 <DialogTitle>Admit Patient</DialogTitle>
                 <DialogDescription>Admit a patient to an available bed</DialogDescription>
               </DialogHeader>
-              
+
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="patient">Patient *</Label>
-                    <Select value={admissionFormData.patientId} onValueChange={(value) => setAdmissionFormData({...admissionFormData, patientId: value})}>
+                    <Select value={admissionFormData.patientId} onValueChange={(value) => setAdmissionFormData({ ...admissionFormData, patientId: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select patient" />
                       </SelectTrigger>
                       <SelectContent>
                         {patients.map((patient) => (
                           <SelectItem key={patient.id} value={patient.id}>
-                            {patient.name} - {patient.id}
+                            {patient.firstName} {patient.lastName} - {patient.id}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -465,7 +466,7 @@ export default function BedManagement() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="bed">Available Bed *</Label>
-                    <Select value={admissionFormData.bedId} onValueChange={(value) => setAdmissionFormData({...admissionFormData, bedId: value})}>
+                    <Select value={admissionFormData.bedId} onValueChange={(value) => setAdmissionFormData({ ...admissionFormData, bedId: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select bed" />
                       </SelectTrigger>
@@ -483,12 +484,12 @@ export default function BedManagement() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="admittingDoctor">Admitting Doctor *</Label>
-                    <Select value={admissionFormData.admittingDoctor} onValueChange={(value) => setAdmissionFormData({...admissionFormData, admittingDoctor: value})}>
+                    <Select value={admissionFormData.admittingDoctor} onValueChange={(value) => setAdmissionFormData({ ...admissionFormData, admittingDoctor: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select doctor" />
                       </SelectTrigger>
                       <SelectContent>
-                        {doctors.filter(d => d.status === 'active').map((doctor) => (
+                        {doctors.filter(d => d.isActive).map((doctor) => (
                           <SelectItem key={doctor.id} value={doctor.name}>
                             Dr. {doctor.name} - {doctor.specialization}
                           </SelectItem>
@@ -502,7 +503,7 @@ export default function BedManagement() {
                       id="admissionDate"
                       type="date"
                       value={admissionFormData.admissionDate || new Date().toISOString().split('T')[0]}
-                      onChange={(e) => setAdmissionFormData({...admissionFormData, admissionDate: e.target.value})}
+                      onChange={(e) => setAdmissionFormData({ ...admissionFormData, admissionDate: e.target.value })}
                     />
                   </div>
                 </div>
@@ -514,7 +515,7 @@ export default function BedManagement() {
                       id="expectedDischarge"
                       type="date"
                       value={admissionFormData.expectedDischarge || ''}
-                      onChange={(e) => setAdmissionFormData({...admissionFormData, expectedDischarge: e.target.value})}
+                      onChange={(e) => setAdmissionFormData({ ...admissionFormData, expectedDischarge: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
@@ -522,7 +523,7 @@ export default function BedManagement() {
                     <Input
                       id="diagnosis"
                       value={admissionFormData.diagnosis || ''}
-                      onChange={(e) => setAdmissionFormData({...admissionFormData, diagnosis: e.target.value})}
+                      onChange={(e) => setAdmissionFormData({ ...admissionFormData, diagnosis: e.target.value })}
                       placeholder="Primary diagnosis"
                     />
                   </div>
@@ -533,7 +534,7 @@ export default function BedManagement() {
                   <Textarea
                     id="notes"
                     value={admissionFormData.notes || ''}
-                    onChange={(e) => setAdmissionFormData({...admissionFormData, notes: e.target.value})}
+                    onChange={(e) => setAdmissionFormData({ ...admissionFormData, notes: e.target.value })}
                     placeholder="Additional notes about the admission"
                     rows={2}
                   />
@@ -584,7 +585,7 @@ export default function BedManagement() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Occupancy Rate</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            <Warning className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{occupancyRate}%</div>
@@ -629,18 +630,17 @@ export default function BedManagement() {
                   </div>
                 ) : (
                   filteredBeds.map((bed) => (
-                    <div key={bed.id} className={`border rounded-lg p-4 ${
-                      bed.status === 'available' ? 'border-green-200 bg-green-50' :
-                      bed.status === 'occupied' ? 'border-blue-200 bg-blue-50' :
-                      bed.status === 'maintenance' ? 'border-yellow-200 bg-yellow-50' :
-                      'border-gray-200'
-                    }`}>
+                    <div key={bed.id} className={`border rounded-lg p-4 ${bed.status === 'available' ? 'border-green-200 bg-green-50' :
+                        bed.status === 'occupied' ? 'border-blue-200 bg-blue-50' :
+                          bed.status === 'maintenance' ? 'border-yellow-200 bg-yellow-50' :
+                            'border-gray-200'
+                      }`}>
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="font-medium">{bed.bedNumber}</h3>
                         <Badge variant={
                           bed.status === 'available' ? 'default' :
-                          bed.status === 'occupied' ? 'secondary' :
-                          bed.status === 'maintenance' ? 'destructive' : 'outline'
+                            bed.status === 'occupied' ? 'secondary' :
+                              bed.status === 'maintenance' ? 'destructive' : 'outline'
                         }>
                           {bed.status}
                         </Badge>
@@ -676,8 +676,8 @@ export default function BedManagement() {
 
                       {bed.status !== 'occupied' && (
                         <div className="mt-3">
-                          <Select 
-                            value={bed.status} 
+                          <Select
+                            value={bed.status}
                             onValueChange={(value) => handleBedStatusUpdate(bed.id, value as any)}
                           >
                             <SelectTrigger className="w-full h-8">
@@ -715,7 +715,7 @@ export default function BedManagement() {
               <div className="space-y-4">
                 {rooms.length === 0 ? (
                   <div className="text-center py-8">
-                    <Home className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <House className="mx-auto h-12 w-12 text-muted-foreground" />
                     <h3 className="mt-4 text-lg font-semibold">No rooms configured</h3>
                     <p className="text-muted-foreground">Start by adding your first room</p>
                   </div>
@@ -723,7 +723,7 @@ export default function BedManagement() {
                   rooms.map((room) => {
                     const roomBeds = beds.filter(b => b.roomId === room.id)
                     const occupiedBeds = roomBeds.filter(b => b.status === 'occupied').length
-                    
+
                     return (
                       <div key={room.id} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
@@ -765,12 +765,12 @@ export default function BedManagement() {
                           <div className="text-sm font-medium mb-2">Beds:</div>
                           <div className="flex flex-wrap gap-2">
                             {roomBeds.map((bed) => (
-                              <Badge 
-                                key={bed.id} 
+                              <Badge
+                                key={bed.id}
                                 variant={
                                   bed.status === 'available' ? 'default' :
-                                  bed.status === 'occupied' ? 'secondary' :
-                                  'destructive'
+                                    bed.status === 'occupied' ? 'secondary' :
+                                      'destructive'
                                 }
                                 className="text-xs"
                               >
@@ -807,7 +807,7 @@ export default function BedManagement() {
                     const daysSinceAdmission = Math.floor(
                       (new Date().getTime() - new Date(admission.admissionDate).getTime()) / (1000 * 60 * 60 * 24)
                     )
-                    
+
                     return (
                       <div key={admission.id} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
@@ -816,8 +816,8 @@ export default function BedManagement() {
                             <Badge variant="outline">{admission.id}</Badge>
                             <Badge variant="secondary">{admission.bedNumber}</Badge>
                           </div>
-                          <Button 
-                            variant="destructive" 
+                          <Button
+                            variant="destructive"
                             size="sm"
                             onClick={() => handleDischargePatient(admission)}
                           >

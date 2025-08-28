@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useKV } from '@/hooks/useLocalStorage'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,14 +12,14 @@ import { Textarea } from '@/components/ui/textarea'
 import {
   Package,
   Plus,
-  Search,
-  AlertTriangle,
-  TrendingDown,
-  Edit,
+  MagnifyingGlass,
+  Warning,
+  TrendDown,
+  PencilSimple,
   ShoppingCart,
   Archive,
   Calendar,
-  DollarSign,
+  CurrencyDollar,
   Pill,
   FirstAid,
 } from '@phosphor-icons/react';
@@ -88,7 +88,7 @@ interface PurchaseOrder {
 
 const categories = {
   medicine: [
-    'Antibiotics', 'Analgesics', 'Antidiabetics', 'Cardiovascular', 'Respiratory', 
+    'Antibiotics', 'Analgesics', 'Antidiabetics', 'Cardiovascular', 'Respiratory',
     'Vaccines', 'Vitamins', 'Antiseptics', 'Emergency Medicines', 'Chronic Disease'
   ],
   supply: [
@@ -174,7 +174,7 @@ export default function InventoryManagement() {
     }
 
     setInventory(current => [...current, newItem])
-    
+
     // Create initial stock transaction
     if (newItem.quantity > 0) {
       const initialTransaction: StockTransaction = {
@@ -231,20 +231,20 @@ export default function InventoryManagement() {
     }
 
     // Update inventory quantity
-    const quantityChange = 
+    const quantityChange =
       transactionFormData.type === 'purchase' || transactionFormData.type === 'return' ? quantity :
-      transactionFormData.type === 'issue' || transactionFormData.type === 'expired' ? -quantity :
-      quantity // adjustment can be positive or negative
+        transactionFormData.type === 'issue' || transactionFormData.type === 'expired' ? -quantity :
+          quantity // adjustment can be positive or negative
 
     setInventory(current =>
       current.map(item =>
         item.id === selectedItem.id
           ? {
-              ...item,
-              quantity: Math.max(0, item.quantity + quantityChange),
-              status: (item.quantity + quantityChange) <= 0 ? 'out_of_stock' : item.status,
-              lastUpdated: new Date().toISOString()
-            }
+            ...item,
+            quantity: Math.max(0, item.quantity + quantityChange),
+            status: (item.quantity + quantityChange) <= 0 ? 'out_of_stock' : item.status,
+            lastUpdated: new Date().toISOString()
+          }
           : item
       )
     )
@@ -275,10 +275,10 @@ export default function InventoryManagement() {
       current.map(item =>
         item.id === selectedItem.id
           ? {
-              ...item,
-              ...itemFormData,
-              lastUpdated: new Date().toISOString()
-            }
+            ...item,
+            ...itemFormData,
+            lastUpdated: new Date().toISOString()
+          }
           : item
       )
     )
@@ -297,12 +297,12 @@ export default function InventoryManagement() {
 
   const filteredInventory = inventory.filter(item => {
     const matchesSearch = item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.supplier?.toLowerCase().includes(searchTerm.toLowerCase())
-    
+      item.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.supplier?.toLowerCase().includes(searchTerm.toLowerCase())
+
     const matchesCategory = filterCategory === 'all' || item.category === filterCategory
     const matchesType = filterType === 'all' || item.type === filterType
-    
+
     return matchesSearch && matchesCategory && matchesType
   })
 
@@ -323,7 +323,7 @@ export default function InventoryManagement() {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-1">
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Search inventory items..."
               value={searchTerm}
@@ -331,7 +331,7 @@ export default function InventoryManagement() {
               className="pl-10"
             />
           </div>
-          
+
           <div className="flex gap-2">
             <Select value={filterType} onValueChange={setFilterType}>
               <SelectTrigger className="w-[120px]">
@@ -358,7 +358,7 @@ export default function InventoryManagement() {
             </Select>
           </div>
         </div>
-        
+
         <div className="flex gap-2">
           <Dialog open={isPurchaseOrderDialogOpen} onOpenChange={setIsPurchaseOrderDialogOpen}>
             <DialogTrigger asChild>
@@ -374,7 +374,7 @@ export default function InventoryManagement() {
               </DialogHeader>
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  This feature would create purchase orders for items below reorder level. 
+                  This feature would create purchase orders for items below reorder level.
                   Currently {lowStockItems.length} items need restocking.
                 </p>
                 <div className="space-y-2">
@@ -404,7 +404,7 @@ export default function InventoryManagement() {
                 <DialogTitle>Add Inventory Item</DialogTitle>
                 <DialogDescription>Add a new item to the hospital inventory</DialogDescription>
               </DialogHeader>
-              
+
               <div className="space-y-6">
                 {/* Basic Information */}
                 <div className="grid grid-cols-2 gap-4">
@@ -412,13 +412,13 @@ export default function InventoryManagement() {
                     <Label>Item Name *</Label>
                     <Input
                       value={itemFormData.name || ''}
-                      onChange={(e) => setItemFormData({...itemFormData, name: e.target.value})}
+                      onChange={(e) => setItemFormData({ ...itemFormData, name: e.target.value })}
                       placeholder="Enter item name"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>Type *</Label>
-                    <Select value={itemFormData.type} onValueChange={(value) => setItemFormData({...itemFormData, type: value as any, category: ''})}>
+                    <Select value={itemFormData.type} onValueChange={(value) => setItemFormData({ ...itemFormData, type: value as any, category: '' })}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -434,7 +434,7 @@ export default function InventoryManagement() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Category *</Label>
-                    <Select value={itemFormData.category} onValueChange={(value) => setItemFormData({...itemFormData, category: value})}>
+                    <Select value={itemFormData.category} onValueChange={(value) => setItemFormData({ ...itemFormData, category: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
@@ -447,7 +447,7 @@ export default function InventoryManagement() {
                   </div>
                   <div className="space-y-2">
                     <Label>Unit</Label>
-                    <Select value={itemFormData.unit} onValueChange={(value) => setItemFormData({...itemFormData, unit: value})}>
+                    <Select value={itemFormData.unit} onValueChange={(value) => setItemFormData({ ...itemFormData, unit: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select unit" />
                       </SelectTrigger>
@@ -468,7 +468,7 @@ export default function InventoryManagement() {
                       type="number"
                       min="0"
                       value={itemFormData.quantity || ''}
-                      onChange={(e) => setItemFormData({...itemFormData, quantity: Number(e.target.value)})}
+                      onChange={(e) => setItemFormData({ ...itemFormData, quantity: Number(e.target.value) })}
                       placeholder="0"
                     />
                   </div>
@@ -478,7 +478,7 @@ export default function InventoryManagement() {
                       type="number"
                       min="0"
                       value={itemFormData.reorderLevel || ''}
-                      onChange={(e) => setItemFormData({...itemFormData, reorderLevel: Number(e.target.value)})}
+                      onChange={(e) => setItemFormData({ ...itemFormData, reorderLevel: Number(e.target.value) })}
                       placeholder="10"
                     />
                   </div>
@@ -488,7 +488,7 @@ export default function InventoryManagement() {
                       type="number"
                       min="0"
                       value={itemFormData.maxLevel || ''}
-                      onChange={(e) => setItemFormData({...itemFormData, maxLevel: Number(e.target.value)})}
+                      onChange={(e) => setItemFormData({ ...itemFormData, maxLevel: Number(e.target.value) })}
                       placeholder="100"
                     />
                   </div>
@@ -496,7 +496,7 @@ export default function InventoryManagement() {
                     <Label>Location</Label>
                     <Input
                       value={itemFormData.location || ''}
-                      onChange={(e) => setItemFormData({...itemFormData, location: e.target.value})}
+                      onChange={(e) => setItemFormData({ ...itemFormData, location: e.target.value })}
                       placeholder="Main Store"
                     />
                   </div>
@@ -511,7 +511,7 @@ export default function InventoryManagement() {
                       min="0"
                       step="0.01"
                       value={itemFormData.costPrice || ''}
-                      onChange={(e) => setItemFormData({...itemFormData, costPrice: Number(e.target.value)})}
+                      onChange={(e) => setItemFormData({ ...itemFormData, costPrice: Number(e.target.value) })}
                       placeholder="0.00"
                     />
                   </div>
@@ -522,7 +522,7 @@ export default function InventoryManagement() {
                       min="0"
                       step="0.01"
                       value={itemFormData.sellingPrice || ''}
-                      onChange={(e) => setItemFormData({...itemFormData, sellingPrice: Number(e.target.value)})}
+                      onChange={(e) => setItemFormData({ ...itemFormData, sellingPrice: Number(e.target.value) })}
                       placeholder="0.00"
                     />
                   </div>
@@ -532,7 +532,7 @@ export default function InventoryManagement() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Supplier *</Label>
-                    <Select value={itemFormData.supplier} onValueChange={(value) => setItemFormData({...itemFormData, supplier: value})}>
+                    <Select value={itemFormData.supplier} onValueChange={(value) => setItemFormData({ ...itemFormData, supplier: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select supplier" />
                       </SelectTrigger>
@@ -547,7 +547,7 @@ export default function InventoryManagement() {
                     <Label>Supplier Contact</Label>
                     <Input
                       value={itemFormData.supplierContact || ''}
-                      onChange={(e) => setItemFormData({...itemFormData, supplierContact: e.target.value})}
+                      onChange={(e) => setItemFormData({ ...itemFormData, supplierContact: e.target.value })}
                       placeholder="Phone/Email"
                     />
                   </div>
@@ -559,7 +559,7 @@ export default function InventoryManagement() {
                     <Label>Batch Number</Label>
                     <Input
                       value={itemFormData.batchNumber || ''}
-                      onChange={(e) => setItemFormData({...itemFormData, batchNumber: e.target.value})}
+                      onChange={(e) => setItemFormData({ ...itemFormData, batchNumber: e.target.value })}
                       placeholder="Batch number"
                     />
                   </div>
@@ -568,7 +568,7 @@ export default function InventoryManagement() {
                     <Input
                       type="date"
                       value={itemFormData.manufacturingDate || ''}
-                      onChange={(e) => setItemFormData({...itemFormData, manufacturingDate: e.target.value})}
+                      onChange={(e) => setItemFormData({ ...itemFormData, manufacturingDate: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
@@ -576,7 +576,7 @@ export default function InventoryManagement() {
                     <Input
                       type="date"
                       value={itemFormData.expiryDate || ''}
-                      onChange={(e) => setItemFormData({...itemFormData, expiryDate: e.target.value})}
+                      onChange={(e) => setItemFormData({ ...itemFormData, expiryDate: e.target.value })}
                     />
                   </div>
                 </div>
@@ -585,7 +585,7 @@ export default function InventoryManagement() {
                   <Label>Description</Label>
                   <Textarea
                     value={itemFormData.description || ''}
-                    onChange={(e) => setItemFormData({...itemFormData, description: e.target.value})}
+                    onChange={(e) => setItemFormData({ ...itemFormData, description: e.target.value })}
                     placeholder="Additional details about the item"
                     rows={2}
                   />
@@ -616,7 +616,7 @@ export default function InventoryManagement() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Low Stock</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-destructive" />
+            <Warning className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-destructive">{lowStockItems.length}</div>
@@ -626,7 +626,7 @@ export default function InventoryManagement() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Out of Stock</CardTitle>
-            <TrendingDown className="h-4 w-4 text-destructive" />
+            <TrendDown className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-destructive">{outOfStockItems.length}</div>
@@ -646,7 +646,7 @@ export default function InventoryManagement() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Value</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CurrencyDollar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">₹{totalValue.toLocaleString()}</div>
@@ -682,10 +682,9 @@ export default function InventoryManagement() {
                 ) : (
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {filteredInventory.map((item) => (
-                      <Card key={item.id} className={`hover:shadow-md transition-shadow ${
-                        item.quantity <= item.reorderLevel ? 'border-destructive' : 
-                        item.quantity === 0 ? 'border-destructive bg-destructive/5' : ''
-                      }`}>
+                      <Card key={item.id} className={`hover:shadow-md transition-shadow ${item.quantity <= item.reorderLevel ? 'border-destructive' :
+                          item.quantity === 0 ? 'border-destructive bg-destructive/5' : ''
+                        }`}>
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between mb-3">
                             <div className="flex-1">
@@ -693,13 +692,13 @@ export default function InventoryManagement() {
                               <div className="flex items-center gap-2 mt-1">
                                 <Badge variant="outline" className="text-xs">
                                   {item.type === 'medicine' ? <Pill className="w-3 h-3 mr-1" /> :
-                                   item.type === 'supply' ? <FirstAid className="w-3 h-3 mr-1" /> :
-                                   <Package className="w-3 h-3 mr-1" />}
+                                    item.type === 'supply' ? <FirstAid className="w-3 h-3 mr-1" /> :
+                                      <Package className="w-3 h-3 mr-1" />}
                                   {item.category}
                                 </Badge>
                                 <Badge variant={
                                   item.status === 'active' ? 'default' :
-                                  item.status === 'out_of_stock' ? 'destructive' : 'secondary'
+                                    item.status === 'out_of_stock' ? 'destructive' : 'secondary'
                                 }>
                                   {item.status?.replace('_', ' ') || 'Unknown'}
                                 </Badge>
@@ -713,7 +712,7 @@ export default function InventoryManagement() {
                                 <Archive className="h-3 w-3" />
                               </Button>
                               <Button variant="outline" size="sm" onClick={() => handleEditItem(item)}>
-                                <Edit className="h-3 w-3" />
+                                <PencilSimple className="h-3 w-3" />
                               </Button>
                             </div>
                           </div>
@@ -721,9 +720,8 @@ export default function InventoryManagement() {
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                               <span>Stock:</span>
-                              <span className={`font-medium ${
-                                item.quantity <= item.reorderLevel ? 'text-destructive' : ''
-                              }`}>
+                              <span className={`font-medium ${item.quantity <= item.reorderLevel ? 'text-destructive' : ''
+                                }`}>
                                 {item.quantity} {item.unit}
                               </span>
                             </div>
@@ -743,7 +741,7 @@ export default function InventoryManagement() {
                               <div className="flex justify-between">
                                 <span>Expires:</span>
                                 <span className={
-                                  new Date(item.expiryDate) <= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) 
+                                  new Date(item.expiryDate) <= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
                                     ? 'text-yellow-600' : ''
                                 }>
                                   {new Date(item.expiryDate).toLocaleDateString()}
@@ -754,7 +752,7 @@ export default function InventoryManagement() {
 
                           {item.quantity <= item.reorderLevel && (
                             <div className="mt-3 p-2 bg-destructive/10 border border-destructive/20 rounded text-xs text-destructive">
-                              <AlertTriangle className="h-3 w-3 inline mr-1" />
+                              <Warning className="h-3 w-3 inline mr-1" />
                               Low stock - Reorder required
                             </div>
                           )}
@@ -774,7 +772,7 @@ export default function InventoryManagement() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-destructive">
-                  <AlertTriangle className="h-5 w-5" />
+                  <Warning className="h-5 w-5" />
                   Low Stock Items ({lowStockItems.length})
                 </CardTitle>
                 <CardDescription>Items below reorder level</CardDescription>
@@ -863,17 +861,16 @@ export default function InventoryManagement() {
                     .map((transaction) => (
                       <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center gap-4">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                            transaction.type === 'purchase' ? 'bg-green-100 text-green-600' :
-                            transaction.type === 'issue' ? 'bg-blue-100 text-blue-600' :
-                            transaction.type === 'return' ? 'bg-yellow-100 text-yellow-600' :
-                            transaction.type === 'expired' ? 'bg-red-100 text-red-600' :
-                            'bg-gray-100 text-gray-600'
-                          }`}>
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${transaction.type === 'purchase' ? 'bg-green-100 text-green-600' :
+                              transaction.type === 'issue' ? 'bg-blue-100 text-blue-600' :
+                                transaction.type === 'return' ? 'bg-yellow-100 text-yellow-600' :
+                                  transaction.type === 'expired' ? 'bg-red-100 text-red-600' :
+                                    'bg-gray-100 text-gray-600'
+                            }`}>
                             {transaction.type === 'purchase' ? '+' :
-                             transaction.type === 'issue' ? '-' :
-                             transaction.type === 'return' ? '↺' :
-                             transaction.type === 'expired' ? '⚠' : '±'}
+                              transaction.type === 'issue' ? '-' :
+                                transaction.type === 'return' ? '↺' :
+                                  transaction.type === 'expired' ? '⚠' : '±'}
                           </div>
                           <div>
                             <p className="font-medium">{transaction.itemName}</p>
@@ -885,7 +882,7 @@ export default function InventoryManagement() {
                             )}
                           </div>
                         </div>
-                        
+
                         <div className="text-right">
                           <p className="text-sm font-medium">
                             {new Date(transaction.date).toLocaleDateString()}
@@ -919,7 +916,7 @@ export default function InventoryManagement() {
               {selectedItem && `Update stock for ${selectedItem.name}`}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             {selectedItem && (
               <div className="p-4 bg-muted/30 rounded-lg">
@@ -933,7 +930,7 @@ export default function InventoryManagement() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Transaction Type *</Label>
-                <Select value={transactionFormData.type} onValueChange={(value) => setTransactionFormData({...transactionFormData, type: value as any})}>
+                <Select value={transactionFormData.type} onValueChange={(value) => setTransactionFormData({ ...transactionFormData, type: value as any })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -952,7 +949,7 @@ export default function InventoryManagement() {
                   type="number"
                   min="1"
                   value={transactionFormData.quantity || ''}
-                  onChange={(e) => setTransactionFormData({...transactionFormData, quantity: Number(e.target.value)})}
+                  onChange={(e) => setTransactionFormData({ ...transactionFormData, quantity: Number(e.target.value) })}
                   placeholder="Enter quantity"
                 />
               </div>
@@ -964,7 +961,7 @@ export default function InventoryManagement() {
                 <Input
                   type="date"
                   value={transactionFormData.date}
-                  onChange={(e) => setTransactionFormData({...transactionFormData, date: e.target.value})}
+                  onChange={(e) => setTransactionFormData({ ...transactionFormData, date: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
@@ -974,7 +971,7 @@ export default function InventoryManagement() {
                   min="0"
                   step="0.01"
                   value={transactionFormData.unitPrice || ''}
-                  onChange={(e) => setTransactionFormData({...transactionFormData, unitPrice: Number(e.target.value)})}
+                  onChange={(e) => setTransactionFormData({ ...transactionFormData, unitPrice: Number(e.target.value) })}
                   placeholder="Unit price"
                 />
               </div>
@@ -986,7 +983,7 @@ export default function InventoryManagement() {
                   <Label>Batch Number</Label>
                   <Input
                     value={transactionFormData.batchNumber || ''}
-                    onChange={(e) => setTransactionFormData({...transactionFormData, batchNumber: e.target.value})}
+                    onChange={(e) => setTransactionFormData({ ...transactionFormData, batchNumber: e.target.value })}
                     placeholder="Batch number"
                   />
                 </div>
@@ -995,7 +992,7 @@ export default function InventoryManagement() {
                   <Input
                     type="date"
                     value={transactionFormData.expiryDate || ''}
-                    onChange={(e) => setTransactionFormData({...transactionFormData, expiryDate: e.target.value})}
+                    onChange={(e) => setTransactionFormData({ ...transactionFormData, expiryDate: e.target.value })}
                   />
                 </div>
               </div>
@@ -1006,7 +1003,7 @@ export default function InventoryManagement() {
                 <Label>Issued To</Label>
                 <Input
                   value={transactionFormData.issuedTo || ''}
-                  onChange={(e) => setTransactionFormData({...transactionFormData, issuedTo: e.target.value})}
+                  onChange={(e) => setTransactionFormData({ ...transactionFormData, issuedTo: e.target.value })}
                   placeholder="Department or person name"
                 />
               </div>
@@ -1016,7 +1013,7 @@ export default function InventoryManagement() {
               <Label>Reason</Label>
               <Input
                 value={transactionFormData.reason || ''}
-                onChange={(e) => setTransactionFormData({...transactionFormData, reason: e.target.value})}
+                onChange={(e) => setTransactionFormData({ ...transactionFormData, reason: e.target.value })}
                 placeholder="Reason for transaction"
               />
             </div>
@@ -1025,7 +1022,7 @@ export default function InventoryManagement() {
               <Label>Notes</Label>
               <Textarea
                 value={transactionFormData.notes || ''}
-                onChange={(e) => setTransactionFormData({...transactionFormData, notes: e.target.value})}
+                onChange={(e) => setTransactionFormData({ ...transactionFormData, notes: e.target.value })}
                 placeholder="Additional notes"
                 rows={2}
               />
@@ -1046,14 +1043,14 @@ export default function InventoryManagement() {
             <DialogTitle>Edit Inventory Item</DialogTitle>
             <DialogDescription>Update item information</DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Item Name</Label>
                 <Input
                   value={itemFormData.name || ''}
-                  onChange={(e) => setItemFormData({...itemFormData, name: e.target.value})}
+                  onChange={(e) => setItemFormData({ ...itemFormData, name: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
@@ -1061,7 +1058,7 @@ export default function InventoryManagement() {
                 <Input
                   type="number"
                   value={itemFormData.reorderLevel || ''}
-                  onChange={(e) => setItemFormData({...itemFormData, reorderLevel: Number(e.target.value)})}
+                  onChange={(e) => setItemFormData({ ...itemFormData, reorderLevel: Number(e.target.value) })}
                 />
               </div>
             </div>
@@ -1073,7 +1070,7 @@ export default function InventoryManagement() {
                   type="number"
                   step="0.01"
                   value={itemFormData.costPrice || ''}
-                  onChange={(e) => setItemFormData({...itemFormData, costPrice: Number(e.target.value)})}
+                  onChange={(e) => setItemFormData({ ...itemFormData, costPrice: Number(e.target.value) })}
                 />
               </div>
               <div className="space-y-2">
@@ -1082,14 +1079,14 @@ export default function InventoryManagement() {
                   type="number"
                   step="0.01"
                   value={itemFormData.sellingPrice || ''}
-                  onChange={(e) => setItemFormData({...itemFormData, sellingPrice: Number(e.target.value)})}
+                  onChange={(e) => setItemFormData({ ...itemFormData, sellingPrice: Number(e.target.value) })}
                 />
               </div>
             </div>
 
             <div className="space-y-2">
               <Label>Status</Label>
-              <Select value={itemFormData.status} onValueChange={(value) => setItemFormData({...itemFormData, status: value as any})}>
+              <Select value={itemFormData.status} onValueChange={(value) => setItemFormData({ ...itemFormData, status: value as any })}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

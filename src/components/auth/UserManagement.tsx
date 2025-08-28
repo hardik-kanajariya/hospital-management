@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { useKV } from '@/hooks/useLocalStorage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,14 +15,14 @@ import RoleBasedAccess from '@/components/auth/RoleBasedAccess';
 import {
   Users,
   Plus,
-  Edit,
+  PencilSimple,
   Trash,
   Shield,
   UserCircle,
   Key,
   Eye,
   EyeSlash,
-  Search
+  MagnifyingGlass
 } from '@phosphor-icons/react';
 
 export default function UserManagement() {
@@ -74,7 +74,7 @@ export default function UserManagement() {
   const togglePermission = (module: string, action: 'create' | 'read' | 'update' | 'delete') => {
     const permissions = [...(formData.permissions || [])];
     const existingPermIndex = permissions.findIndex(p => p.module === module);
-    
+
     if (existingPermIndex >= 0) {
       const existingPerm = permissions[existingPermIndex];
       if (existingPerm.actions.includes(action)) {
@@ -91,7 +91,7 @@ export default function UserManagement() {
       // Create new permission
       permissions.push({ module, actions: [action] });
     }
-    
+
     setFormData({ ...formData, permissions });
   };
 
@@ -129,7 +129,7 @@ export default function UserManagement() {
     };
 
     if (selectedUser) {
-      setUsers(currentUsers => 
+      setUsers(currentUsers =>
         currentUsers.map(u => u.id === selectedUser.id ? newUser : u)
       );
       toast.success('User updated successfully');
@@ -148,7 +148,7 @@ export default function UserManagement() {
       toast.error('Cannot delete your own account');
       return;
     }
-    
+
     if (confirm('Are you sure you want to delete this user?')) {
       setUsers(currentUsers => currentUsers.filter(u => u.id !== userId));
       toast.success('User deleted successfully');
@@ -187,7 +187,7 @@ export default function UserManagement() {
       <RoleBasedAccess requiredRole="super_admin">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Search users by name, email, or role..."
               value={searchTerm}
@@ -226,7 +226,7 @@ export default function UserManagement() {
                       <Input
                         id="name"
                         value={formData.name || ''}
-                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         placeholder="Enter full name"
                       />
                     </div>
@@ -236,18 +236,18 @@ export default function UserManagement() {
                         id="email"
                         type="email"
                         value={formData.email || ''}
-                        onChange={(e) => setFormData({...formData, email: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         placeholder="Enter email address"
                         disabled={!!selectedUser}
                       />
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="role">Role *</Label>
-                      <Select 
-                        value={formData.role} 
+                      <Select
+                        value={formData.role}
                         onValueChange={(value) => handleRoleChange(value as UserRole)}
                       >
                         <SelectTrigger>
@@ -267,7 +267,7 @@ export default function UserManagement() {
                       <Input
                         id="department"
                         value={formData.department || ''}
-                        onChange={(e) => setFormData({...formData, department: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                         placeholder="Enter department"
                       />
                     </div>
@@ -308,7 +308,7 @@ export default function UserManagement() {
                     <Checkbox
                       id="isActive"
                       checked={formData.isActive}
-                      onCheckedChange={(checked) => setFormData({...formData, isActive: checked as boolean})}
+                      onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked as boolean })}
                     />
                     <Label htmlFor="isActive">Active user account</Label>
                   </div>
@@ -372,7 +372,7 @@ export default function UserManagement() {
               <div className="text-2xl font-bold">{users.length}</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Active Users</CardTitle>
@@ -384,7 +384,7 @@ export default function UserManagement() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Doctors</CardTitle>
@@ -396,7 +396,7 @@ export default function UserManagement() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Admin Users</CardTitle>
@@ -460,28 +460,28 @@ export default function UserManagement() {
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => toggleUserStatus(user.id)}
                           disabled={user.id === currentUser?.id}
                         >
                           {user.isActive ? 'Deactivate' : 'Activate'}
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => {
                             setSelectedUser(user);
                             setFormData(user);
                             setIsDialogOpen(true);
                           }}
                         >
-                          <Edit className="h-4 w-4" />
+                          <PencilSimple className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => handleDeleteUser(user.id)}
                           disabled={user.id === currentUser?.id}
                         >

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useKV } from '@github/spark/hooks'
+import { useKV } from '@/hooks/useLocalStorage'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import {
   Receipt,
   Plus,
-  Search,
+  MagnifyingGlass,
   CreditCard,
   Eye,
   Printer,
@@ -175,7 +175,7 @@ export default function EnhancedBillingSystem() {
       paymentMethod: newBill.paymentMethod,
       status: 'pending',
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
-      insuranceClaim: newBill.insuranceClaim
+      insuranceClaim: newBill.insuranceClaim || undefined
     }
 
     setBills(prev => [...prev, bill])
@@ -214,7 +214,7 @@ export default function EnhancedBillingSystem() {
         const newPaidAmount = bill.paidAmount + paidAmount
         const balanceAmount = bill.totalAmount - newPaidAmount
         const status = balanceAmount <= 0 ? 'paid' : balanceAmount < bill.totalAmount ? 'partially_paid' : 'pending'
-        
+
         return {
           ...bill,
           paidAmount: newPaidAmount,
@@ -225,7 +225,7 @@ export default function EnhancedBillingSystem() {
       }
       return bill
     }))
-    
+
     toast.success('Payment updated successfully')
   }
 
@@ -233,7 +233,7 @@ export default function EnhancedBillingSystem() {
   const generateDailyReport = () => {
     const today = new Date().toISOString().split('T')[0]
     const todayBills = bills.filter(bill => bill.billDate.startsWith(today))
-    
+
     const report = {
       date: today,
       totalBills: todayBills.length,
@@ -246,21 +246,21 @@ export default function EnhancedBillingSystem() {
     // In a real application, this would generate a PDF or export to Excel
     console.log('Daily Report:', report)
     toast.success('Daily report generated')
-    
+
     return report
   }
 
   const generateMonthlyReport = () => {
     const currentMonth = new Date().toISOString().substring(0, 7) // YYYY-MM
     const monthlyBills = bills.filter(bill => bill.billDate.startsWith(currentMonth))
-    
+
     const report = {
       month: currentMonth,
       totalBills: monthlyBills.length,
       totalRevenue: monthlyBills.reduce((sum, bill) => sum + bill.totalAmount, 0),
       totalTax: monthlyBills.reduce((sum, bill) => sum + bill.taxAmount, 0),
       categoryBreakdown: Object.keys(taxRates).reduce((acc, category) => {
-        const categoryItems = monthlyBills.flatMap(bill => 
+        const categoryItems = monthlyBills.flatMap(bill =>
           bill.items.filter(item => item.category === category)
         )
         acc[category] = categoryItems.reduce((sum, item) => sum + item.totalPrice, 0)
@@ -270,7 +270,7 @@ export default function EnhancedBillingSystem() {
 
     console.log('Monthly Report:', report)
     toast.success('Monthly report generated')
-    
+
     return report
   }
 
@@ -278,12 +278,12 @@ export default function EnhancedBillingSystem() {
   const filteredBills = bills.filter(bill => {
     const patient = patients.find(p => p.id === bill.patientId)
     const patientName = patient ? `${patient.firstName} ${patient.lastName}` : ''
-    
+
     return patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           bill.id.toLowerCase().includes(searchTerm.toLowerCase())
+      bill.id.toLowerCase().includes(searchTerm.toLowerCase())
   })
 
-  const { subtotal: newBillSubtotal, taxAmount: newBillTaxAmount, totalAmount: newBillTotalAmount } = 
+  const { subtotal: newBillSubtotal, taxAmount: newBillTaxAmount, totalAmount: newBillTotalAmount } =
     calculateBillTotals(newBill.items, newBill.discountAmount)
 
   return (
@@ -299,7 +299,7 @@ export default function EnhancedBillingSystem() {
           {/* Header with Search and Actions */}
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder="Search bills by patient name or bill ID..."
                 value={searchTerm}
@@ -307,13 +307,13 @@ export default function EnhancedBillingSystem() {
                 className="pl-10"
               />
             </div>
-            
+
             <div className="flex gap-2">
               <Button onClick={generateDailyReport} variant="outline">
                 <FileText className="h-4 w-4 mr-2" />
                 Daily Report
               </Button>
-              
+
               <Dialog open={isNewBillDialogOpen} onOpenChange={setIsNewBillDialogOpen}>
                 <DialogTrigger asChild>
                   <Button>
@@ -328,12 +328,12 @@ export default function EnhancedBillingSystem() {
                       Add items and generate a new bill for the patient
                     </DialogDescription>
                   </DialogHeader>
-                  
+
                   <div className="grid gap-6">
                     {/* Patient Selection */}
                     <div className="space-y-2">
                       <Label>Select Patient *</Label>
-                      <Select value={newBill.patientId} onValueChange={(value) => setNewBill(prev => ({...prev, patientId: value}))}>
+                      <Select value={newBill.patientId} onValueChange={(value) => setNewBill(prev => ({ ...prev, patientId: value }))}>
                         <SelectTrigger>
                           <SelectValue placeholder="Choose a patient" />
                         </SelectTrigger>
@@ -378,7 +378,7 @@ export default function EnhancedBillingSystem() {
                           <Label>Description</Label>
                           <Input
                             value={newItem.description}
-                            onChange={(e) => setNewItem(prev => ({...prev, description: e.target.value}))}
+                            onChange={(e) => setNewItem(prev => ({ ...prev, description: e.target.value }))}
                             placeholder="Item description"
                           />
                         </div>
@@ -388,7 +388,7 @@ export default function EnhancedBillingSystem() {
                             type="number"
                             min="1"
                             value={newItem.quantity}
-                            onChange={(e) => setNewItem(prev => ({...prev, quantity: Number(e.target.value)}))}
+                            onChange={(e) => setNewItem(prev => ({ ...prev, quantity: Number(e.target.value) }))}
                           />
                         </div>
                         <div className="space-y-2">
@@ -398,13 +398,13 @@ export default function EnhancedBillingSystem() {
                             min="0"
                             step="0.01"
                             value={newItem.unitPrice}
-                            onChange={(e) => setNewItem(prev => ({...prev, unitPrice: Number(e.target.value)}))}
+                            onChange={(e) => setNewItem(prev => ({ ...prev, unitPrice: Number(e.target.value) }))}
                             placeholder="0.00"
                           />
                         </div>
                         <div className="space-y-2">
                           <Label>Category</Label>
-                          <Select value={newItem.category} onValueChange={(value) => setNewItem(prev => ({...prev, category: value as any}))}>
+                          <Select value={newItem.category} onValueChange={(value) => setNewItem(prev => ({ ...prev, category: value as any }))}>
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
@@ -463,13 +463,13 @@ export default function EnhancedBillingSystem() {
                           min="0"
                           step="0.01"
                           value={newBill.discountAmount}
-                          onChange={(e) => setNewBill(prev => ({...prev, discountAmount: Number(e.target.value)}))}
+                          onChange={(e) => setNewBill(prev => ({ ...prev, discountAmount: Number(e.target.value) }))}
                           placeholder="0.00"
                         />
                       </div>
                       <div className="space-y-2">
                         <Label>Payment Method</Label>
-                        <Select value={newBill.paymentMethod} onValueChange={(value) => setNewBill(prev => ({...prev, paymentMethod: value as any}))}>
+                        <Select value={newBill.paymentMethod} onValueChange={(value) => setNewBill(prev => ({ ...prev, paymentMethod: value as any }))}>
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
@@ -518,7 +518,7 @@ export default function EnhancedBillingSystem() {
                       <Label>Notes</Label>
                       <Textarea
                         value={newBill.notes}
-                        onChange={(e) => setNewBill(prev => ({...prev, notes: e.target.value}))}
+                        onChange={(e) => setNewBill(prev => ({ ...prev, notes: e.target.value }))}
                         placeholder="Additional notes for this bill"
                         rows={2}
                       />
@@ -571,12 +571,12 @@ export default function EnhancedBillingSystem() {
                           </div>
                           <Badge variant={
                             bill.status === 'paid' ? 'default' :
-                            bill.status === 'partially_paid' ? 'secondary' : 'destructive'
+                              bill.status === 'partially_paid' ? 'secondary' : 'destructive'
                           }>
                             {bill.status.replace('_', ' ')}
                           </Badge>
                         </div>
-                        
+
                         <div className="flex items-center gap-4">
                           <div className="text-right">
                             <p className="font-semibold">₹{bill.totalAmount.toLocaleString()}</p>
@@ -586,7 +586,7 @@ export default function EnhancedBillingSystem() {
                               </p>
                             )}
                           </div>
-                          
+
                           <div className="flex gap-2">
                             <Button
                               variant="outline"
@@ -642,7 +642,7 @@ export default function EnhancedBillingSystem() {
                     </span>
                   </div>
                 </div>
-                
+
                 <div className="mt-6 space-y-2">
                   <Button onClick={generateDailyReport} className="w-full">
                     <Download className="h-4 w-4 mr-2" />
@@ -664,12 +664,12 @@ export default function EnhancedBillingSystem() {
               <CardContent>
                 <div className="space-y-4">
                   {Object.entries(taxRates).map(([category, rate]) => {
-                    const categoryRevenue = bills.flatMap(bill => 
+                    const categoryRevenue = bills.flatMap(bill =>
                       bill.items.filter(item => item.category === category)
                     ).reduce((sum, item) => sum + item.totalPrice, 0)
-                    
+
                     const categoryTax = categoryRevenue * rate / 100
-                    
+
                     return (
                       <div key={category} className="flex justify-between items-center">
                         <div>
