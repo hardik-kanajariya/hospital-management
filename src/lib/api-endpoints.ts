@@ -3,7 +3,7 @@
  * This file defines all the backend API endpoints that the application will use
  */
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
 export const API_ENDPOINTS = {
   // Authentication endpoints

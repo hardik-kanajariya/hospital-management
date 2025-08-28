@@ -11,16 +11,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { Patient, Doctor } from '@/types/hospital'
 import {
-  Bed,
-  Plus,
-  MagnifyingGlass,
-  Users,
-  CheckCircle,
-  Warning,
-  MapPin,
-  Calendar,
-  User,
-  House,
+  BedIcon,
+  PlusIcon,
+  MagnifyingGlassIcon,
+  UsersIcon,
+  CheckCircleIcon,
+  WarningIcon,
+  MapPinIcon,
+  CalendarIcon,
+  UserIcon,
+  HouseIcon,
 } from '@phosphor-icons/react';
 import { toast } from 'sonner'
 
@@ -302,7 +302,7 @@ export default function BedManagement() {
       {/* Header Actions */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="relative flex-1 max-w-md">
-          <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
             placeholder="Search beds by room, bed number, or patient..."
             value={searchTerm}
@@ -315,7 +315,7 @@ export default function BedManagement() {
           <Dialog open={isRoomDialogOpen} onOpenChange={setIsRoomDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2">
-                <House className="h-4 w-4" />
+                <HouseIcon className="h-4 w-4" />
                 Add Room
               </Button>
             </DialogTrigger>
@@ -437,7 +437,7 @@ export default function BedManagement() {
           <Dialog open={isAdmissionDialogOpen} onOpenChange={setIsAdmissionDialogOpen}>
             <DialogTrigger asChild>
               <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
+                <PlusIcon className="h-4 w-4" />
                 Admit Patient
               </Button>
             </DialogTrigger>
@@ -555,7 +555,7 @@ export default function BedManagement() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Beds</CardTitle>
-            <Bed className="h-4 w-4 text-muted-foreground" />
+            <BedIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{bedStats.total}</div>
@@ -565,7 +565,7 @@ export default function BedManagement() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Available</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600" />
+            <CheckCircleIcon className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{bedStats.available}</div>
@@ -575,7 +575,7 @@ export default function BedManagement() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Occupied</CardTitle>
-            <Users className="h-4 w-4 text-blue-600" />
+            <UsersIcon className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">{bedStats.occupied}</div>
@@ -585,7 +585,7 @@ export default function BedManagement() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Occupancy Rate</CardTitle>
-            <Warning className="h-4 w-4 text-muted-foreground" />
+            <WarningIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{occupancyRate}%</div>
@@ -595,7 +595,7 @@ export default function BedManagement() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Today's Admissions</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CalendarIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{todayAdmissions.length}</div>
@@ -622,7 +622,7 @@ export default function BedManagement() {
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {filteredBeds.length === 0 ? (
                   <div className="col-span-full text-center py-8">
-                    <Bed className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <BedIcon className="mx-auto h-12 w-12 text-muted-foreground" />
                     <h3 className="mt-4 text-lg font-semibold">No beds found</h3>
                     <p className="text-muted-foreground">
                       {searchTerm ? 'Try adjusting your search terms' : 'Start by adding your first room'}
@@ -631,9 +631,9 @@ export default function BedManagement() {
                 ) : (
                   filteredBeds.map((bed) => (
                     <div key={bed.id} className={`border rounded-lg p-4 ${bed.status === 'available' ? 'border-green-200 bg-green-50' :
-                        bed.status === 'occupied' ? 'border-blue-200 bg-blue-50' :
-                          bed.status === 'maintenance' ? 'border-yellow-200 bg-yellow-50' :
-                            'border-gray-200'
+                      bed.status === 'occupied' ? 'border-blue-200 bg-blue-50' :
+                        bed.status === 'maintenance' ? 'border-yellow-200 bg-yellow-50' :
+                          'border-gray-200'
                       }`}>
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="font-medium">{bed.bedNumber}</h3>
@@ -648,22 +648,22 @@ export default function BedManagement() {
 
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center gap-2">
-                          <MapPin className="h-3 w-3" />
+                          <MapPinIcon className="h-3 w-3" />
                           <span>Room {bed.roomNumber}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Bed className="h-3 w-3" />
+                          <BedIcon className="h-3 w-3" />
                           <span>{bed.type}</span>
                         </div>
                         {bed.patientName && (
                           <div className="flex items-center gap-2">
-                            <User className="h-3 w-3" />
+                            <UserIcon className="h-3 w-3" />
                             <span>{bed.patientName}</span>
                           </div>
                         )}
                         {bed.admissionDate && (
                           <div className="flex items-center gap-2">
-                            <Calendar className="h-3 w-3" />
+                            <CalendarIcon className="h-3 w-3" />
                             <span>Since {new Date(bed.admissionDate).toLocaleDateString()}</span>
                           </div>
                         )}
@@ -715,7 +715,7 @@ export default function BedManagement() {
               <div className="space-y-4">
                 {rooms.length === 0 ? (
                   <div className="text-center py-8">
-                    <House className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <HouseIcon className="mx-auto h-12 w-12 text-muted-foreground" />
                     <h3 className="mt-4 text-lg font-semibold">No rooms configured</h3>
                     <p className="text-muted-foreground">Start by adding your first room</p>
                   </div>
@@ -798,7 +798,7 @@ export default function BedManagement() {
               <div className="space-y-4">
                 {activeAdmissions.length === 0 ? (
                   <div className="text-center py-8">
-                    <Users className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <UsersIcon className="mx-auto h-12 w-12 text-muted-foreground" />
                     <h3 className="mt-4 text-lg font-semibold">No active admissions</h3>
                     <p className="text-muted-foreground">Current admissions will appear here</p>
                   </div>

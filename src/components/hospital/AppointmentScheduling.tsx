@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Calendar, CalendarPlus, MagnifyingGlass, Clock, User, FileText } from '@phosphor-icons/react';
+import { CalendarIcon, CalendarPlusIcon, MagnifyingGlassIcon, ClockIcon, UserIcon, FileTextIcon } from '@phosphor-icons/react';
 import { toast } from 'sonner'
 import { useNotifications } from '@/hooks/useNotifications'
 import { Appointment, Patient } from '@/types/hospital'
@@ -206,7 +206,7 @@ export default function AppointmentScheduling() {
       <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-1">
           <div className="relative max-w-md">
-            <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Search appointments..."
               value={searchTerm}
@@ -245,7 +245,7 @@ export default function AppointmentScheduling() {
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <CalendarPlus className="w-4 h-4 mr-2" />
+              <CalendarPlusIcon className="w-4 h-4 mr-2" />
               Book Appointment
             </Button>
           </DialogTrigger>
@@ -387,7 +387,7 @@ export default function AppointmentScheduling() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
+            <CalendarIcon className="w-5 h-5" />
             Today's Appointments - {today}
           </CardTitle>
         </CardHeader>
@@ -418,7 +418,7 @@ export default function AppointmentScheduling() {
         {filteredAppointments.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-8">
-              <Calendar className="w-12 h-12 text-muted-foreground mb-4" />
+              <CalendarIcon className="w-12 h-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium text-muted-foreground">No appointments found</h3>
               <p className="text-sm text-muted-foreground">Try adjusting your search or filters</p>
             </CardContent>
@@ -442,22 +442,22 @@ export default function AppointmentScheduling() {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
-                        <User className="w-4 h-4" />
+                        <UserIcon className="w-4 h-4" />
                         <span>{appointment.doctorId}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
+                        <CalendarIcon className="w-4 h-4" />
                         <span>{appointment.appointmentDate}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
+                        <ClockIcon className="w-4 h-4" />
                         <span>{appointment.appointmentTime}</span>
                       </div>
                     </div>
 
                     {appointment.notes && (
                       <div className="flex items-center gap-2 mt-2 text-sm">
-                        <FileText className="w-4 h-4 text-muted-foreground" />
+                        <FileTextIcon className="w-4 h-4 text-muted-foreground" />
                         <span className="text-muted-foreground">{appointment.notes}</span>
                       </div>
                     )}

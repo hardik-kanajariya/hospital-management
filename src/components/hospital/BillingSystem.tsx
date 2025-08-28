@@ -11,6 +11,22 @@ import { Receipt, Plus, MagnifyingGlass, CreditCard, Eye, Printer, CurrencyDolla
 import { toast } from 'sonner'
 import { Bill, BillItem, Patient } from '@/types/hospital';
 
+// Extended types for backward compatibility
+interface ExtendedBill extends Bill {
+  patientName?: string;
+  date?: string;
+  total?: number;
+  dueAmount?: number;
+  paymentStatus?: string;
+  discount?: number;
+  tax?: number;
+}
+
+interface ExtendedBillItem extends BillItem {
+  rate?: number;
+  amount?: number;
+}
+
 const serviceItems = [
   { description: 'General Consultation', rate: 500 },
   { description: 'Specialist Consultation', rate: 800 },
@@ -50,7 +66,7 @@ const insuranceProviders = [
 ]
 
 export default function BillingSystem() {
-  const [bills, setBills] = useKV<Bill[]>('hospital-bills', [])
+  const [bills, setBills] = useKV<ExtendedBill[]>('hospital-bills', [])
   const [patients] = useKV<Patient[]>('hospital-patients', [])
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -82,8 +98,10 @@ export default function BillingSystem() {
     id: '1',
     description: '',
     quantity: 1,
-    rate: 0,
-    amount: 0
+    unitPrice: 0,
+    totalPrice: 0,
+    taxRate: 0,
+    category: 'consultation'
   }])
 
   const [paymentData, setPaymentData] = useState({
@@ -128,8 +146,10 @@ export default function BillingSystem() {
             description: context.appointmentType === 'Emergency' ? 'Emergency Consultation' :
               context.appointmentType === 'Specialist Consultation' ? 'Specialist Consultation' : 'General Consultation',
             quantity: 1,
-            rate: consultationRate,
-            amount: consultationRate
+            unitPrice: consultationRate,
+            totalPrice: consultationRate,
+            taxRate: 0,
+            category: 'consultation'
           }])
         }
 
@@ -160,7 +180,7 @@ export default function BillingSystem() {
 
   // Calculate totals
   const calculateSubtotal = () => {
-    return billItems.reduce((sum, item) => sum + item.amount, 0)
+    return billItems.reduce((sum, item) => sum + item.totalPrice, 0)
   }
 
   const calculateTotal = () => {
@@ -176,8 +196,10 @@ export default function BillingSystem() {
       id: Date.now().toString(),
       description: '',
       quantity: 1,
-      rate: 0,
-      amount: 0
+      unitPrice: 0,
+      totalPrice: 0,
+      taxRate: 0,
+      category: 'other'
     }
     setBillItems([...billItems, newItem])
   }
@@ -191,8 +213,8 @@ export default function BillingSystem() {
       items.map(item => {
         if (item.id === id) {
           const updated = { ...item, [field]: value }
-          if (field === 'quantity' || field === 'rate') {
-            updated.amount = updated.quantity * updated.rate
+          if (field === 'quantity' || field === 'unitPrice') {
+            updated.totalPrice = updated.quantity * updated.unitPrice
           }
           return updated
         }
@@ -216,25 +238,25 @@ export default function BillingSystem() {
     const bill: Bill = {
       id: `INV${Date.now()}`,
       patientId: newBill.patientId,
-      patientName: newBill.patientName,
-      date: newBill.date,
+      billDate: newBill.date,
       items: billItems.filter(item => item.description),
       subtotal,
-      discount: discountAmount,
-      tax: taxAmount,
-      total,
-      paymentStatus: 'pending',
+      discountAmount: discountAmount,
+      taxAmount: taxAmount,
+      totalAmount: total,
+      status: 'pending',
       paidAmount: 0,
-      dueAmount: total,
-      notes: newBill.notes,
+      balanceAmount: total,
+      paymentMethod: 'cash',
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
       insuranceClaim: insuranceClaim.hasInsurance ? {
-        provider: insuranceClaim.provider,
-        policyNumber: insuranceClaim.policyNumber,
+        id: `claim-${Date.now()}`,
+        claimNumber: `CLM-${Date.now()}`,
+        submittedDate: new Date().toISOString(),
+        status: 'submitted' as const,
         claimAmount: insuranceClaim.claimAmount,
-        claimStatus: 'pending',
-        submittedDate: new Date().toISOString()
-      } : undefined,
-      createdAt: new Date().toISOString()
+        documents: []
+      } : undefined
     }
 
     setBills(currentBills => [...currentBills, bill])
@@ -258,8 +280,10 @@ export default function BillingSystem() {
       id: '1',
       description: '',
       quantity: 1,
-      rate: 0,
-      amount: 0
+      unitPrice: 0,
+      totalPrice: 0,
+      taxRate: 0,
+      category: 'consultation'
     }])
 
     setIsDialogOpen(false)
@@ -272,15 +296,15 @@ export default function BillingSystem() {
       return
     }
 
-    if (paymentData.amount > selectedBill.dueAmount) {
+    if (paymentData.amount > selectedBill.balanceAmount) {
       toast.error('Payment amount cannot exceed due amount')
       return
     }
 
     const newPaidAmount = selectedBill.paidAmount + paymentData.amount
-    const newDueAmount = selectedBill.total - newPaidAmount
+    const newDueAmount = selectedBill.totalAmount - newPaidAmount
 
-    let newStatus: Bill['paymentStatus'] = 'partial'
+    let newStatus: ExtendedBill['status'] = 'partially_paid'
     if (newDueAmount === 0) {
       newStatus = 'paid'
     } else if (newPaidAmount === 0) {
@@ -293,10 +317,12 @@ export default function BillingSystem() {
           ? {
             ...bill,
             paidAmount: newPaidAmount,
-            dueAmount: newDueAmount,
-            paymentStatus: newStatus,
-            paymentMethod: paymentData.method
-          }
+            balanceAmount: newDueAmount,
+            status: newStatus,
+            paymentMethod: paymentData.method as Bill['paymentMethod'],
+            paymentDate: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          } as ExtendedBill
           : bill
       )
     )
@@ -354,11 +380,11 @@ export default function BillingSystem() {
   }
 
   // Calculate dashboard stats
-  const todayBills = bills.filter(bill => bill.date === today)
+  const todayBills = bills.filter(bill => bill.billDate === today)
   const todayRevenue = todayBills.reduce((sum, bill) => sum + bill.paidAmount, 0)
-  const pendingAmount = bills.reduce((sum, bill) => sum + bill.dueAmount, 0)
+  const pendingAmount = bills.reduce((sum, bill) => sum + (bill.balanceAmount || 0), 0)
   const monthlyRevenue = bills
-    .filter(bill => bill.date.startsWith(currentMonth))
+    .filter(bill => bill.billDate.startsWith(currentMonth))
     .reduce((sum, bill) => sum + bill.paidAmount, 0)
 
   return (
@@ -532,7 +558,7 @@ export default function BillingSystem() {
                               const serviceItem = serviceItems.find(s => s.description === value)
                               updateBillItem(item.id, 'description', value)
                               if (serviceItem) {
-                                updateBillItem(item.id, 'rate', serviceItem.rate)
+                                updateBillItem(item.id, 'unitPrice', serviceItem.rate)
                               }
                             }}
                           >
@@ -562,15 +588,15 @@ export default function BillingSystem() {
                           <Input
                             type="number"
                             min="0"
-                            value={item.rate}
-                            onChange={(e) => updateBillItem(item.id, 'rate', parseFloat(e.target.value) || 0)}
+                            value={item.unitPrice}
+                            onChange={(e) => updateBillItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
                           />
                         </div>
                         <div className="space-y-1">
                           <Label className="text-sm">Amount (₹)</Label>
                           <Input
                             type="number"
-                            value={item.amount}
+                            value={item.totalPrice}
                             readOnly
                             className="bg-muted"
                           />
@@ -745,17 +771,17 @@ export default function BillingSystem() {
                       <div className="flex items-center gap-2">
                         <h3 className="text-lg font-semibold">{bill.patientName}</h3>
                         <Badge variant="outline">{bill.id}</Badge>
-                        {getStatusBadge(bill.paymentStatus)}
-                        {bill.insuranceClaim && getClaimStatusBadge(bill.insuranceClaim.claimStatus)}
+                        {getStatusBadge(bill.status || 'pending')}
+                        {bill.insuranceClaim && getClaimStatusBadge(bill.insuranceClaim.status)}
                       </div>
                       <div className="space-y-1">
                         <p className="text-sm text-muted-foreground">
-                          <strong>Date:</strong> {new Date(bill.date).toLocaleDateString()} •
-                          <strong> Total:</strong> ₹{bill.total.toLocaleString()}
+                          <strong>Date:</strong> {new Date(bill.billDate || '').toLocaleDateString()} •
+                          <strong> Total:</strong> ₹{(bill.totalAmount || 0).toLocaleString()}
                         </p>
                         <p className="text-sm text-muted-foreground">
                           <strong>Paid:</strong> ₹{bill.paidAmount.toLocaleString()} •
-                          <strong> Due:</strong> ₹{bill.dueAmount.toLocaleString()}
+                          <strong> Due:</strong> ₹{(bill.balanceAmount || 0).toLocaleString()}
                         </p>
                         {bill.paymentMethod && (
                           <p className="text-sm text-muted-foreground">
@@ -764,8 +790,8 @@ export default function BillingSystem() {
                         )}
                         {bill.insuranceClaim && (
                           <p className="text-sm text-muted-foreground">
-                            <strong>Insurance:</strong> {bill.insuranceClaim.provider} •
-                            <strong> Policy:</strong> {bill.insuranceClaim.policyNumber} •
+                            <strong>Insurance:</strong> {bill.insuranceClaim.claimNumber} •
+                            <strong> Policy:</strong> {bill.insuranceClaim.claimAmount} •
                             <strong> Claim:</strong> ₹{bill.insuranceClaim.claimAmount.toLocaleString()}
                           </p>
                         )}
@@ -798,7 +824,7 @@ export default function BillingSystem() {
                             <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <Label className="text-sm font-medium text-muted-foreground">Patient</Label>
-                                <p>{selectedBill.patientName}</p>
+                                <p>{patients.find(p => p.id === selectedBill.patientId)?.firstName + ' ' + patients.find(p => p.id === selectedBill.patientId)?.lastName}</p>
                               </div>
                               <div>
                                 <Label className="text-sm font-medium text-muted-foreground">Invoice ID</Label>
@@ -806,11 +832,11 @@ export default function BillingSystem() {
                               </div>
                               <div>
                                 <Label className="text-sm font-medium text-muted-foreground">Date</Label>
-                                <p>{new Date(selectedBill.date).toLocaleDateString()}</p>
+                                <p>{new Date(selectedBill.billDate).toLocaleDateString()}</p>
                               </div>
                               <div>
                                 <Label className="text-sm font-medium text-muted-foreground">Status</Label>
-                                <p>{getStatusBadge(selectedBill.paymentStatus)}</p>
+                                <p>{getStatusBadge(selectedBill.status)}</p>
                               </div>
                             </div>
 
@@ -822,10 +848,10 @@ export default function BillingSystem() {
                                     <div>
                                       <p className="font-medium">{item.description}</p>
                                       <p className="text-sm text-muted-foreground">
-                                        {item.quantity} × ₹{item.rate}
+                                        {item.quantity} × ₹{item.unitPrice}
                                       </p>
                                     </div>
-                                    <p className="font-medium">₹{item.amount}</p>
+                                    <p className="font-medium">₹{item.totalPrice}</p>
                                   </div>
                                 ))}
                               </div>
@@ -839,15 +865,15 @@ export default function BillingSystem() {
                                 </div>
                                 <div className="flex justify-between">
                                   <span>Discount:</span>
-                                  <span>-₹{selectedBill.discount.toFixed(2)}</span>
+                                  <span>-₹{selectedBill.discountAmount.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between">
                                   <span>Tax:</span>
-                                  <span>₹{selectedBill.tax.toFixed(2)}</span>
+                                  <span>₹{selectedBill.taxAmount.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between font-bold text-lg border-t pt-2">
                                   <span>Total:</span>
-                                  <span>₹{selectedBill.total.toFixed(2)}</span>
+                                  <span>₹{selectedBill.totalAmount.toFixed(2)}</span>
                                 </div>
                               </div>
                             </div>
@@ -860,7 +886,7 @@ export default function BillingSystem() {
                                 </div>
                                 <div>
                                   <Label className="text-sm font-medium text-muted-foreground">Amount Due</Label>
-                                  <p className="text-red-600 font-bold">₹{selectedBill.dueAmount.toFixed(2)}</p>
+                                  <p className="text-red-600 font-bold">₹{selectedBill.balanceAmount.toFixed(2)}</p>
                                 </div>
                               </div>
                             </div>
@@ -869,14 +895,14 @@ export default function BillingSystem() {
                       </DialogContent>
                     </Dialog>
 
-                    {bill.dueAmount > 0 && (
+                    {(bill.balanceAmount || 0) > 0 && (
                       <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
                         <DialogTrigger asChild>
                           <Button
                             size="sm"
                             onClick={() => {
                               setSelectedBill(bill)
-                              setPaymentData({ amount: bill.dueAmount, method: '', notes: '' })
+                              setPaymentData({ amount: bill.balanceAmount || 0, method: '', notes: '' })
                             }}
                           >
                             <CreditCard className="w-4 h-4 mr-1" />
@@ -895,7 +921,7 @@ export default function BillingSystem() {
                             <div className="p-4 bg-muted rounded-lg">
                               <div className="flex justify-between items-center">
                                 <span>Total Bill Amount:</span>
-                                <span className="font-bold">₹{bill.total.toLocaleString()}</span>
+                                <span className="font-bold">₹{(bill.totalAmount || 0).toLocaleString()}</span>
                               </div>
                               <div className="flex justify-between items-center">
                                 <span>Already Paid:</span>
@@ -903,7 +929,7 @@ export default function BillingSystem() {
                               </div>
                               <div className="flex justify-between items-center border-t pt-2">
                                 <span>Amount Due:</span>
-                                <span className="font-bold text-red-600">₹{bill.dueAmount.toLocaleString()}</span>
+                                <span className="font-bold text-red-600">₹{(bill.balanceAmount || 0).toLocaleString()}</span>
                               </div>
                             </div>
 

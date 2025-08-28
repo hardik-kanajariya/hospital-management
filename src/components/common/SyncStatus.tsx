@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { useSyncStatus } from '@/hooks/useData'
-import { CloudArrowUp, WifiSlash, Pulse, Warning, CheckCircle } from '@phosphor-icons/react'
+import { CloudArrowUpIcon, WifiSlashIcon, PulseIcon, WarningIcon, CheckCircleIcon } from '@phosphor-icons/react'
 
 interface SyncStatusProps {
   onSyncNow?: () => void
@@ -22,10 +22,10 @@ export default function SyncStatus({ onSyncNow, className }: SyncStatusProps) {
   }
 
   const getStatusIcon = () => {
-    if (!status.isOnline) return <WifiSlash className="w-3 h-3 mr-1" />
-    if (status.syncInProgress) return <Pulse className="w-3 h-3 mr-1 animate-spin" />
-    if (status.pendingSync > 0) return <Warning className="w-3 h-3 mr-1" />
-    return <CheckCircle className="w-3 h-3 mr-1" />
+    if (!status.isOnline) return <WifiSlashIcon className="w-3 h-3 mr-1" />
+    if (status.syncInProgress) return <PulseIcon className="w-3 h-3 mr-1 animate-spin" />
+    if (status.pendingSync > 0) return <WarningIcon className="w-3 h-3 mr-1" />
+    return <CheckCircleIcon className="w-3 h-3 mr-1" />
   }
 
   const getStatusText = () => {
@@ -55,7 +55,7 @@ export default function SyncStatus({ onSyncNow, className }: SyncStatusProps) {
           onClick={onSyncNow}
           className="h-6 px-2"
         >
-          <CloudArrowUp className="w-3 h-3" />
+          <CloudArrowUpIcon className="w-3 h-3" />
         </Button>
       )}
     </div>
@@ -128,7 +128,7 @@ export function DetailedSyncStatus() {
           {!status.isOnline && (
             <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
               <div className="flex items-start gap-2">
-                <WifiSlash className="w-4 h-4 text-orange-600 mt-0.5" />
+                <WifiSlashIcon className="w-4 h-4 text-orange-600 mt-0.5" />
                 <div className="text-sm">
                   <p className="font-medium text-orange-800">Working Offline</p>
                   <p className="text-orange-700">
@@ -142,7 +142,7 @@ export function DetailedSyncStatus() {
           {status.pendingSync > 0 && status.isOnline && (
             <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
               <div className="flex items-start gap-2">
-                <Warning className="w-4 h-4 text-yellow-600 mt-0.5" />
+                <WarningIcon className="w-4 h-4 text-yellow-600 mt-0.5" />
                 <div className="text-sm">
                   <p className="font-medium text-yellow-800">Sync Pending</p>
                   <p className="text-yellow-700">

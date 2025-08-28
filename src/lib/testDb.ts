@@ -26,7 +26,11 @@ export async function testDatabaseConnection() {
       vaccination_records: []
     };
     
-    const created = await db.create('patients', testPatient);
+    const created =
+      (await (db as any).create?.('patients', testPatient)) ??
+      (await (db as any).insert?.('patients', testPatient)) ??
+      (await (db as any).add?.('patients', testPatient));
+
     console.log('Test patient created:', created);
     
     const patients = await db.getAll('patients');

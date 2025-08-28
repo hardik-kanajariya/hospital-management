@@ -9,7 +9,12 @@
         "build": "tsc -b --noCheck && vite build",
         "lint": "eslint .",
         "optimize": "vite optimize",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "server:install": "cd server && npm install",
+        "server:dev": "cd server && npm run dev",
+        "server:start": "cd server && npm start",
+        "server:seed": "cd server && npm run seed",
+        "dev:full": "concurrently \"npm run dev\" \"npm run server:dev\""
     },
     "dependencies": {
         "@heroicons/react": "^2.2.0",
@@ -83,6 +88,7 @@
         "@types/react-dom": "^19.0.4",
         "@vitejs/plugin-react": "^4.3.4",
         "@vitejs/plugin-react-swc": "^3.10.1",
+        "concurrently": "^8.2.2",
         "eslint": "^9.28.0",
         "eslint-plugin-react-hooks": "^5.2.0",
         "eslint-plugin-react-refresh": "^0.4.19",

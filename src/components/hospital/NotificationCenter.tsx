@@ -12,17 +12,15 @@ import { toast } from 'sonner';
 import {
   Bell,
   Plus,
-  MessageCircle,
-  Mail,
   Phone,
   Clock,
   CheckCircle,
   XCircle,
-  AlertCircle,
   Calendar,
   TestTube,
   CreditCard
 } from '@phosphor-icons/react';
+import { CircleAlert, Mail } from 'lucide-react';
 
 export default function NotificationCenter() {
   const { 
@@ -86,7 +84,7 @@ export default function NotificationCenter() {
       case 'pending':
         return <Clock className="w-4 h-4 text-yellow-500" />;
       default:
-        return <AlertCircle className="w-4 h-4 text-gray-500" />;
+        return <CircleAlert className="w-4 h-4 text-gray-500" />;
     }
   };
 
@@ -99,7 +97,7 @@ export default function NotificationCenter() {
       case 'billing_reminder':
         return <CreditCard className="w-4 h-4 text-orange-500" />;
       default:
-        return <MessageCircle className="w-4 h-4 text-gray-500" />;
+        return <CircleAlert className="w-4 h-4 text-gray-500" />;
     }
   };
 
@@ -149,7 +147,7 @@ export default function NotificationCenter() {
                       <div className="flex items-center gap-2">
                         <Mail className="w-4 h-4" />
                         Email
-                      </div>
+                      </div>  
                     </SelectItem>
                   </SelectContent>
                 </Select>
