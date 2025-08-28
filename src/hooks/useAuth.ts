@@ -58,8 +58,8 @@ export function useAuth() {
         // Offline mode - use demo users
         const userRole = getUserRoleFromEmail(email);
         
-        // Simple password check for demo
-        if (password === 'password') {
+        // Simple password check for demo (admin123 for all demo accounts)
+        if (password === 'admin123') {
           const user: User = {
             id: crypto.randomUUID(),
             email,

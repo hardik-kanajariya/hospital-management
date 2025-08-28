@@ -17,7 +17,7 @@ import {
 } from '@phosphor-icons/react';
 
 export default function Dashboard() {
-  const { user } = useAuth()
+  const { user, hasPermission } = useAuth()
   const { getNotificationHistory } = useNotifications()
   const [patients] = useKV<Patient[]>('hospital-patients', [])
   const [appointments] = useKV<Appointment[]>('hospital-appointments', [])
@@ -53,6 +53,28 @@ export default function Dashboard() {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5)
 
+  // Role-specific welcome messages
+  const getRoleSpecificWelcome = () => {
+    switch (user?.role) {
+      case 'super_admin':
+        return "Monitor and manage all hospital operations from here."
+      case 'doctor':
+        return "Check your appointments and patient records for today."
+      case 'billing_manager':
+        return "Track billing, payments and financial operations."
+      case 'nurse':
+        return "Monitor patient care and upcoming appointments."
+      case 'lab_technician':
+        return "Check lab orders and manage test results."
+      case 'pharmacist':
+        return "Monitor inventory and prescription orders."
+      case 'receptionist':
+        return "Manage appointments and patient check-ins."
+      default:
+        return "Here's what's happening at your hospital today."
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Welcome Message */}
@@ -60,10 +82,13 @@ export default function Dashboard() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Welcome back, {user?.name}</h1>
           <p className="text-muted-foreground">
-            Here's what's happening at your hospital today.
+            {getRoleSpecificWelcome()}
           </p>
         </div>
         <div className="text-right">
+          <Badge variant={user?.role === 'super_admin' ? 'destructive' : 'secondary'} className="mb-2">
+            {user?.role?.replace('_', ' ').toUpperCase()}
+          </Badge>
           <p className="text-sm text-muted-foreground">
             {new Date().toLocaleDateString('en-IN', {
               weekday: 'long',
@@ -75,59 +100,71 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Key Metrics */}
+      {/* Key Metrics - Role Based */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Patients</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{patients.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Registered in system
-            </p>
-          </CardContent>
-        </Card>
+        {/* Patients - Always show for most roles */}
+        {hasPermission('patients', 'read') && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Patients</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{patients.length}</div>
+              <p className="text-xs text-muted-foreground">
+                Registered in system
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Appointments</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{todayAppointments.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {appointments.filter(apt => apt.status === 'completed').length} completed
-            </p>
-          </CardContent>
-        </Card>
+        {/* Appointments - Show for doctors, nurses, receptionists, admins */}
+        {hasPermission('appointments', 'read') && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Today's Appointments</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{todayAppointments.length}</div>
+              <p className="text-xs text-muted-foreground">
+                {appointments.filter(apt => apt.status === 'completed').length} completed
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Revenue</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">₹{todayRevenue.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
-              From {todayBills.length} bills
-            </p>
-          </CardContent>
-        </Card>
+        {/* Revenue - Show for billing managers and admins */}
+        {hasPermission('billing', 'read') && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Today's Revenue</CardTitle>
+              <CreditCard className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">₹{todayRevenue.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">
+                From {todayBills.length} bills
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Low Stock Items</CardTitle>
-            <Warning className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{lowStockItems.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Need restocking
-            </p>
-          </CardContent>
-        </Card>
+        {/* Inventory - Show for pharmacists, store managers, admins */}
+        {hasPermission('inventory', 'read') && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Low Stock Items</CardTitle>
+              <Warning className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{lowStockItems.length}</div>
+              <p className="text-xs text-muted-foreground">
+                Need restocking
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Quick Stats for Role-Specific Information */}
@@ -169,6 +206,108 @@ export default function Dashboard() {
               <div className="text-2xl font-bold">1</div>
               <p className="text-xs text-muted-foreground">
                 Requires attention
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Billing Manager specific stats */}
+      {user?.role === 'billing_manager' && (
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pending Payments</CardTitle>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {bills.filter(bill => bill.status === 'pending' || bill.status === 'overdue').length}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Awaiting payment
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
+              <CreditCard className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                ₹{bills.reduce((sum, bill) => sum + (bill.totalAmount || 0), 0).toLocaleString()}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Total this month
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Outstanding Amount</CardTitle>
+              <Warning className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                ₹{bills.filter(bill => bill.status === 'pending' || bill.status === 'overdue')
+                  .reduce((sum, bill) => sum + (bill.totalAmount || 0), 0).toLocaleString()}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Unpaid bills
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Pharmacist specific stats */}
+      {user?.role === 'pharmacist' && (
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Critical Stock</CardTitle>
+              <Warning className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{lowStockItems.length}</div>
+              <p className="text-xs text-muted-foreground">
+                Items need reorder
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pending Prescriptions</CardTitle>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">12</div>
+              <p className="text-xs text-muted-foreground">
+                To be dispensed
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Expiring Soon</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {inventory.filter(item => {
+                  const expiryDate = new Date(item.expiryDate || '');
+                  const thirtyDaysFromNow = new Date();
+                  thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+                  return expiryDate <= thirtyDaysFromNow;
+                }).length}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Within 30 days
               </p>
             </CardContent>
           </Card>

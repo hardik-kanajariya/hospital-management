@@ -88,8 +88,18 @@ function App() {
         </div>
       )
     }
-    return <LoginForm onLogin={() => setActiveTab('dashboard')} />
+    return <LoginForm onLogin={() => {
+      // After successful login, redirect to dashboard
+      setActiveTab('dashboard')
+    }} />
   }
+
+  // Auto-redirect to dashboard on first login if on landing
+  useEffect(() => {
+    if (isAuthenticated && activeTab === 'landing') {
+      setActiveTab('dashboard')
+    }
+  }, [isAuthenticated, activeTab])
 
   // Filter tabs based on user permissions
   const availableTabs = [
