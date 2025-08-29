@@ -18,16 +18,7 @@ export const registerValidator = vine.compile(
         email: vine.string().email().normalizeEmail(),
         password: vine.string().minLength(6),
         name: vine.string().trim().minLength(1),
-        role: vine.enum([
-            'super_admin',
-            'doctor',
-            'billing_manager',
-            'nurse',
-            'lab_technician',
-            'pharmacist',
-            'medical_store_manager',
-            'receptionist'
-        ]),
+        roleId: vine.string().uuid(),
         phone: vine.string().optional(),
         department: vine.string().optional(),
         employeeId: vine.string().optional()

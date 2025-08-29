@@ -57,7 +57,7 @@ export default function Dashboard() {
 
   // Role-specific welcome messages
   const getRoleSpecificWelcome = () => {
-    switch (user?.role) {
+    switch (user?.role?.name) {
       case 'super_admin':
         return "Monitor and manage all hospital operations from here."
       case 'doctor':
@@ -88,8 +88,8 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="text-right">
-          <Badge variant={user?.role === 'super_admin' ? 'destructive' : 'secondary'} className="mb-2">
-            {user?.role?.replace('_', ' ').toUpperCase()}
+          <Badge variant={user?.role?.name === 'super_admin' ? 'destructive' : 'secondary'} className="mb-2">
+            {user?.role?.name?.replace('_', ' ').toUpperCase()}
           </Badge>
           <p className="text-sm text-muted-foreground">
             {new Date().toLocaleDateString('en-IN', {
@@ -170,7 +170,7 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Stats for Role-Specific Information */}
-      {user?.role === 'doctor' && (
+      {user?.role?.name === 'doctor' && (
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -215,7 +215,7 @@ export default function Dashboard() {
       )}
 
       {/* Billing Manager specific stats */}
-      {user?.role === 'billing_manager' && (
+      {user?.role?.name === 'billing_manager' && (
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -266,7 +266,7 @@ export default function Dashboard() {
       )}
 
       {/* Pharmacist specific stats */}
-      {user?.role === 'pharmacist' && (
+      {user?.role?.name === 'pharmacist' && (
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -475,7 +475,7 @@ export default function Dashboard() {
       )}
 
       {/* Sync Status for Admins and Receptionists */}
-      {(user?.role === 'super_admin' || user?.role === 'receptionist') && (
+      {(user?.role?.name === 'super_admin' || user?.role?.name === 'receptionist') && (
         <div className="space-y-6">
           <h3 className="text-lg font-semibold">System Status</h3>
           <ConnectionStatus className="w-full" />

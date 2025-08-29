@@ -1,9 +1,11 @@
 import { DateTime } from 'luxon'
 import hash from '@adonisjs/core/services/hash'
 import { compose } from '@adonisjs/core/helpers'
-import { BaseModel, column, beforeSave } from '@adonisjs/lucid/orm'
+import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
+import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import Role from './role.js'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],
@@ -24,19 +26,20 @@ export default class User extends compose(BaseModel, AuthFinder) {
   declare name: string
 
   @column()
-  declare role: 'super_admin' | 'doctor' | 'billing_manager' | 'nurse' | 'lab_technician' | 'pharmacist' | 'medical_store_manager' | 'receptionist'
+  declare roleId: string | null
 
-  @column({
-    prepare: (value: any) => JSON.stringify(value),
-    consume: (value: string) => {
-      try {
-        return JSON.parse(value)
-      } catch {
-        return {}
-      }
-    }
-  })
-  declare permissions: Record<string, any>
+  // Remove old permissions column - will use role-based permissions
+  // @column({
+  //   prepare: (value: any) => JSON.stringify(value),
+  //   consume: (value: string) => {
+  //     try {
+  //       return JSON.parse(value)
+  //     } catch {
+  //       return {}
+  //     }
+  //   }
+  // })
+  // declare permissions: Record<string, any>
 
   @column()
   declare isActive: boolean
@@ -59,79 +62,40 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column.dateTime({ autoCreate: true, autoUpdate: true, columnName: 'updated_at' })
   declare updatedAt: DateTime
 
-  @beforeSave()
-  public static async setPermissions(user: User) {
-    if (user.$dirty.role || !user.permissions || Object.keys(user.permissions).length === 0) {
-      user.permissions = User.getPermissionsForRole(user.role)
-    }
-  }
+  // Relationships
+  @belongsTo(() => Role)
+  declare role: BelongsTo<typeof Role>
 
   static accessTokens = DbAccessTokensProvider.forModel(User)
 
-  public static getPermissionsForRole(role: string): Record<string, any> {
-    const rolePermissions: Record<string, any> = {
-      'super_admin': [
-        { module: '*', actions: ['create', 'read', 'update', 'delete'] }
-      ],
-      'doctor': [
-        { module: 'dashboard', actions: ['read'] },
-        { module: 'patients', actions: ['create', 'read', 'update'] },
-        { module: 'appointments', actions: ['create', 'read', 'update'] },
-        { module: 'medical_records', actions: ['create', 'read', 'update'] },
-        { module: 'doctors', actions: ['read', 'update'] },
-        { module: 'prescriptions', actions: ['create', 'read', 'update'] },
-        { module: 'lab_tests', actions: ['create', 'read'] },
-        { module: 'beds', actions: ['read', 'update'] },
-        { module: 'billing', actions: ['read'] },
-        { module: 'notifications', actions: ['create', 'read'] }
-      ],
-      'billing_manager': [
-        { module: 'dashboard', actions: ['read'] },
-        { module: 'patients', actions: ['read'] },
-        { module: 'appointments', actions: ['read'] },
-        { module: 'billing', actions: ['create', 'read', 'update', 'delete'] },
-        { module: 'inventory', actions: ['read'] },
-        { module: 'notifications', actions: ['create', 'read'] }
-      ],
-      'nurse': [
-        { module: 'dashboard', actions: ['read'] },
-        { module: 'patients', actions: ['read', 'update'] },
-        { module: 'appointments', actions: ['read', 'update'] },
-        { module: 'medical_records', actions: ['read'] },
-        { module: 'beds', actions: ['read', 'update'] },
-        { module: 'notifications', actions: ['create', 'read'] }
-      ],
-      'lab_technician': [
-        { module: 'dashboard', actions: ['read'] },
-        { module: 'patients', actions: ['read'] },
-        { module: 'lab_tests', actions: ['create', 'read', 'update'] },
-        { module: 'notifications', actions: ['create', 'read'] }
-      ],
-      'pharmacist': [
-        { module: 'dashboard', actions: ['read'] },
-        { module: 'patients', actions: ['read'] },
-        { module: 'prescriptions', actions: ['read', 'update'] },
-        { module: 'inventory', actions: ['read', 'update'] },
-        { module: 'notifications', actions: ['create', 'read'] }
-      ],
-      'medical_store_manager': [
-        { module: 'dashboard', actions: ['read'] },
-        { module: 'inventory', actions: ['create', 'read', 'update', 'delete'] },
-        { module: 'notifications', actions: ['create', 'read'] }
-      ],
-      'receptionist': [
-        { module: 'dashboard', actions: ['read'] },
-        { module: 'patients', actions: ['create', 'read', 'update'] },
-        { module: 'appointments', actions: ['create', 'read', 'update'] },
-        { module: 'billing', actions: ['read'] },
-        { module: 'notifications', actions: ['create', 'read'] }
-      ]
-    }
-
-    return rolePermissions[role] || []
-  }
-
   public async comparePassword(password: string): Promise<boolean> {
     return await hash.verify(this.passwordHash, password)
+  }
+
+  // Method to get user permissions through role
+  public async getUserPermissions() {
+    await this.load('role', (roleQuery) => {
+      roleQuery.preload('permissions')
+    })
+
+    if (!this.role) return []
+
+    return this.role.permissions.map(permission => ({
+      module: permission.module,
+      actions: permission.$pivot?.actions || []
+    }))
+  }
+
+  // Method to check if user has specific permission
+  public async hasPermission(module: string, action: string = 'read'): Promise<boolean> {
+    const permissions = await this.getUserPermissions()
+
+    // Check for super admin access (wildcard permission)
+    const hasWildcard = permissions.some(p => p.module === '*')
+    if (hasWildcard) return true
+
+    // Check for specific module permission
+    const modulePermission = permissions.find(p => p.module === module)
+    return modulePermission ? modulePermission.actions.includes(action) : false
   }
 }

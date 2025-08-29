@@ -17,7 +17,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     console.log('ProtectedRoute check:', {
         isAuthenticated,
         isLoading,
-        userRole: user?.role,
+        userRole: user?.role?.name,
         userName: user?.name,
         requiredRole,
         currentPath: location.pathname,
@@ -45,8 +45,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
 
     // If role is required and user doesn't have it, redirect to dashboard
-    if (requiredRole && user?.role !== requiredRole) {
-        console.log('ProtectedRoute: User role mismatch, redirecting to dashboard. Required:', requiredRole, 'User role:', user?.role);
+    if (requiredRole && user?.role?.name !== requiredRole) {
+        console.log('ProtectedRoute: User role mismatch, redirecting to dashboard. Required:', requiredRole, 'User role:', user?.role?.name);
         return <Navigate to="/dashboard" replace />;
     }
 

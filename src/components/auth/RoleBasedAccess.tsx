@@ -25,37 +25,35 @@ export default function RoleBasedAccess({
   // Check role-based access
   if (requiredRole) {
     const allowedRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
-    if (!user || !allowedRoles.includes(user.role)) {
-      if (fallback) return <>{fallback}</>;
-      if (showMessage) {
-        return (
-          <Alert className="border-destructive">
-            <LockIcon className="h-4 w-4 text-destructive" />
-            <AlertDescription className="text-destructive">
-              Access denied. This feature requires {Array.isArray(requiredRole) ? requiredRole.join(' or ') : requiredRole} role.
-            </AlertDescription>
-          </Alert>
-        );
-      }
-      return null;
+    if (!user) return renderAccessDenied("Authentication required");
+
+    // Handle new Role object structure
+    const userRole = typeof user.role === 'object' ? user.role?.name : user.role;
+
+    if (!userRole || !allowedRoles.includes(userRole)) {
+      return renderAccessDenied(`Access denied. This feature requires ${Array.isArray(requiredRole) ? requiredRole.join(' or ') : requiredRole} role.`);
     }
   }
 
   // Check permission-based access
-  if (requiredModule && !hasPermission(requiredModule)) {
+  if (requiredModule && !hasPermission(requiredModule, requiredAction)) {
+    return renderAccessDenied(`Access denied. You don't have permission to ${requiredAction} ${requiredModule}.`);
+  }
+
+  return <>{children}</>;
+
+  function renderAccessDenied(message: string) {
     if (fallback) return <>{fallback}</>;
     if (showMessage) {
       return (
         <Alert className="border-destructive">
-          <ShieldIcon className="h-4 w-4 text-destructive" />
+          <LockIcon className="h-4 w-4 text-destructive" />
           <AlertDescription className="text-destructive">
-            Access denied. You don't have permission to {requiredAction} {requiredModule}.
+            {message}
           </AlertDescription>
         </Alert>
       );
     }
     return null;
   }
-
-  return <>{children}</>;
 }

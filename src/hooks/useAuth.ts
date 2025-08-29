@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { httpService } from '@/services/HttpService';
-import { User, UserRole, ROLE_CONFIGS } from '@/types/auth';
+import { User, UserRole, Role } from '@/types/auth';
 
 interface AuthState {
   user: User | null;
@@ -103,10 +103,13 @@ export function useAuth() {
       const authResponse = await httpService.authenticate(email, password);
       console.log('HTTP authentication successful:', authResponse);
 
-      // Adapt the response to match User type
+      // Adapt the response to match User type - handle legacy string roles
       const user: User = {
         ...authResponse.user,
-        role: authResponse.user.role as UserRole,
+        role: typeof authResponse.user.role === 'string'
+          ? undefined  // Legacy string role, will be migrated
+          : authResponse.user.role, // New Role object
+        roleId: (authResponse.user as any).roleId, // Handle potential missing roleId
         isActive: true,
         createdAt: new Date().toISOString(),
         permissions: authResponse.user.permissions || []
@@ -171,26 +174,45 @@ export function useAuth() {
   };
 
   // Permission checking
-  const hasPermission = (permission: string): boolean => {
+  const hasPermission = (permission: string, action: string = 'read'): boolean => {
     if (!authState.user) return false;
 
     // Check if user has the specific permission
-    return authState.user.permissions.some(p =>
-      p.module === permission || p.module === '*'
-    );
+    return authState.user.permissions.some(p => {
+      // Check for wildcard permission (super admin)
+      if (p.module === '*') return true;
+
+      // Check for specific module permission with required action
+      return p.module === permission && p.actions?.includes(action as any);
+    });
   };
 
-  // Role checking
+  // Role checking - works with both old string roles and new Role objects
   const hasRole = (role: UserRole | UserRole[]): boolean => {
-    if (!authState.user) return false;
+    if (!authState.user || !authState.user.role) return false;
 
     const roles = Array.isArray(role) ? role : [role];
+
+    // Handle new Role object structure
+    if (typeof authState.user.role === 'object') {
+      return roles.includes(authState.user.role.name as UserRole);
+    }
+
+    // Handle legacy string role structure
     return roles.includes(authState.user.role as UserRole);
   };
 
   // Check if user has admin privileges
   const isAdmin = (): boolean => {
-    return hasRole('super_admin');
+    if (!authState.user || !authState.user.role) return false;
+
+    // Handle new Role object structure
+    if (typeof authState.user.role === 'object') {
+      return authState.user.role.name === 'super_admin';
+    }
+
+    // Handle legacy string role structure
+    return authState.user.role === 'super_admin';
   };
 
   // Clear any auth errors

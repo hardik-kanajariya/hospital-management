@@ -81,7 +81,7 @@ export function useConnectionStatus(): ConnectionHook {
             setConnectionState(prev => ({ ...prev, isOnline: true }));
 
             // Show notification to relevant users
-            if (user?.role === 'super_admin' || user?.role === 'receptionist') {
+            if (user?.role?.name === 'super_admin' || user?.role?.name === 'receptionist') {
                 toast.success('Internet connection restored');
             }
 

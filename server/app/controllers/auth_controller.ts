@@ -12,8 +12,14 @@ export default class AuthController {
         try {
             const payload = await request.validateUsing(loginValidator)
 
-            // Find user by email
-            const user = await User.findBy('email', payload.email)
+            // Find user by email and load role with permissions
+            const user = await User.query()
+                .where('email', payload.email)
+                .preload('role', (roleQuery) => {
+                    roleQuery.preload('permissions')
+                })
+                .first()
+
             if (!user) {
                 return response.status(401).json({
                     success: false,
@@ -47,6 +53,9 @@ export default class AuthController {
             user.lastLogin = DateTime.now()
             await user.save()
 
+            // Get user permissions
+            const userPermissions = await user.getUserPermissions()
+
             // Return response
             return response.status(200).json({
                 success: true,
@@ -57,7 +66,8 @@ export default class AuthController {
                         email: user.email,
                         name: user.name,
                         role: user.role,
-                        permissions: user.permissions,
+                        roleId: user.roleId,
+                        permissions: userPermissions,
                         isActive: user.isActive,
                         phone: user.phone,
                         department: user.department,
@@ -102,13 +112,21 @@ export default class AuthController {
             user.email = payload.email
             user.passwordHash = payload.password // Will be hashed by model hook
             user.name = payload.name
-            user.role = payload.role
+            user.roleId = payload.roleId // Use roleId instead of role
             user.phone = payload.phone || null
             user.department = payload.department || null
             user.employeeId = payload.employeeId || null
             user.isActive = true
 
             await user.save()
+
+            // Load the role and permissions for response
+            await user.load('role', (roleQuery) => {
+                roleQuery.preload('permissions')
+            })
+
+            // Get user permissions
+            const userPermissions = await user.getUserPermissions()
 
             // Generate access token
             const token = await User.accessTokens.create(user, ['*'], {
@@ -124,7 +142,8 @@ export default class AuthController {
                         email: user.email,
                         name: user.name,
                         role: user.role,
-                        permissions: user.permissions,
+                        roleId: user.roleId,
+                        permissions: userPermissions,
                         isActive: user.isActive,
                         phone: user.phone,
                         department: user.department,
@@ -180,6 +199,14 @@ export default class AuthController {
         try {
             const user = auth.getUserOrFail()
 
+            // Load role and permissions
+            await user.load('role', (roleQuery) => {
+                roleQuery.preload('permissions')
+            })
+
+            // Get user permissions
+            const userPermissions = await user.getUserPermissions()
+
             return response.status(200).json({
                 success: true,
                 data: {
@@ -188,7 +215,8 @@ export default class AuthController {
                         email: user.email,
                         name: user.name,
                         role: user.role,
-                        permissions: user.permissions,
+                        roleId: user.roleId,
+                        permissions: userPermissions,
                         isActive: user.isActive,
                         phone: user.phone,
                         department: user.department,

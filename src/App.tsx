@@ -65,7 +65,12 @@ function App() {
   const availableTabs = useMemo(() => {
     if (!isAuthenticated || !user) return [];
 
-    return [
+    // Check if user is super admin
+    const isSuperAdmin = typeof user.role === 'object'
+      ? user.role?.name === 'super_admin'
+      : user.role === 'super_admin';
+
+    const tabs = [
       { id: 'landing', label: 'Home', icon: HouseIcon, module: 'dashboard', path: '/landing' },
       { id: 'dashboard', label: 'Dashboard', icon: PulseIcon, module: 'dashboard', path: '/dashboard' },
       { id: 'patients', label: 'Patients', icon: UsersIcon, module: 'patients', path: '/patients' },
@@ -78,7 +83,18 @@ function App() {
       { id: 'inventory', label: 'Inventory', icon: PackageIcon, module: 'inventory', path: '/inventory' },
       { id: 'notifications', label: 'Notifications', icon: BellIcon, module: 'notifications', path: '/notifications' },
       { id: 'users', label: 'Users', icon: ShieldIcon, module: 'user_management', path: '/users', requiresRole: 'super_admin' }
-    ].filter(tab => {
+    ];
+
+    // Add super admin specific tabs
+    if (isSuperAdmin) {
+      tabs.push(
+        { id: 'admin', label: 'Admin Dashboard', icon: ShieldIcon, module: 'admin', path: '/admin', requiresRole: 'super_admin' },
+        { id: 'admin-roles', label: 'Role Management', icon: ShieldIcon, module: 'roles', path: '/admin/roles', requiresRole: 'super_admin' },
+        { id: 'admin-users', label: 'User Management', icon: UsersIcon, module: 'users', path: '/admin/users', requiresRole: 'super_admin' }
+      );
+    }
+
+    return tabs.filter(tab => {
       // Always show landing and dashboard
       if (['landing', 'dashboard'].includes(tab.id)) return true;
 
@@ -86,7 +102,7 @@ function App() {
       if (!hasPermission(tab.module)) return false;
 
       // Check role requirement if specified
-      if (tab.requiresRole && user?.role !== tab.requiresRole) return false;
+      if (tab.requiresRole && !isSuperAdmin) return false;
 
       return true;
     });
@@ -94,24 +110,37 @@ function App() {
 
   // Group navigation items by category (memoized)
   // Always define this hook, even if availableTabs is empty
-  const navigationGroups = useMemo(() => [
-    {
-      label: 'Overview',
-      items: availableTabs.filter(tab => ['landing', 'dashboard'].includes(tab.id))
-    },
-    {
-      label: 'Patient Care',
-      items: availableTabs.filter(tab => ['patients', 'appointments', 'records', 'lab'].includes(tab.id))
-    },
-    {
-      label: 'Operations',
-      items: availableTabs.filter(tab => ['doctors', 'beds', 'inventory'].includes(tab.id))
-    },
-    {
-      label: 'Administration',
-      items: availableTabs.filter(tab => ['billing', 'notifications', 'users'].includes(tab.id))
+  const navigationGroups = useMemo(() => {
+    const groups = [
+      {
+        label: 'Overview',
+        items: availableTabs.filter(tab => ['landing', 'dashboard'].includes(tab.id))
+      },
+      {
+        label: 'Patient Care',
+        items: availableTabs.filter(tab => ['patients', 'appointments', 'records', 'lab'].includes(tab.id))
+      },
+      {
+        label: 'Operations',
+        items: availableTabs.filter(tab => ['doctors', 'beds', 'inventory'].includes(tab.id))
+      },
+      {
+        label: 'Administration',
+        items: availableTabs.filter(tab => ['billing', 'notifications', 'users'].includes(tab.id))
+      }
+    ];
+
+    // Add Super Admin section if user has super admin tabs
+    const adminTabs = availableTabs.filter(tab => ['admin', 'admin-roles', 'admin-users'].includes(tab.id));
+    if (adminTabs.length > 0) {
+      groups.push({
+        label: 'Super Admin',
+        items: adminTabs
+      });
     }
-  ].filter(group => group.items.length > 0), [availableTabs]);
+
+    return groups.filter(group => group.items.length > 0);
+  }, [availableTabs]);
 
   // Helper functions (also moved before conditional returns)
   const getPageTitle = () => {
@@ -128,6 +157,9 @@ function App() {
       case 'inventory': return 'Inventory Management'
       case 'notifications': return 'Notification Center'
       case 'users': return 'User Management'
+      case 'admin': return 'Super Admin Dashboard'
+      case 'admin/roles': return 'Role Management'
+      case 'admin/users': return 'User Administration'
       case 'landing': return 'Home'
       default: return 'Hospital Management'
     }
@@ -147,6 +179,9 @@ function App() {
       case 'inventory': return 'Track medical supplies and medications'
       case 'notifications': return 'Send and track SMS and email notifications'
       case 'users': return 'Manage hospital staff access and permissions'
+      case 'admin': return 'System administration and configuration'
+      case 'admin/roles': return 'Configure roles and permissions'
+      case 'admin/users': return 'Manage all system users and access'
       case 'landing': return 'Welcome to MedCare Rural Hospital Management System'
       default: return 'Hospital management system'
     }
@@ -237,7 +272,13 @@ function App() {
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium truncate">{user?.name || 'User'}</p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {user?.role ? user.role.replace('_', ' ').toUpperCase() : 'USER'}
+                    {user ? (
+                      typeof user.role === 'object'
+                        ? user.role?.displayName || 'USER'
+                        : typeof user.role === 'string'
+                          ? (user.role as string).replace('_', ' ').toUpperCase()
+                          : 'USER'
+                    ) : 'USER'}
                   </p>
                 </div>
               </div>

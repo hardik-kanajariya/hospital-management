@@ -182,6 +182,26 @@ router.group(() => {
       router.get('/alerts', '#controllers/dashboard_controller.alerts')
     }).prefix('/dashboard')
 
+    // Role management routes (Super Admin only)
+    router.group(() => {
+      router.get('/', '#controllers/roles_controller.index')
+      router.get('/permissions', '#controllers/roles_controller.permissions')
+      router.get('/:id', '#controllers/roles_controller.show')
+      router.post('/', '#controllers/roles_controller.store')
+      router.put('/:id', '#controllers/roles_controller.update')
+      router.delete('/:id', '#controllers/roles_controller.destroy')
+    }).prefix('/roles')
+
+    // Permission management routes (Super Admin only)
+    router.group(() => {
+      router.get('/', '#controllers/permissions_controller.index')
+      router.get('/modules', '#controllers/permissions_controller.modules')
+      router.get('/:id', '#controllers/permissions_controller.show')
+      router.post('/', '#controllers/permissions_controller.store')
+      router.put('/:id', '#controllers/permissions_controller.update')
+      router.delete('/:id', '#controllers/permissions_controller.destroy')
+    }).prefix('/permissions')
+
   }).use(middleware.auth()) // Apply auth middleware to all protected routes
 
 }).prefix('/api')

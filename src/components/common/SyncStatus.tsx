@@ -22,7 +22,7 @@ export default function ConnectionStatus({ onCheck, className }: ConnectionStatu
   const { user } = useAuth();
 
   // Only show to admin and receptionist roles
-  if (user?.role !== 'super_admin' && user?.role !== 'receptionist') {
+  if (user?.role?.name !== 'super_admin' && user?.role?.name !== 'receptionist') {
     return null;
   }
 
@@ -88,7 +88,7 @@ export function ConnectionStatusCard() {
   const { user } = useAuth();
 
   // Only show to admin and receptionist roles
-  if (user?.role !== 'super_admin' && user?.role !== 'receptionist') {
+  if (user?.role?.name !== 'super_admin' && user?.role?.name !== 'receptionist') {
     return null;
   }
 

@@ -14,6 +14,9 @@ import LabManagement from '../components/hospital/LabManagement';
 import BedManagement from '../components/hospital/BedManagement';
 import UserManagement from '../components/auth/UserManagement';
 import NotificationCenter from '../components/hospital/NotificationCenter';
+import SuperAdminDashboard from '../components/hospital/SuperAdminDashboard';
+import RoleManagement from '../components/hospital/RoleManagement';
+import SuperAdminUserManagement from '../components/hospital/SuperAdminUserManagement';
 import RoleBasedAccess from '../components/auth/RoleBasedAccess';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 import RootRedirect from '../components/common/RootRedirect';
@@ -136,6 +139,30 @@ export const router = createBrowserRouter([
                 element: (
                     <ProtectedRoute requiredRole="super_admin">
                         <UserManagement />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'admin',
+                element: (
+                    <ProtectedRoute requiredRole="super_admin">
+                        <SuperAdminDashboard />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'admin/roles',
+                element: (
+                    <ProtectedRoute requiredRole="super_admin">
+                        <RoleManagement />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'admin/users',
+                element: (
+                    <ProtectedRoute requiredRole="super_admin">
+                        <SuperAdminUserManagement />
                     </ProtectedRoute>
                 )
             }
