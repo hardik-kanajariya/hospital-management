@@ -60,16 +60,6 @@ function App() {
     initializeApp()
   }, [])
 
-  // Debug authentication state changes
-  useEffect(() => {
-    console.log('App component - Auth state changed:', {
-      isAuthenticated,
-      user: user?.name,
-      role: user?.role,
-      currentPath: location.pathname
-    });
-  }, [isAuthenticated, user, location.pathname])
-
   // Show minimal layout for login page
   if (location.pathname === '/login') {
     return (
@@ -82,6 +72,17 @@ function App() {
 
   // Show minimal layout for landing page
   if (location.pathname === '/landing') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+        <Outlet />
+        <Toaster />
+      </div>
+    )
+  }
+
+  // If user is not authenticated and tries to access protected routes, 
+  // let ProtectedRoute handle the redirect
+  if (!isAuthenticated && !['/login', '/landing', '/'].includes(location.pathname)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
         <Outlet />

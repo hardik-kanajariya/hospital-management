@@ -16,6 +16,7 @@ import UserManagement from '../components/auth/UserManagement';
 import NotificationCenter from '../components/hospital/NotificationCenter';
 import RoleBasedAccess from '../components/auth/RoleBasedAccess';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
+import RootRedirect from '../components/common/RootRedirect';
 
 export const router = createBrowserRouter([
     {
