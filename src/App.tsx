@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { db } from '@/lib/database'
-import { initializeOfflineDB } from '@/hooks/useDatabase'
 import { useNavigation } from '@/hooks/useNavigation'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
@@ -65,8 +64,8 @@ function App() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
+        // Initialize the main database instance
         await db.initialize()
-        await initializeOfflineDB()
         console.log('Database initialized successfully')
       } catch (error) {
         console.error('Failed to initialize database:', error)

@@ -430,60 +430,155 @@ export class HospitalDatabase {
   async initialize(): Promise<void> {
     if (this.initialized) return;
 
-    await this.offlineDb.initialize();
-    await this.syncManager.initialize();
-    this.initialized = true;
+    try {
+      await this.offlineDb.initialize();
+      await this.syncManager.initialize();
+      this.initialized = true;
+      console.log('Hospital database initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize database:', error);
+      throw error;
+    }
   }
 
   async getAll(tableName: string): Promise<any[]> {
+    if (!this.initialized) {
+      throw new Error('Database not initialized. Please wait for initialization to complete.');
+    }
+
+    // Try online first, fallback to offline
     if (navigator.onLine) {
       try {
-        const data = await this.apiClient.get(`/${tableName}`);
-        return data.data || data;
+        const response = await this.apiClient.get(`/${tableName}`);
+
+        // Handle different API response structures
+        let data: any[] = [];
+        if (response && response.success && response.data) {
+          // New standardized response format
+          if (Array.isArray(response.data)) {
+            data = response.data;
+          } else if (response.data.data && Array.isArray(response.data.data)) {
+            // Paginated response
+            data = response.data.data;
+          }
+        } else if (Array.isArray(response)) {
+          // Old direct array response
+          data = response;
+        }
+
+        // Store in offline database for caching
+        if (data.length > 0) {
+          try {
+            // Clear existing data and add new data
+            const existingData = await this.offlineDb.getAll(tableName);
+            for (const item of existingData) {
+              if (item && typeof item === 'object' && item.id) {
+                await this.offlineDb.delete(tableName, item.id);
+              }
+            }
+            for (const item of data) {
+              if (item && typeof item === 'object') {
+                await this.offlineDb.add(tableName, { ...item, sync_status: 'synced' });
+              }
+            }
+          } catch (offlineError) {
+            console.warn('Failed to cache data offline:', offlineError);
+          }
+        }
+
+        return data;
       } catch (error) {
         console.warn('API call failed, falling back to offline data:', error);
       }
     }
 
+    // Fallback to offline data
     return this.offlineDb.getAll(tableName);
   }
 
   async add(tableName: string, data: any): Promise<number> {
-    const id = await this.offlineDb.add(tableName, data);
+    if (!this.initialized) {
+      throw new Error('Database not initialized. Please wait for initialization to complete.');
+    }
 
+    // Add to offline storage first
+    const offlineId = await this.offlineDb.add(tableName, {
+      ...data,
+      sync_status: navigator.onLine ? 'pending' : 'offline',
+      local_changes: true
+    });
+
+    // Try to sync with server if online
     if (navigator.onLine) {
       try {
-        await this.apiClient.post(`/${tableName}`, { ...data, id });
+        const response = await this.apiClient.post(`/${tableName}`, data);
+
+        // Update offline record with server ID if successful
+        let serverData = response;
+        if (response && response.success && response.data) {
+          serverData = response.data;
+        }
+
+        await this.offlineDb.update(tableName, offlineId, {
+          ...serverData,
+          sync_status: 'synced',
+          local_changes: false
+        });
+
+        return serverData.id || offlineId;
       } catch (error) {
-        console.warn('API call failed, data saved offline:', error);
+        console.warn('Failed to sync with server, data saved offline:', error);
       }
     }
 
-    return id;
+    return offlineId;
   }
 
   async update(tableName: string, id: number, data: any): Promise<void> {
-    await this.offlineDb.update(tableName, id, data);
+    if (!this.initialized) {
+      throw new Error('Database not initialized. Please wait for initialization to complete.');
+    }
 
+    // Update offline storage first
+    await this.offlineDb.update(tableName, id, {
+      ...data,
+      sync_status: navigator.onLine ? 'pending' : 'offline',
+      local_changes: true,
+      updated_at: new Date().toISOString()
+    });
+
+    // Try to sync with server if online
     if (navigator.onLine) {
       try {
         await this.apiClient.put(`/${tableName}/${id}`, data);
+
+        // Mark as synced
+        await this.offlineDb.update(tableName, id, {
+          sync_status: 'synced',
+          local_changes: false
+        });
       } catch (error) {
-        console.warn('API call failed, update saved offline:', error);
+        console.warn('Failed to sync update with server:', error);
       }
     }
   }
 
   async delete(tableName: string, id: number): Promise<void> {
-    await this.offlineDb.delete(tableName, id);
+    if (!this.initialized) {
+      throw new Error('Database not initialized. Please wait for initialization to complete.');
+    }
 
+    // Try server delete first if online
     if (navigator.onLine) {
       try {
         await this.apiClient.delete(`/${tableName}/${id}`);
       } catch (error) {
-        console.warn('API call failed, deletion saved offline:', error);
+        console.warn('Failed to delete from server:', error);
       }
     }
+
+    // Delete from offline storage
+    await this.offlineDb.delete(tableName, id);
   }
 
   async authenticate(email: string, password: string): Promise<any> {
@@ -493,15 +588,21 @@ export class HospitalDatabase {
 
     try {
       const response = await this.apiClient.post('/auth/login', { email, password });
-      console.log('Authentication API response:', response);
 
-      // Check if the response has the expected structure
-      if (response.success && response.data) {
-        this.apiClient.setToken(response.data.token);
-        return response.data.user;
+      // Handle different response structures
+      let authData;
+      if (response && response.success && response.data) {
+        authData = response.data;
       } else {
-        throw new Error('Invalid response structure from authentication API');
+        authData = response;
       }
+
+      if (authData.token) {
+        this.apiClient.setToken(authData.token);
+        localStorage.setItem('auth_token', authData.token);
+      }
+
+      return authData.user || authData;
     } catch (error) {
       console.error('Authentication error:', error);
       throw new Error('Authentication failed');
@@ -510,10 +611,15 @@ export class HospitalDatabase {
 
   logout(): void {
     this.apiClient.clearToken();
+    localStorage.removeItem('auth_token');
   }
 
   isOnline(): boolean {
     return navigator.onLine;
+  }
+
+  isInitialized(): boolean {
+    return this.initialized;
   }
 }
 
