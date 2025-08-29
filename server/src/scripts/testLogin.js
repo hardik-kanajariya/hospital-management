@@ -1,40 +1,49 @@
-import { connectDatabase } from '../config/database.js';
-import User from '../models/User.js';
+import { User } from '../models/index.js';
+import bcrypt from 'bcrypt';
 
 async function testLogin() {
     try {
-        await connectDatabase();
-        console.log('Database connected');
+        console.log('🔍 Testing login functionality...\n');
 
-        // Check if users exist
-        const users = await User.findAll({ limit: 5 });
-        console.log(`Users found: ${users.length}`);
+        // Test credentials
+        const testCredentials = [
+            { email: 'admin@medcare.com', password: 'admin123', role: 'super_admin' },
+            { email: 'dr.sharma@medcare.com', password: 'admin123', role: 'doctor' },
+            { email: 'nurse@medcare.com', password: 'admin123', role: 'nurse' },
+            { email: 'billing@medcare.com', password: 'admin123', role: 'billing_manager' },
+            { email: 'lab@medcare.com', password: 'admin123', role: 'lab_technician' },
+            { email: 'pharmacy@medcare.com', password: 'admin123', role: 'pharmacist' },
+            { email: 'reception@medcare.com', password: 'admin123', role: 'receptionist' }
+        ]; for (const creds of testCredentials) {
+            console.log(`Testing ${creds.role}: ${creds.email}`);
 
-        for (const user of users) {
-            console.log(`User: ${user.email}, Active: ${user.is_active}, Role: ${user.role}`);
+            // Find user
+            const user = await User.findOne({ where: { email: creds.email } });
+
+            if (!user) {
+                console.log(`❌ User not found: ${creds.email}\n`);
+                continue;
+            }
+
+            console.log(`📧 User found: ${user.name}`);
+            console.log(`🔑 Stored hash: ${user.password_hash}`);
+
+            // Test password
+            const isValid = await bcrypt.compare(creds.password, user.password_hash);
+            console.log(`🔐 Password valid: ${isValid}`);
+
+            if (isValid) {
+                console.log(`✅ Login successful for ${creds.role}!\n`);
+            } else {
+                console.log(`❌ Login failed for ${creds.role}!\n`);
+            }
         }
 
-        // Test admin user specifically
-        const admin = await User.findOne({ where: { email: 'admin@medcare.com' } });
-        if (admin) {
-            console.log('\nAdmin user found:');
-            console.log('Email:', admin.email);
-            console.log('Is active:', admin.is_active);
-            console.log('Password hash exists:', !!admin.password_hash);
-            console.log('Password hash length:', admin.password_hash.length);
-
-            // Test password comparison
-            const testPassword = 'admin123';
-            const isMatch = await admin.comparePassword(testPassword);
-            console.log(`Password "${testPassword}" matches:`, isMatch);
-
-        } else {
-            console.log('Admin user not found');
-        }
-
+        console.log('🎉 Authentication test completed!');
         process.exit(0);
+
     } catch (error) {
-        console.error('Error:', error);
+        console.error('❌ Test failed:', error);
         process.exit(1);
     }
 }

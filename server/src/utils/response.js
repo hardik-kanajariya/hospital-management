@@ -39,3 +39,12 @@ export const unauthorizedResponse = (res, message = 'Unauthorized') => {
 export const forbiddenResponse = (res, message = 'Forbidden') => {
     return errorResponse(res, message, 403);
 };
+
+// New helper functions for consistency
+export const sendResponse = (res, data, message = 'Success', statusCode = 200) => {
+    return successResponse(res, message, data, statusCode);
+};
+
+export const sendError = (res, message, statusCode = 500, errors = null) => {
+    return errorResponse(res, message, statusCode, errors);
+};

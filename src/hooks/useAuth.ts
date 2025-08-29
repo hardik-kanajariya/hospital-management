@@ -12,7 +12,6 @@ interface AuthState {
 const setUserData = (user: User) => {
   try {
     localStorage.setItem('current_user', JSON.stringify(user));
-    localStorage.setItem('auth_token', 'authenticated');
   } catch (error) {
     console.error('Failed to save user data:', error);
   }
@@ -68,6 +67,7 @@ export function useAuth() {
             isAuthenticated: true,
             isLoading: false
           });
+          console.log('Restored user session:', parsedUser.name);
         } else {
           // Invalid user object, clear storage
           clearUserData();
@@ -85,59 +85,51 @@ export function useAuth() {
     try {
       console.log('Login attempt for:', email, 'isOnline:', db.isOnline());
 
+      let authenticatedUser: User;
+
       if (db.isOnline()) {
         // Try database authentication first
         console.log('Attempting database authentication...');
-        const authenticatedUser = await db.authenticate(email, password);
+        authenticatedUser = await db.authenticate(email, password);
         console.log('Database authentication successful:', authenticatedUser);
-
-        // Store user data safely
-        setUserData(authenticatedUser);
-
-        setAuthState({
-          user: authenticatedUser,
-          isAuthenticated: true,
-          isLoading: false
-        });
-
-        console.log('Auth state updated - isAuthenticated: true (from database)');
-        return { success: true };
       } else {
         // Offline mode - use demo users
         console.log('Using offline demo authentication...');
         const userRole = getUserRoleFromEmail(email);
 
         // Simple password check for demo (admin123 for all demo accounts)
-        if (password === 'admin123') {
-          const user: User = {
-            id: crypto.randomUUID(),
-            email,
-            name: getNameFromEmail(email),
-            role: userRole,
-            isActive: true,
-            createdAt: new Date().toISOString(),
-            lastLogin: new Date().toISOString(),
-            permissions: ROLE_CONFIGS.find(r => r.role === userRole)?.permissions || []
-          };
-
-          // Store user data safely
-          setUserData(user);
-
-          console.log('Login successful - Setting auth state:', user);
-
-          setAuthState({
-            user,
-            isAuthenticated: true,
-            isLoading: false
-          });
-
-          console.log('Auth state updated - isAuthenticated: true (from demo)');
-
-          return { success: true };
+        if (password !== 'admin123') {
+          throw new Error('Invalid credentials');
         }
+
+        authenticatedUser = {
+          id: crypto.randomUUID(),
+          email,
+          name: getNameFromEmail(email),
+          role: userRole,
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          lastLogin: new Date().toISOString(),
+          permissions: ROLE_CONFIGS.find(r => r.role === userRole)?.permissions || []
+        };
+
+        console.log('Demo authentication successful:', authenticatedUser);
       }
 
-      throw new Error('Invalid credentials');
+      // Store user data safely
+      setUserData(authenticatedUser);
+
+      // Update state with the authenticated user
+      setAuthState({
+        user: authenticatedUser,
+        isAuthenticated: true,
+        isLoading: false
+      });
+
+      console.log('Auth state updated - user authenticated:', authenticatedUser.name, authenticatedUser.role);
+
+      return { success: true };
+
     } catch (error) {
       console.error('Login error:', error);
       setAuthState(prev => ({ ...prev, isLoading: false }));

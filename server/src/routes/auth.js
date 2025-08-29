@@ -12,7 +12,7 @@ router.post('/register', [
     body('email').isEmail().normalizeEmail(),
     body('password').isLength({ min: 6 }),
     body('name').trim().notEmpty(),
-    body('role').isIn(['super_admin', 'admin', 'doctor', 'nurse', 'staff', 'receptionist', 'lab_technician', 'billing_manager', 'pharmacy_manager'])
+    body('role').isIn(['super_admin', 'doctor', 'billing_manager', 'nurse', 'lab_technician', 'pharmacist', 'medical_store_manager', 'receptionist'])
 ], async (req, res) => {
     try {
         const errors = validationResult(req);

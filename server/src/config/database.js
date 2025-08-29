@@ -29,11 +29,9 @@ export const connectDatabase = async () => {
         await sequelize.authenticate();
         console.log('Database connection has been established successfully.');
 
-        // Sync models in development
-        if (process.env.NODE_ENV === 'development') {
-            await sequelize.sync({ alter: true });
-            console.log('Database synchronized successfully.');
-        }
+        // Don't auto-sync in development for now to avoid conflicts
+        // Use manual migrations instead
+        console.log('Database ready. Use "npm run migrate" to create/update tables.');
     } catch (error) {
         console.error('Unable to connect to the database:', error);
         throw error;

@@ -58,7 +58,7 @@ import NotificationCenter from '@/components/hospital/NotificationCenter'
 
 function App() {
   const { user, isAuthenticated, logout, hasPermission } = useAuth()
-  const { activeTab, setActiveTab } = useNavigation()
+  const { activeTab, setActiveTab, navigateToDashboard } = useNavigation()
   const { syncState } = useSyncManager()
 
   // Initialize database on app start
@@ -76,13 +76,23 @@ function App() {
     initializeApp()
   }, [])
 
+  // Debug authentication state changes
+  useEffect(() => {
+    console.log('App component - Auth state changed:', {
+      isAuthenticated,
+      user: user?.name,
+      role: user?.role,
+      activeTab
+    });
+  }, [isAuthenticated, user, activeTab])
+
   // Show login form when not authenticated
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
         <LoginForm onLogin={() => {
-          console.log('Login callback triggered, setting tab to dashboard');
-          setActiveTab('dashboard');
+          console.log('Login callback triggered, navigating to dashboard');
+          navigateToDashboard();
         }} />
       </div>
     )

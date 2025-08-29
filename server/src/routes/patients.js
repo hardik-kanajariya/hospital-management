@@ -55,14 +55,11 @@ router.get('/', [
         res.json({
             success: true,
             data: {
-                patients,
-                pagination: {
-                    current_page: page,
-                    total_pages: totalPages,
-                    total_records: count,
-                    has_next: page < totalPages,
-                    has_prev: page > 1
-                }
+                data: patients,
+                total: count,
+                page: page,
+                limit: limit,
+                totalPages: totalPages
             }
         });
     } catch (error) {
@@ -90,7 +87,7 @@ router.get('/:id', async (req, res) => {
 
         res.json({
             success: true,
-            data: { patient }
+            data: patient
         });
     } catch (error) {
         console.error('Get patient error:', error);

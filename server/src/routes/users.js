@@ -59,14 +59,11 @@ router.get('/', [
         res.json({
             success: true,
             data: {
-                users,
-                pagination: {
-                    current_page: page,
-                    total_pages: totalPages,
-                    total_records: count,
-                    has_next: page < totalPages,
-                    has_prev: page > 1
-                }
+                data: users,
+                total: count,
+                page: page,
+                limit: limit,
+                totalPages: totalPages
             }
         });
     } catch (error) {

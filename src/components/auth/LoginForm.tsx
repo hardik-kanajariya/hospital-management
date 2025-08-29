@@ -28,13 +28,19 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
       return;
     }
 
-    const result = await login(email, password);
+    try {
+      const result = await login(email, password);
 
-    if (result.success) {
-      toast.success('Login successful!');
-      onLogin?.(); // Only call if onLogin is provided
-    } else {
-      toast.error(result.error || 'Login failed');
+      if (result.success) {
+        toast.success('Login successful! Redirecting...');
+        // Call the onLogin callback immediately
+        onLogin?.();
+      } else {
+        toast.error(result.error || 'Login failed');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('Login failed. Please try again.');
     }
   };
 
