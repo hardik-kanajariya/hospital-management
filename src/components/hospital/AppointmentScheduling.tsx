@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useKV } from '@/hooks/useLocalStorage'
+import { useKV, useNotifications, notificationService } from '@/lib'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -9,7 +9,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { CalendarIcon, CalendarPlusIcon, MagnifyingGlassIcon, ClockIcon, UserIcon, FileTextIcon } from '@phosphor-icons/react';
 import { toast } from 'sonner'
-import { useNotifications } from '@/hooks/useNotifications'
 import { Appointment, Patient } from '@/types/hospital'
 
 const doctors = [
@@ -45,7 +44,7 @@ export default function AppointmentScheduling() {
     type: 'consultation'
   })
   const [sendReminder, setSendReminder] = useState(true)
-  const { sendAppointmentReminder, isLoading: isNotificationLoading } = useNotifications()
+  const { addNotification } = useNotifications()
   const [todayAppointments, setTodayAppointments] = useKV<Appointment[]>('today-appointments', [])
 
   const [filterStatus, setFilterStatus] = useState('all')
@@ -132,7 +131,7 @@ export default function AppointmentScheduling() {
     // Send appointment reminder if enabled
     if (sendReminder) {
       const doctorName = formData.doctorId; // In a real app, you'd look up the doctor name
-      await sendAppointmentReminder(
+      await notificationService.sendAppointmentReminder(
         patient.phoneNumber,
         patient.email,
         {
@@ -142,6 +141,11 @@ export default function AppointmentScheduling() {
           patientName: `${patient.firstName} ${patient.lastName}`
         }
       );
+
+      addNotification({
+        message: `Appointment reminder sent to ${patient.firstName} ${patient.lastName}`,
+        type: 'success'
+      });
     }
 
     resetForm()

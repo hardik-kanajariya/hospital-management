@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNotifications } from '@/hooks/useNotifications';
+import { useNotifications, notificationService } from '@/lib';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,14 +23,15 @@ import {
 import { CircleAlert, Mail } from 'lucide-react';
 
 export default function NotificationCenter() {
-  const { 
-    notifications, 
-    isLoading, 
-    sendSMSNotification, 
-    sendEmailNotification,
-    getNotificationHistory 
+  const {
+    notifications,
+    addNotification,
+    markAsRead,
+    markAllAsRead,
+    clearNotifications
   } = useNotifications();
-  
+
+  const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     type: 'sms' as 'sms' | 'email',
@@ -47,21 +48,36 @@ export default function NotificationCenter() {
     }
 
     try {
-      if (formData.type === 'sms') {
-        await sendSMSNotification(
-          formData.recipient,
-          formData.message,
-          formData.templateType
-        );
-      } else {
-        await sendEmailNotification(
-          formData.recipient,
-          formData.subject || 'Hospital Notification',
-          formData.message,
-          formData.templateType
-        );
-      }
-      
+      setIsLoading(true);
+
+      // Use the notification service's send method
+      await notificationService.sendNotification({
+        template: 'system',
+        recipient: {
+          id: 'user',
+          type: 'patient',
+          phone: formData.type === 'sms' ? formData.recipient : undefined,
+          email: formData.type === 'email' ? formData.recipient : undefined,
+          name: 'User'
+        },
+        variables: {
+          message: formData.message,
+          subject: formData.subject || 'Hospital Notification'
+        },
+        deliveryMethods: formData.type === 'sms' ? ['sms'] : ['email']
+      });
+
+      addNotification({
+        message: `${formData.type.toUpperCase()} notification sent to ${formData.recipient}`,
+        type: 'success'
+      });
+
+      // Also add a notification about the sent message
+      addNotification({
+        message: `Message: "${formData.message.substring(0, 50)}${formData.message.length > 50 ? '...' : ''}"`,
+        type: 'info'
+      });
+
       setIsDialogOpen(false);
       setFormData({
         type: 'sms',
@@ -71,7 +87,14 @@ export default function NotificationCenter() {
         templateType: 'custom'
       });
     } catch (error) {
+      console.error('Failed to send notification:', error);
+      addNotification({
+        message: `Failed to send ${formData.type} notification`,
+        type: 'error'
+      });
       toast.error('Failed to send notification');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -101,7 +124,8 @@ export default function NotificationCenter() {
     }
   };
 
-  const notificationHistory = getNotificationHistory();
+  // Use current notifications as history for now
+  const notificationHistory = notifications;
 
   return (
     <div className="space-y-6">
@@ -110,7 +134,7 @@ export default function NotificationCenter() {
           <h2 className="text-2xl font-bold tracking-tight">Notification Center</h2>
           <p className="text-muted-foreground">Send and track SMS and email notifications</p>
         </div>
-        
+
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -129,9 +153,9 @@ export default function NotificationCenter() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Notification Type</Label>
-                <Select 
-                  value={formData.type} 
-                  onValueChange={(value) => setFormData({...formData, type: value as any})}
+                <Select
+                  value={formData.type}
+                  onValueChange={(value) => setFormData({ ...formData, type: value as any })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -147,7 +171,7 @@ export default function NotificationCenter() {
                       <div className="flex items-center gap-2">
                         <Mail className="w-4 h-4" />
                         Email
-                      </div>  
+                      </div>
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -158,7 +182,7 @@ export default function NotificationCenter() {
                 <Input
                   placeholder={formData.type === 'sms' ? 'Enter phone number' : 'Enter email address'}
                   value={formData.recipient}
-                  onChange={(e) => setFormData({...formData, recipient: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, recipient: e.target.value })}
                 />
               </div>
 
@@ -168,16 +192,16 @@ export default function NotificationCenter() {
                   <Input
                     placeholder="Enter email subject"
                     value={formData.subject}
-                    onChange={(e) => setFormData({...formData, subject: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                   />
                 </div>
               )}
 
               <div className="space-y-2">
                 <Label>Template Type</Label>
-                <Select 
-                  value={formData.templateType} 
-                  onValueChange={(value) => setFormData({...formData, templateType: value as any})}
+                <Select
+                  value={formData.templateType}
+                  onValueChange={(value) => setFormData({ ...formData, templateType: value as any })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -197,7 +221,7 @@ export default function NotificationCenter() {
                 <Textarea
                   placeholder="Enter your message"
                   value={formData.message}
-                  onChange={(e) => setFormData({...formData, message: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   rows={4}
                 />
                 <p className="text-xs text-muted-foreground">
@@ -229,7 +253,7 @@ export default function NotificationCenter() {
             <div className="text-2xl font-bold">{notifications.length}</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">SMS Sent</CardTitle>
@@ -237,11 +261,11 @@ export default function NotificationCenter() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {notifications.filter(n => n.type === 'sms').length}
+              {notifications.filter(n => n.title?.toLowerCase().includes('sms')).length}
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Emails Sent</CardTitle>
@@ -249,11 +273,11 @@ export default function NotificationCenter() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {notifications.filter(n => n.type === 'email').length}
+              {notifications.filter(n => n.title?.toLowerCase().includes('email')).length}
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
@@ -261,8 +285,8 @@ export default function NotificationCenter() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {notifications.length > 0 
-                ? Math.round((notifications.filter(n => n.status === 'sent').length / notifications.length) * 100)
+              {notifications.length > 0
+                ? Math.round((notifications.filter(n => n.type === 'success').length / notifications.length) * 100)
                 : 0}%
             </div>
           </CardContent>
@@ -272,10 +296,22 @@ export default function NotificationCenter() {
       {/* Notification History */}
       <Card>
         <CardHeader>
-          <CardTitle>Notification History</CardTitle>
-          <CardDescription>
-            Recent notifications sent to patients and staff
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Notification History</CardTitle>
+              <CardDescription>
+                Recent notifications sent to patients and staff
+              </CardDescription>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={markAllAsRead}>
+                Mark All Read
+              </Button>
+              <Button variant="outline" size="sm" onClick={clearNotifications}>
+                Clear All
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -292,35 +328,42 @@ export default function NotificationCenter() {
                 <div key={notification.id} className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors">
                   <div className="flex items-start gap-4">
                     <div className="flex items-center gap-2">
-                      {getTemplateIcon(notification.templateType)}
-                      {notification.type === 'sms' ? 
-                        <PhoneIcon className="w-4 h-4 text-blue-500" /> : 
+                      {/* Use notification type to determine icon */}
+                      {notification.type === 'success' && <CheckCircleIcon className="w-4 h-4 text-green-500" />}
+                      {notification.type === 'error' && <XCircleIcon className="w-4 h-4 text-red-500" />}
+                      {notification.type === 'warning' && <ClockIcon className="w-4 h-4 text-yellow-500" />}
+                      {notification.type === 'info' && <CircleAlert className="w-4 h-4 text-blue-500" />}
+
+                      {/* Determine if SMS or Email based on title/message content */}
+                      {(notification.title?.toLowerCase().includes('sms') || notification.message?.toLowerCase().includes('sms')) ?
+                        <PhoneIcon className="w-4 h-4 text-blue-500" /> :
                         <Mail className="w-4 h-4 text-green-500" />
                       }
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-3">
-                        <h3 className="font-medium">{notification.subject}</h3>
-                        <Badge variant={notification.status === 'sent' ? 'default' : 'secondary'}>
-                          {notification.status}
+                        <h3 className="font-medium">{notification.title}</h3>
+                        <Badge variant={notification.type === 'success' ? 'default' :
+                          notification.type === 'error' ? 'destructive' : 'secondary'}>
+                          {notification.type}
                         </Badge>
                         <Badge variant="outline">
-                          {notification.templateType.replace('_', ' ')}
+                          {notification.read ? 'Read' : 'Unread'}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        To: {notification.recipientId}
-                      </p>
                       <p className="text-sm text-muted-foreground line-clamp-2">
                         {notification.message}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(notification.sentAt || notification.scheduledAt).toLocaleString()}
+                        {new Date(notification.timestamp).toLocaleString()}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {getStatusIcon(notification.status)}
+                    {notification.read ?
+                      <CheckCircleIcon className="w-4 h-4 text-green-500" /> :
+                      <CircleAlert className="w-4 h-4 text-gray-500" />
+                    }
                   </div>
                 </div>
               ))

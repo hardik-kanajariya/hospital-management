@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useKV } from '@/hooks/useLocalStorage'
+import { useKV, useNotifications, notificationService } from '@/lib'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,7 +23,6 @@ import {
   CalculatorIcon,
 } from '@phosphor-icons/react';
 import { toast } from 'sonner'
-import { useNotifications } from '@/hooks/useNotifications'
 import { Bill, Patient, BillItem, InsuranceClaim } from '@/types/hospital'
 
 // Service items for quick billing
@@ -58,7 +57,7 @@ export default function EnhancedBillingSystem() {
   const [isViewBillDialogOpen, setIsViewBillDialogOpen] = useState(false)
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null)
   const [activeTab, setActiveTab] = useState('bills')
-  const { sendBillingReminder, isLoading: isNotificationLoading } = useNotifications()
+  const { addNotification } = useNotifications()
 
   // New bill state
   const [newBill, setNewBill] = useState({
@@ -181,13 +180,21 @@ export default function EnhancedBillingSystem() {
     setBills(prev => [...prev, bill])
 
     // Send payment reminder if enabled
-    await sendBillingReminder(
+    await notificationService.sendBillingReminder(
       patient.phoneNumber,
       patient.email,
       `${patient.firstName} ${patient.lastName}`,
-      totalAmount,
-      new Date(bill.dueDate).toLocaleDateString()
+      {
+        billNumber: bill.id,
+        amount: totalAmount,
+        dueDate: new Date(bill.dueDate).toLocaleDateString()
+      }
     )
+
+    addNotification({
+      message: `Payment reminder sent to ${patient.firstName} ${patient.lastName}`,
+      type: 'success'
+    });
 
     resetNewBill()
     setIsNewBillDialogOpen(false)

@@ -1,9 +1,6 @@
-import { useKV } from '@/hooks/useLocalStorage'
+import { useKV, useAuth, useNotifications, useConnectionStatus } from '@/lib'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { useAuth } from '@/hooks/useAuth'
-import { useNotifications } from '@/hooks/useNotifications'
-import { useConnectionStatus } from '@/hooks/useConnectionStatus'
 import ConnectionStatus from '@/components/common/SyncStatus'
 import { Patient, Appointment, Bill, InventoryItem } from '@/types/hospital'
 import {
@@ -20,13 +17,12 @@ import {
 
 export default function Dashboard() {
   const { user, hasPermission } = useAuth()
-  const { getNotificationHistory } = useNotifications()
+  const { notifications } = useNotifications()
   const [patients] = useKV<Patient[]>('hospital-patients', [])
   const [appointments] = useKV<Appointment[]>('hospital-appointments', [])
   const [bills] = useKV<Bill[]>('hospital-bills', [])
   const [inventory] = useKV<InventoryItem[]>('hospital-inventory', [])
 
-  const notifications = getNotificationHistory()
   const recentNotifications = notifications.slice(0, 5)
 
   // Calculate dashboard statistics
@@ -415,19 +411,19 @@ export default function Dashboard() {
                 recentNotifications.map((notification) => (
                   <div key={notification.id} className="flex items-start justify-between">
                     <div className="flex-1">
-                      <p className="text-sm font-medium">{notification.subject}</p>
+                      <p className="text-sm font-medium">{notification.title}</p>
                       <p className="text-xs text-muted-foreground line-clamp-2">
                         {notification.message}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(notification.scheduledAt).toLocaleDateString()}
+                        {new Date(notification.timestamp).toLocaleDateString()}
                       </p>
                     </div>
                     <Badge variant={
-                      notification.status === 'sent' ? 'default' :
-                        notification.status === 'failed' ? 'destructive' : 'secondary'
+                      notification.type === 'success' ? 'default' :
+                        notification.type === 'error' ? 'destructive' : 'secondary'
                     } className="text-xs">
-                      {notification.status}
+                      {notification.type}
                     </Badge>
                   </div>
                 ))

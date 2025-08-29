@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useKV } from '@/hooks/useLocalStorage'
+import { useKV } from '@/lib'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -683,7 +683,7 @@ export default function InventoryManagement() {
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {filteredInventory.map((item) => (
                       <Card key={item.id} className={`hover:shadow-md transition-shadow ${item.quantity <= item.reorderLevel ? 'border-destructive' :
-                          item.quantity === 0 ? 'border-destructive bg-destructive/5' : ''
+                        item.quantity === 0 ? 'border-destructive bg-destructive/5' : ''
                         }`}>
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between mb-3">
@@ -862,10 +862,10 @@ export default function InventoryManagement() {
                       <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center gap-4">
                           <div className={`w-10 h-10 rounded-full flex items-center justify-center ${transaction.type === 'purchase' ? 'bg-green-100 text-green-600' :
-                              transaction.type === 'issue' ? 'bg-blue-100 text-blue-600' :
-                                transaction.type === 'return' ? 'bg-yellow-100 text-yellow-600' :
-                                  transaction.type === 'expired' ? 'bg-red-100 text-red-600' :
-                                    'bg-gray-100 text-gray-600'
+                            transaction.type === 'issue' ? 'bg-blue-100 text-blue-600' :
+                              transaction.type === 'return' ? 'bg-yellow-100 text-yellow-600' :
+                                transaction.type === 'expired' ? 'bg-red-100 text-red-600' :
+                                  'bg-gray-100 text-gray-600'
                             }`}>
                             {transaction.type === 'purchase' ? '+' :
                               transaction.type === 'issue' ? '-' :

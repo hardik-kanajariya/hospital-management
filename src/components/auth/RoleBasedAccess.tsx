@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/lib';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ShieldIcon, LockIcon } from '@phosphor-icons/react';
 

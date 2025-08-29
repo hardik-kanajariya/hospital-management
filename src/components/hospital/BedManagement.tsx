@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useKV } from '@/hooks/useLocalStorage'
+import { useKV } from '@/lib'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -845,7 +845,7 @@ export default function BedManagement() {
                             <div>Procedure Charges: ₹{admission.charges.procedureCharges}</div>
                             <div>Other Charges: ₹{admission.charges.otherCharges}</div>
                             <div className="font-medium pt-1 border-t">
-                              Total: ₹{Object.values(admission.charges).reduce((sum, charge) => sum + charge, 0)}
+                              Total: ₹{Object.values(admission.charges).reduce((sum, charge) => sum + (typeof charge === 'number' ? charge : 0), 0)}
                             </div>
                           </div>
                         </div>

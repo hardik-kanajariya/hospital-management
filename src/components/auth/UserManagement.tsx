@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useKV } from '@/hooks/useLocalStorage';
+import { useKV } from '@/lib';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,8 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useAuth } from '@/hooks/useAuth';
-import { User, UserRole, Permission, ROLE_CONFIGS } from '@/types/auth';
+import { useAuth } from '@/lib';
+import { User, UserRole, Permission, Role, ROLE_CONFIGS } from '@/types/auth';
 import { toast } from 'sonner';
 import RoleBasedAccess from '@/components/auth/RoleBasedAccess';
 import {
@@ -31,7 +31,7 @@ export default function UserManagement() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState<Partial<User>>({
-    role: 'receptionist',
+    roleId: 'receptionist',
     isActive: true,
     permissions: []
   });
@@ -52,7 +52,7 @@ export default function UserManagement() {
   // Reset form
   const resetForm = () => {
     setFormData({
-      role: 'receptionist',
+      roleId: 'receptionist',
       isActive: true,
       permissions: []
     });
@@ -61,12 +61,34 @@ export default function UserManagement() {
   };
 
   // Handle role change
-  const handleRoleChange = (role: UserRole) => {
-    const roleConfig = ROLE_CONFIGS.find(r => r.role === role);
+  const handleRoleChange = (roleId: UserRole) => {
+    const roleConfig = ROLE_CONFIGS.find(r => r.role === roleId);
+    // Create a Role object for the new system
+    const roleObject: Role = {
+      id: roleId,
+      name: roleId,
+      displayName: roleConfig?.displayName || roleId,
+      accessLevel: roleConfig?.accessLevel || 1,
+      isActive: true,
+      isSystemRole: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
     setFormData({
       ...formData,
-      role,
-      permissions: roleConfig?.permissions || []
+      roleId,
+      role: roleObject,
+      permissions: roleConfig?.permissions.map(p => ({
+        id: crypto.randomUUID(),
+        name: `${p.module}_${p.actions.join('_')}`,
+        displayName: `${p.module} - ${p.actions.join(', ')}`,
+        module: p.module,
+        isActive: true,
+        actions: p.actions,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      })) || []
     });
   };
 
@@ -77,19 +99,32 @@ export default function UserManagement() {
 
     if (existingPermIndex >= 0) {
       const existingPerm = permissions[existingPermIndex];
-      if (existingPerm.actions.includes(action)) {
+      const actions = existingPerm.actions || [];
+      if (actions.includes(action)) {
         // Remove action
-        existingPerm.actions = existingPerm.actions.filter(a => a !== action);
-        if (existingPerm.actions.length === 0) {
+        const newActions = actions.filter(a => a !== action);
+        if (newActions.length === 0) {
           permissions.splice(existingPermIndex, 1);
+        } else {
+          existingPerm.actions = newActions;
         }
       } else {
         // Add action
-        existingPerm.actions.push(action);
+        existingPerm.actions = [...actions, action];
       }
     } else {
       // Create new permission
-      permissions.push({ module, actions: [action] });
+      const newPermission: Permission = {
+        id: crypto.randomUUID(),
+        name: `${module}_${action}`,
+        displayName: `${module} - ${action}`,
+        module,
+        isActive: true,
+        actions: [action],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      permissions.push(newPermission);
     }
 
     setFormData({ ...formData, permissions });
@@ -99,7 +134,7 @@ export default function UserManagement() {
   const hasModulePermission = (module: string, action: 'create' | 'read' | 'update' | 'delete'): boolean => {
     const permissions = formData.permissions || [];
     const modulePermission = permissions.find(p => p.module === module);
-    return modulePermission ? modulePermission.actions.includes(action) : false;
+    return modulePermission ? (modulePermission.actions?.includes(action) ?? false) : false;
   };
 
   // Handle add/edit user
@@ -120,7 +155,8 @@ export default function UserManagement() {
       id: selectedUser?.id || crypto.randomUUID(),
       email: formData.email!,
       name: formData.name!,
-      role: formData.role as UserRole,
+      role: formData.role, // This is now a Role object
+      roleId: formData.roleId,
       department: formData.department,
       isActive: formData.isActive ?? true,
       permissions: formData.permissions || [],
@@ -174,7 +210,7 @@ export default function UserManagement() {
   const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchTerm.toLowerCase())
+    (user.role?.name || user.roleId || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const modules = [
@@ -247,7 +283,7 @@ export default function UserManagement() {
                     <div className="space-y-2">
                       <Label htmlFor="role">Role *</Label>
                       <Select
-                        value={formData.role}
+                        value={formData.roleId}
                         onValueChange={(value) => handleRoleChange(value as UserRole)}
                       >
                         <SelectTrigger>
@@ -323,7 +359,7 @@ export default function UserManagement() {
                         <div className="flex items-center justify-between mb-3">
                           <h4 className="font-medium capitalize">{module.replace('_', ' ')}</h4>
                           <Badge variant="outline" className="text-xs">
-                            {formData.permissions?.find(p => p.module === module)?.actions.length || 0} permissions
+                            {formData.permissions?.find(p => p.module === module)?.actions?.length || 0} permissions
                           </Badge>
                         </div>
                         <div className="grid grid-cols-4 gap-2">
@@ -392,7 +428,7 @@ export default function UserManagement() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {users.filter(u => u.role === 'doctor').length}
+                {users.filter(u => u.role?.name === 'doctor' || u.roleId === 'doctor').length}
               </div>
             </CardContent>
           </Card>
@@ -404,7 +440,7 @@ export default function UserManagement() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {users.filter(u => u.role === 'super_admin').length}
+                {users.filter(u => u.role?.name === 'super_admin' || u.roleId === 'super_admin').length}
               </div>
             </CardContent>
           </Card>
@@ -430,7 +466,7 @@ export default function UserManagement() {
                 </div>
               ) : (
                 filteredUsers.map((user) => {
-                  const roleConfig = ROLE_CONFIGS.find(r => r.role === user.role);
+                  const roleConfig = ROLE_CONFIGS.find(r => r.role === (user.role?.name || user.roleId));
                   return (
                     <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors">
                       <div className="flex items-center gap-4">
@@ -444,7 +480,7 @@ export default function UserManagement() {
                               {user.isActive ? 'Active' : 'Inactive'}
                             </Badge>
                             <Badge variant="outline">
-                              {roleConfig?.displayName || user.role}
+                              {roleConfig?.displayName || user.role?.displayName || user.roleId}
                             </Badge>
                           </div>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -473,7 +509,10 @@ export default function UserManagement() {
                           size="sm"
                           onClick={() => {
                             setSelectedUser(user);
-                            setFormData(user);
+                            setFormData({
+                              ...user,
+                              roleId: user.role?.name || user.roleId || 'receptionist'
+                            });
                             setIsDialogOpen(true);
                           }}
                         >
