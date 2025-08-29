@@ -78,10 +78,16 @@ export default function SuperAdminUserManagement() {
         try {
             const response = await httpService.get('/users');
             if (response.success) {
-                setUsers(response.data);
+                // Handle paginated response - users are in response.data.data
+                const users = response.data.data || response.data || [];
+                setUsers(Array.isArray(users) ? users : []);
             }
         } catch (error) {
+            console.error('Error loading users:', error);
             toast.error('Failed to load users');
+            setUsers([]); // Ensure users is always an array
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -89,10 +95,13 @@ export default function SuperAdminUserManagement() {
         try {
             const response = await httpService.get('/roles');
             if (response.success) {
-                setRoles(response.data.filter((role: Role) => role.isActive));
+                const roles = response.data || [];
+                setRoles(Array.isArray(roles) ? roles.filter((role: Role) => role.isActive) : []);
             }
         } catch (error) {
+            console.error('Error loading roles:', error);
             toast.error('Failed to load roles');
+            setRoles([]); // Ensure roles is always an array
         } finally {
             setLoading(false);
         }
@@ -236,64 +245,72 @@ export default function SuperAdminUserManagement() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {users.map((user) => (
-                                <TableRow key={user.id}>
-                                    <TableCell>
-                                        <div className="flex items-center space-x-3">
-                                            <UserIcon className="h-8 w-8 text-muted-foreground" />
-                                            <div>
-                                                <div className="font-medium">{user.name}</div>
-                                                <div className="text-sm text-muted-foreground">
-                                                    {user.email}
+                            {Array.isArray(users) && users.length > 0 ? (
+                                users.map((user) => (
+                                    <TableRow key={user.id}>
+                                        <TableCell>
+                                            <div className="flex items-center space-x-3">
+                                                <UserIcon className="h-8 w-8 text-muted-foreground" />
+                                                <div>
+                                                    <div className="font-medium">{user.name}</div>
+                                                    <div className="text-sm text-muted-foreground">
+                                                        {user.email}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant="secondary">
-                                            {getRoleName(user)}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>{user.department || '-'}</TableCell>
-                                    <TableCell>{user.employeeId || '-'}</TableCell>
-                                    <TableCell>
-                                        <Badge variant={user.isActive ? "default" : "secondary"}>
-                                            {user.isActive ? "Active" : "Inactive"}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        {user.lastLogin
-                                            ? new Date(user.lastLogin).toLocaleDateString()
-                                            : 'Never'
-                                        }
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex space-x-2">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleViewUser(user)}
-                                            >
-                                                <EyeIcon className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleEditUser(user)}
-                                            >
-                                                <PencilIcon className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleDeleteUser(user)}
-                                            >
-                                                <TrashIcon className="h-4 w-4" />
-                                            </Button>
-                                        </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant="secondary">
+                                                {getRoleName(user)}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>{user.department || '-'}</TableCell>
+                                        <TableCell>{user.employeeId || '-'}</TableCell>
+                                        <TableCell>
+                                            <Badge variant={user.isActive ? "default" : "secondary"}>
+                                                {user.isActive ? "Active" : "Inactive"}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            {user.lastLogin
+                                                ? new Date(user.lastLogin).toLocaleDateString()
+                                                : 'Never'
+                                            }
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex space-x-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleViewUser(user)}
+                                                >
+                                                    <EyeIcon className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleEditUser(user)}
+                                                >
+                                                    <PencilIcon className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleDeleteUser(user)}
+                                                >
+                                                    <TrashIcon className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                                        {Array.isArray(users) ? 'No users found' : 'Loading users...'}
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            )}
                         </TableBody>
                     </Table>
                 </CardContent>
