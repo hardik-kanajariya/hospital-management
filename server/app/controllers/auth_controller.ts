@@ -171,13 +171,20 @@ export default class AuthController {
      */
     async logout({ auth, response }: HttpContext) {
         try {
-            const user = auth.getUserOrFail()
+            // Try to get the user, but don't fail if token is invalid/expired
+            const user = auth.user
             const token = auth.user?.currentAccessToken
 
-            if (token) {
-                await User.accessTokens.delete(user, token.identifier)
+            if (user && token) {
+                try {
+                    await User.accessTokens.delete(user, token.identifier)
+                } catch (tokenError) {
+                    // Log but don't fail - token might already be expired/invalid
+                    console.warn('Token deletion failed (may already be expired):', tokenError.message)
+                }
             }
 
+            // Always return success for logout - even if token was invalid
             return response.status(200).json({
                 success: true,
                 message: 'Logout successful'
@@ -185,11 +192,25 @@ export default class AuthController {
 
         } catch (error) {
             console.error('Logout error:', error)
-            return response.status(500).json({
-                success: false,
-                message: 'Server error during logout'
+            // For logout, we should still return success even if there's an error
+            // The client should clear their local token regardless
+            return response.status(200).json({
+                success: true,
+                message: 'Logout completed (token may have been expired)'
             })
         }
+    }
+
+    /**
+     * Force logout (for expired tokens) - doesn't require authentication
+     */
+    async logoutForce({ response }: HttpContext) {
+        // This endpoint doesn't require authentication
+        // Client should use this when the regular logout fails due to expired token
+        return response.status(200).json({
+            success: true,
+            message: 'Force logout successful - please clear local storage'
+        })
     }
 
     /**

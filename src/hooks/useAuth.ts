@@ -156,9 +156,13 @@ export function useAuth() {
       // Call logout endpoint if online
       if (navigator.onLine) {
         await httpService.logout();
+        console.log('Server logout successful');
+      } else {
+        console.log('Offline - performing client-side logout only');
       }
     } catch (error) {
       console.warn('Logout request failed:', error);
+      // Don't throw error - logout should always succeed locally
     } finally {
       // Always clear local data
       clearUserData();

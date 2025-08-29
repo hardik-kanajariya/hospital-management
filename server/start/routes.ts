@@ -39,6 +39,8 @@ router.group(() => {
     router.post('/login', '#controllers/auth_controller.login')
     router.post('/register', '#controllers/auth_controller.register')
     router.post('/refresh', '#controllers/auth_controller.refresh')
+    // Add unprotected logout route for expired tokens
+    router.post('/logout-force', '#controllers/auth_controller.logoutForce')
     router.get('/verify', '#controllers/auth_controller.verify').use(middleware.auth())
   }).prefix('/auth')
 

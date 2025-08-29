@@ -227,9 +227,17 @@ class HttpService {
      */
     async logout(): Promise<void> {
         try {
+            // Try normal logout first
             await this.post('/auth/logout', {});
         } catch (error) {
-            console.warn('Logout request failed:', error);
+            console.warn('Normal logout failed (likely expired token), trying force logout:', error);
+            try {
+                // Try force logout if normal logout fails
+                await this.post('/auth/logout-force', {});
+            } catch (forceLogoutError) {
+                console.warn('Force logout also failed, proceeding with client cleanup:', forceLogoutError);
+                // Even if both fail, we'll still clear the token locally
+            }
         } finally {
             this.clearToken();
         }
