@@ -92,13 +92,22 @@ npm run db:seed
 
 5. **Start the application**
 ```bash
-# Development mode
-npm run dev
+# Start both frontend and backend together (Recommended)
+npm start
+
+# Alternative: Start individually
+npm run dev          # Frontend only
+npm run server:dev   # Backend only
 
 # Production mode
-npm run build
-npm run start
+npm run build:full
+npm run server:start
 ```
+
+**Quick Start Options:**
+- **Windows**: Double-click `start.bat`
+- **Mac/Linux**: Run `./start.sh` or `bash start.sh`
+- **Command Line**: Run `npm start`
 
 6. **Access the application**
 - Open your browser and go to `http://localhost:3000`

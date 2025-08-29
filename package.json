@@ -14,7 +14,10 @@
         "server:dev": "cd server && npm run dev",
         "server:start": "cd server && npm start",
         "server:seed": "cd server && npm run seed",
-        "dev:full": "concurrently \"npm run dev\" \"npm run server:dev\""
+        "start": "concurrently --names \"CLIENT,SERVER\" --prefix-colors \"cyan,yellow\" \"npm run dev\" \"npm run server:dev\"",
+        "dev:full": "npm run start",
+        "build:full": "npm run build && cd server && npm run build",
+        "setup": "npm install && npm run server:install"
     },
     "dependencies": {
         "@heroicons/react": "^2.2.0",
