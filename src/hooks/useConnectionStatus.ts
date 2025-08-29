@@ -1,202 +1,142 @@
-/**
- * Enhanced Connection Status Hook
- * Monitors internet connectivity and server health with automatic retry
- */
-
-import { useEffect, useCallback } from 'react';
-import { useConnection } from '../lib/store';
+import { useState, useEffect, useCallback } from 'react';
 import { httpService } from '@/services/HttpService';
+import { toast } from 'sonner';
+import { useAuth } from './useAuth';
 
-export interface ConnectionStatus {
+interface ConnectionState {
     isOnline: boolean;
-    isServerReachable: boolean;
-    lastSyncTime: Date | null;
-    syncInProgress: boolean;
-    offlineActionsCount: number;
-    connectionState: 'online' | 'offline' | 'server-unreachable' | 'syncing';
+    isConnected: boolean;
+    checking: boolean;
+    lastCheck: Date | null;
+    error: string | null;
 }
 
-export function useConnectionStatus(): {
-    connectionState: ConnectionStatus;
-    checkConnection: () => Promise<boolean>;
-    syncOfflineActions: () => Promise<void>;
-    forceSync: () => Promise<void>;
-} {
-    const {
-        isOnline,
-        isServerReachable,
-        lastSyncTime,
-        syncInProgress,
-        offlineActions,
-        setServerReachable,
-        setLastSyncTime,
-        setSyncInProgress,
-        clearOfflineActions,
-    } = useConnection();
+interface ConnectionHook {
+    connectionState: ConnectionState;
+    checkConnection: () => Promise<void>;
+    clearError: () => void;
+}
 
-    // Determine overall connection state
-    const getConnectionState = useCallback((): ConnectionStatus['connectionState'] => {
-        if (syncInProgress) return 'syncing';
-        if (!isOnline) return 'offline';
-        if (!isServerReachable) return 'server-unreachable';
-        return 'online';
-    }, [isOnline, isServerReachable, syncInProgress]);
+export function useConnectionStatus(): ConnectionHook {
+    const { user } = useAuth();
+    const [connectionState, setConnectionState] = useState<ConnectionState>({
+        isOnline: navigator.onLine,
+        isConnected: false,
+        checking: false,
+        lastCheck: null,
+        error: null
+    });
 
-    // Check server health
-    const checkConnection = useCallback(async (): Promise<boolean> => {
-        if (!isOnline) {
-            setServerReachable(false);
-            return false;
-        }
-
+    // Check server connectivity
+    const checkServerConnection = useCallback(async () => {
         try {
             const isHealthy = await httpService.checkHealth();
-            setServerReachable(isHealthy);
-
-            if (isHealthy) {
-                setLastSyncTime(new Date());
-            }
-
+            setConnectionState(prev => ({
+                ...prev,
+                isConnected: isHealthy,
+                lastCheck: new Date(),
+                error: isHealthy ? null : 'Server is not responding'
+            }));
             return isHealthy;
         } catch (error) {
-            console.error('Connection check failed:', error);
-            setServerReachable(false);
+            const errorMessage = error instanceof Error ? error.message : 'Connection check failed';
+            setConnectionState(prev => ({
+                ...prev,
+                isConnected: false,
+                lastCheck: new Date(),
+                error: errorMessage
+            }));
             return false;
         }
-    }, [isOnline, setServerReachable, setLastSyncTime]);
+    }, []);
 
-    // Sync offline actions when connection is restored
-    const syncOfflineActions = useCallback(async (): Promise<void> => {
-        if (!isOnline || !isServerReachable || offlineActions.length === 0) {
+    // Manual connection check
+    const checkConnection = useCallback(async () => {
+        if (!navigator.onLine) {
+            toast.error('No internet connection');
             return;
         }
 
-        setSyncInProgress(true);
+        setConnectionState(prev => ({ ...prev, checking: true, error: null }));
 
         try {
-            console.log(`Syncing ${offlineActions.length} offline actions...`);
+            const isConnected = await checkServerConnection();
 
-            // Process offline actions
-            for (const action of offlineActions) {
-                try {
-                    switch (action.type) {
-                        case 'CREATE':
-                            await httpService.post(action.endpoint, action.data);
-                            break;
-                        case 'UPDATE':
-                            await httpService.put(`${action.endpoint}/${action.id}`, action.data);
-                            break;
-                        case 'DELETE':
-                            await httpService.delete(`${action.endpoint}/${action.id}`);
-                            break;
-                        case 'CREATE_NOTIFICATION':
-                            await httpService.post('/notifications', action.data);
-                            break;
-                        default:
-                            console.warn('Unknown offline action type:', action.type);
-                    }
-                } catch (error) {
-                    console.error('Failed to sync offline action:', action, error);
-                    // Continue with other actions even if one fails
-                }
+            if (isConnected) {
+                toast.success('Connection verified');
+            } else {
+                toast.error('Server is not responding');
+            }
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Connection check failed';
+            toast.error(`Connection check failed: ${errorMessage}`);
+        } finally {
+            setConnectionState(prev => ({ ...prev, checking: false }));
+        }
+    }, [checkServerConnection]);
+
+    // Handle online/offline events
+    useEffect(() => {
+        const handleOnline = () => {
+            setConnectionState(prev => ({ ...prev, isOnline: true }));
+
+            // Show notification to relevant users
+            if (user?.role?.name === 'super_admin' || user?.role?.name === 'receptionist') {
+                toast.success('Internet connection restored');
             }
 
-            // Clear successfully synced actions
-            clearOfflineActions();
-            setLastSyncTime(new Date());
-
-            console.log('Offline actions synced successfully');
-        } catch (error) {
-            console.error('Failed to sync offline actions:', error);
-        } finally {
-            setSyncInProgress(false);
-        }
-    }, [
-        isOnline,
-        isServerReachable,
-        offlineActions,
-        setSyncInProgress,
-        clearOfflineActions,
-        setLastSyncTime
-    ]);
-
-    // Force sync - check connection and sync if available
-    const forceSync = useCallback(async (): Promise<void> => {
-        const isConnected = await checkConnection();
-        if (isConnected) {
-            await syncOfflineActions();
-        }
-    }, [checkConnection, syncOfflineActions]);
-
-    // Set up periodic health checks
-    useEffect(() => {
-        // Initial connection check
-        checkConnection();
-
-        // Set up periodic health checks every 30 seconds
-        const healthCheckInterval = setInterval(checkConnection, 30000);
-
-        // Set up online/offline event listeners
-        const handleOnline = () => {
-            console.log('Network connection restored');
-            // Wait a bit for the connection to stabilize
-            setTimeout(async () => {
-                const isConnected = await checkConnection();
-                if (isConnected) {
-                    await syncOfflineActions();
-                }
-            }, 1000);
+            // Check server connection when back online
+            checkServerConnection();
         };
 
         const handleOffline = () => {
-            console.log('Network connection lost');
-            setServerReachable(false);
+            setConnectionState(prev => ({
+                ...prev,
+                isOnline: false,
+                isConnected: false,
+                checking: false
+            }));
+
+            // Show offline notification
+            toast.error('Internet connection lost');
         };
 
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
 
-        // Cleanup
         return () => {
-            clearInterval(healthCheckInterval);
             window.removeEventListener('online', handleOnline);
             window.removeEventListener('offline', handleOffline);
         };
-    }, [checkConnection, syncOfflineActions, setServerReachable]);
+    }, [checkServerConnection, user?.role]);
 
-    // Auto-sync when connection is restored
+    // Initial connection check (only if user is authenticated)
     useEffect(() => {
-        if (isOnline && isServerReachable && offlineActions.length > 0 && !syncInProgress) {
-            // Debounce sync attempts
-            const syncTimeout = setTimeout(syncOfflineActions, 2000);
-            return () => clearTimeout(syncTimeout);
+        if (navigator.onLine && user) {
+            checkServerConnection();
         }
-    }, [isOnline, isServerReachable, offlineActions.length, syncInProgress, syncOfflineActions]);
+    }, [checkServerConnection, user]);
 
-    const connectionState: ConnectionStatus = {
-        isOnline,
-        isServerReachable,
-        lastSyncTime,
-        syncInProgress,
-        offlineActionsCount: offlineActions.length,
-        connectionState: getConnectionState(),
-    };
+    // Periodic connection check (every 5 minutes, only if user is authenticated)
+    useEffect(() => {
+        if (!user) return; // Don't check if not authenticated
+
+        const interval = setInterval(() => {
+            if (navigator.onLine) {
+                checkServerConnection();
+            }
+        }, 300000); // 5 minutes instead of 2
+
+        return () => clearInterval(interval);
+    }, [checkServerConnection, user]);
+
+    const clearError = useCallback(() => {
+        setConnectionState(prev => ({ ...prev, error: null }));
+    }, []);
 
     return {
         connectionState,
         checkConnection,
-        syncOfflineActions,
-        forceSync,
-    };
-}
-
-// Export a simplified version for backward compatibility
-export function useConnectionSimple() {
-    const { connectionState } = useConnectionStatus();
-
-    return {
-        isOnline: connectionState.isOnline,
-        isConnected: connectionState.isOnline && connectionState.isServerReachable,
-        connectionState: connectionState.connectionState,
+        clearError
     };
 }
