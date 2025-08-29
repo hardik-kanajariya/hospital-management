@@ -20,6 +20,7 @@ import inventoryRoutes from './routes/inventory.js';
 import labRoutes from './routes/lab.js';
 import bedRoutes from './routes/beds.js';
 import dashboardRoutes from './routes/dashboard.js';
+import notificationRoutes from './routes/notifications.js';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler.js';
@@ -87,6 +88,7 @@ app.use('/api/billing', authMiddleware, billingRoutes);
 app.use('/api/inventory', authMiddleware, inventoryRoutes);
 app.use('/api/lab', authMiddleware, labRoutes);
 app.use('/api/beds', authMiddleware, bedRoutes);
+app.use('/api/notifications', authMiddleware, notificationRoutes);
 app.use('/api/dashboard', authMiddleware, dashboardRoutes);
 
 // Socket.IO for real-time features
