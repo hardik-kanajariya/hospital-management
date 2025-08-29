@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useConnectionStatus } from '@/hooks/useConnectionStatus';
+import { useAuth } from '@/hooks/useAuth';
 import {
   ArrowClockwiseIcon,
   CheckCircleIcon,
@@ -9,7 +10,6 @@ import {
   WifiSlashIcon,
   WarningIcon
 } from '@phosphor-icons/react';
-import { useAuth } from '@/lib';
 
 interface ConnectionStatusProps {
   onCheck?: () => void;
@@ -22,28 +22,28 @@ export default function ConnectionStatus({ onCheck, className }: ConnectionStatu
   const { user } = useAuth();
 
   // Only show to admin and receptionist roles
-  if (!user || (user?.role?.name !== 'super_admin' && user?.role?.name !== 'receptionist')) {
+  if (user?.role?.name !== 'super_admin' && user?.role?.name !== 'receptionist') {
     return null;
   }
 
   const getStatusColor = () => {
     if (!connectionState.isOnline) return 'text-red-600 border-red-600';
-    if (connectionState.syncInProgress) return 'text-blue-600 border-blue-600';
-    if (connectionState.isServerReachable) return 'text-green-600 border-green-600';
+    if (connectionState.checking) return 'text-blue-600 border-blue-600';
+    if (connectionState.isConnected) return 'text-green-600 border-green-600';
     return 'text-orange-600 border-orange-600';
   };
 
   const getStatusIcon = () => {
     if (!connectionState.isOnline) return <WifiSlashIcon className="w-3 h-3 mr-1" />;
-    if (connectionState.syncInProgress) return <ArrowClockwiseIcon className="w-3 h-3 mr-1 animate-spin" />;
-    if (connectionState.isServerReachable) return <CheckCircleIcon className="w-3 h-3 mr-1" />;
+    if (connectionState.checking) return <ArrowClockwiseIcon className="w-3 h-3 mr-1 animate-spin" />;
+    if (connectionState.isConnected) return <CheckCircleIcon className="w-3 h-3 mr-1" />;
     return <WarningIcon className="w-3 h-3 mr-1" />;
   };
 
   const getStatusText = () => {
     if (!connectionState.isOnline) return 'Offline';
-    if (connectionState.syncInProgress) return 'Syncing...';
-    if (connectionState.isServerReachable) return 'Connected';
+    if (connectionState.checking) return 'Checking...';
+    if (connectionState.isConnected) return 'Connected';
     return 'Server Issue';
   };
 
@@ -62,9 +62,9 @@ export default function ConnectionStatus({ onCheck, className }: ConnectionStatu
         {getStatusText()}
       </Badge>
 
-      {connectionState.lastSyncTime && (
+      {connectionState.lastCheck && (
         <span className="text-xs text-muted-foreground">
-          Last: {connectionState.lastSyncTime.toLocaleTimeString()}
+          Last: {connectionState.lastCheck.toLocaleTimeString()}
         </span>
       )}
 
@@ -73,9 +73,9 @@ export default function ConnectionStatus({ onCheck, className }: ConnectionStatu
           size="sm"
           variant="outline"
           onClick={handleCheck}
-          disabled={connectionState.syncInProgress}
+          disabled={connectionState.checking}
         >
-          {connectionState.syncInProgress ? 'Syncing...' : 'Test Connection'}
+          {connectionState.checking ? 'Checking...' : 'Test Connection'}
         </Button>
       )}
     </div>
@@ -88,7 +88,7 @@ export function ConnectionStatusCard() {
   const { user } = useAuth();
 
   // Only show to admin and receptionist roles
-  if (!user || (user?.role?.name !== 'super_admin' && user?.role?.name !== 'receptionist')) {
+  if (user?.role?.name !== 'super_admin' && user?.role?.name !== 'receptionist') {
     return null;
   }
 
@@ -96,7 +96,7 @@ export function ConnectionStatusCard() {
     <Card className="w-full max-w-md">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-sm">
-          {connectionState.isOnline && connectionState.isServerReachable ? (
+          {connectionState.isOnline && connectionState.isConnected ? (
             <CloudArrowUpIcon className="w-4 h-4 text-green-600" />
           ) : (
             <WifiSlashIcon className="w-4 h-4 text-orange-600" />
@@ -114,39 +114,37 @@ export function ConnectionStatusCard() {
 
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">Server</span>
-          <Badge variant={connectionState.isServerReachable ? 'default' : 'secondary'}>
-            {connectionState.isServerReachable ? 'Available' : 'Unavailable'}
+          <Badge variant={connectionState.isConnected ? 'default' : 'secondary'}>
+            {connectionState.isConnected ? 'Available' : 'Unavailable'}
           </Badge>
         </div>
 
-        {connectionState.lastSyncTime && (
+        {connectionState.lastCheck && (
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Last Sync</span>
+            <span className="text-sm text-muted-foreground">Last Check</span>
             <span className="text-xs text-muted-foreground">
-              {connectionState.lastSyncTime.toLocaleTimeString()}
+              {connectionState.lastCheck.toLocaleTimeString()}
             </span>
           </div>
         )}
 
-        {connectionState.offlineActionsCount > 0 && (
-          <div className="p-2 bg-orange-50 border border-orange-200 rounded-md">
-            <p className="text-xs text-orange-600">
-              {connectionState.offlineActionsCount} actions pending sync
-            </p>
+        {connectionState.error && (
+          <div className="p-2 bg-destructive/10 border border-destructive/20 rounded-md">
+            <p className="text-xs text-destructive">{connectionState.error}</p>
           </div>
         )}
 
         {connectionState.isOnline && (
           <Button
             onClick={checkConnection}
-            disabled={connectionState.syncInProgress}
+            disabled={connectionState.checking}
             size="sm"
             className="w-full"
           >
-            {connectionState.syncInProgress ? (
+            {connectionState.checking ? (
               <>
                 <ArrowClockwiseIcon className="w-4 h-4 mr-2 animate-spin" />
-                Syncing...
+                Testing...
               </>
             ) : (
               <>

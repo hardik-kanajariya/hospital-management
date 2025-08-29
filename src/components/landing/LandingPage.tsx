@@ -4,70 +4,70 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
-  HeartIcon,
-  UsersIcon,
-  CalendarIcon,
-  FileTextIcon,
-  CreditCardIcon,
-  PackageIcon,
-  PulseIcon,
-  TestTubeIcon,
-  BedIcon,
-  ShieldIcon,
-  CheckCircleIcon,
-  StarIcon,
-  GlobeIcon,
-  WifiHighIcon,
-  DatabaseIcon,
-  ClockIcon,
-  MedalIcon,
-  LightningIcon,
-  PhoneCallIcon,
-  EnvelopeIcon,
-  ArrowRightIcon,
-  DownloadIcon,
-  PlayIcon
+  Heart,
+  Users,
+  Calendar,
+  FileText,
+  CreditCard,
+  Package,
+  Pulse,
+  TestTube,
+  Bed,
+  Shield,
+  CheckCircle,
+  Star,
+  Globe,
+  WifiHigh,
+  Database,
+  Clock,
+  Medal,
+  Lightning,
+  PhoneCall,
+  Envelope,
+  ArrowRight,
+  Download,
+  Play
 } from '@phosphor-icons/react'
 
 export default function LandingPage() {
   const features = [
     {
-      icon: UsersIcon,
+      icon: Users,
       title: 'Patient Management',
       description: 'Complete patient records with vaccination tracking and chronic conditions monitoring'
     },
     {
-      icon: CalendarIcon,
+      icon: Calendar,
       title: 'Appointment Scheduling',
       description: 'Smart scheduling with doctor availability and automated SMS reminders'
     },
     {
-      icon: FileTextIcon,
+      icon: FileText,
       title: 'Medical Records',
       description: 'Electronic health records with consultation notes and prescription management'
     },
     {
-      icon: CreditCardIcon,
+      icon: CreditCard,
       title: 'Billing & Insurance',
       description: 'Automated billing with insurance claim processing and financial reporting'
     },
     {
-      icon: PackageIcon,
+      icon: Package,
       title: 'Inventory Management',
       description: 'Medicine and medical supplies tracking with expiry date monitoring'
     },
     {
-      icon: TestTubeIcon,
+      icon: TestTube,
       title: 'Laboratory Management',
       description: 'Test ordering, result tracking, and comprehensive report generation'
     },
     {
-      icon: BedIcon,
+      icon: Bed,
       title: 'Bed Management',
       description: 'Real-time bed availability and patient admission tracking'
     },
     {
-      icon: ShieldIcon,
+      icon: Shield,
       title: 'Role-Based Security',
       description: 'Multi-level access control for different hospital staff roles'
     }
@@ -75,22 +75,22 @@ export default function LandingPage() {
 
   const benefits = [
     {
-      icon: WifiHighIcon,
+      icon: WifiHigh,
       title: 'Offline-First Design',
       description: 'Works without internet connection with automatic sync when online'
     },
     {
-      icon: GlobeIcon,
+      icon: Globe,
       title: 'Multi-Language Support',
       description: 'Built-in support for Hindi, English, and regional languages'
     },
     {
-      icon: DatabaseIcon,
+      icon: Database,
       title: 'Secure Database',
       description: 'MySQL database with encrypted data storage and HIPAA compliance'
     },
     {
-      icon: ClockIcon,
+      icon: Clock,
       title: '24/7 Availability',
       description: 'Round-the-clock system availability with reliable uptime'
     }
@@ -181,7 +181,7 @@ export default function LandingPage() {
           <div className="text-center text-white">
             <div className="flex items-center justify-center mb-6">
               <div className="flex items-center justify-center w-16 h-16 bg-white text-blue-600 rounded-2xl mr-4">
-                <HeartIcon className="w-10 h-10" weight="fill" />
+                <Heart className="w-10 h-10" weight="fill" />
               </div>
               <div className="text-left">
                 <h1 className="text-5xl font-bold mb-2">MedCare Rural</h1>
@@ -201,19 +201,19 @@ export default function LandingPage() {
 
             <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
               <Badge variant="secondary" className="bg-white/20 text-white border-white/30 px-4 py-2">
-                <LightningIcon className="w-4 h-4 mr-2" />
+                <Lightning className="w-4 h-4 mr-2" />
                 Offline-First Design
               </Badge>
               <Badge variant="secondary" className="bg-white/20 text-white border-white/30 px-4 py-2">
-                <DatabaseIcon className="w-4 h-4 mr-2" />
+                <Database className="w-4 h-4 mr-2" />
                 MySQL Database
               </Badge>
               <Badge variant="secondary" className="bg-white/20 text-white border-white/30 px-4 py-2">
-                <ShieldIcon className="w-4 h-4 mr-2" />
+                <Shield className="w-4 h-4 mr-2" />
                 HIPAA Compliant
               </Badge>
               <Badge variant="secondary" className="bg-white/20 text-white border-white/30 px-4 py-2">
-                <MedalIcon className="w-4 h-4 mr-2" />
+                <Medal className="w-4 h-4 mr-2" />
                 Premium Software
               </Badge>
             </div>
@@ -221,12 +221,12 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button size="lg" asChild className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg">
                 <Link to="/login">
-                  <DownloadIcon className="w-5 h-5 mr-2" />
+                  <Download className="w-5 h-5 mr-2" />
                   Get Demo Access
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-lg">
-                <PlayIcon className="w-5 h-5 mr-2" />
+                <Play className="w-5 h-5 mr-2" />
                 Watch Demo Video
               </Button>
             </div>
@@ -304,7 +304,7 @@ export default function LandingPage() {
                 <CardContent className="p-8">
                   <div className="flex items-center mb-4">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <StarIcon key={i} className="w-5 h-5 text-yellow-400" weight="fill" />
+                      <Star key={i} className="w-5 h-5 text-yellow-400" weight="fill" />
                     ))}
                   </div>
                   <p className="text-gray-600 mb-6 italic">"{testimonial.content}"</p>
@@ -348,7 +348,7 @@ export default function LandingPage() {
                   <ul className="space-y-3 mb-8">
                     {plan.features.map((feature, featureIndex) => (
                       <li key={featureIndex} className="flex items-center">
-                        <CheckCircleIcon className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
+                        <CheckCircle className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
                         <span className="text-gray-700">{feature}</span>
                       </li>
                     ))}
@@ -356,7 +356,7 @@ export default function LandingPage() {
                   <Button className={`w-full ${plan.popular ? 'bg-blue-600 hover:bg-blue-700' : ''}`} size="lg" asChild>
                     <Link to="/login">
                       {plan.price === 'Custom' ? 'Contact Sales' : 'Get Started'}
-                      <ArrowRightIcon className="w-4 h-4 ml-2" />
+                      <ArrowRight className="w-4 h-4 ml-2" />
                     </Link>
                   </Button>
                 </CardContent>
@@ -376,13 +376,13 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button size="lg" asChild className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg">
               <Link to="/login">
-                <PhoneCallIcon className="w-5 h-5 mr-2" />
+                <PhoneCall className="w-5 h-5 mr-2" />
                 Schedule Demo Call
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-lg">
               <Link to="/login">
-                <EnvelopeIcon className="w-5 h-5 mr-2" />
+                <Envelope className="w-5 h-5 mr-2" />
                 Request Quote
               </Link>
             </Button>
@@ -396,7 +396,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center mb-4">
-                <HeartIcon className="w-8 h-8 text-blue-400 mr-2" weight="fill" />
+                <Heart className="w-8 h-8 text-blue-400 mr-2" weight="fill" />
                 <span className="text-xl font-bold">MedCare Rural</span>
               </div>
               <p className="text-gray-400">
