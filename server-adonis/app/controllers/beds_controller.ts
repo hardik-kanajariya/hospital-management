@@ -113,7 +113,7 @@ export default class BedsController {
             bed.floor = payload.floor
             bed.features = payload.features || []
             bed.dailyRate = payload.dailyRate
-            bed.notes = payload.notes
+            bed.notes = payload.notes || null
 
             await bed.save()
 

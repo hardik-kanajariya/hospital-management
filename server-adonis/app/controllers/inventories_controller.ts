@@ -1,4 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
+import { DateTime } from 'luxon'
 import Inventory from '#models/inventory'
 import { v4 as uuid } from 'uuid'
 import { inventoryValidator, updateInventoryValidator } from '#validators/inventory'
@@ -96,17 +97,17 @@ export default class InventoriesController {
             inventoryItem.id = uuid()
             inventoryItem.itemId = itemId
             inventoryItem.name = payload.name
-            inventoryItem.description = payload.description
+            inventoryItem.description = payload.description || null
             inventoryItem.category = payload.category
-            inventoryItem.manufacturer = payload.manufacturer
-            inventoryItem.batchNumber = payload.batchNumber
+            inventoryItem.manufacturer = payload.manufacturer || null
+            inventoryItem.batchNumber = payload.batchNumber || null
             inventoryItem.unitPrice = payload.unitPrice
             inventoryItem.quantityInStock = payload.quantityInStock
             inventoryItem.minimumStockLevel = payload.minimumStockLevel
             inventoryItem.unit = payload.unit
-            inventoryItem.supplierInfo = payload.supplierInfo
-            inventoryItem.expiryDate = payload.expiryDate
-            inventoryItem.location = payload.location
+            inventoryItem.supplierInfo = payload.supplierInfo || null
+            inventoryItem.expiryDate = payload.expiryDate ? DateTime.fromJSDate(payload.expiryDate) : null
+            inventoryItem.location = payload.location || null
             inventoryItem.status = payload.status || 'active'
 
             await inventoryItem.save()
@@ -142,7 +143,20 @@ export default class InventoriesController {
 
             const payload = await request.validateUsing(updateInventoryValidator)
 
-            inventoryItem.merge(payload)
+            if (payload.name !== undefined) inventoryItem.name = payload.name
+            if (payload.description !== undefined) inventoryItem.description = payload.description || null
+            if (payload.category !== undefined) inventoryItem.category = payload.category
+            if (payload.manufacturer !== undefined) inventoryItem.manufacturer = payload.manufacturer || null
+            if (payload.batchNumber !== undefined) inventoryItem.batchNumber = payload.batchNumber || null
+            if (payload.unitPrice !== undefined) inventoryItem.unitPrice = payload.unitPrice
+            if (payload.quantityInStock !== undefined) inventoryItem.quantityInStock = payload.quantityInStock
+            if (payload.minimumStockLevel !== undefined) inventoryItem.minimumStockLevel = payload.minimumStockLevel
+            if (payload.unit !== undefined) inventoryItem.unit = payload.unit
+            if (payload.supplierInfo !== undefined) inventoryItem.supplierInfo = payload.supplierInfo || null
+            if (payload.expiryDate !== undefined) inventoryItem.expiryDate = payload.expiryDate ? DateTime.fromJSDate(payload.expiryDate) : null
+            if (payload.location !== undefined) inventoryItem.location = payload.location || null
+            if (payload.status !== undefined) inventoryItem.status = payload.status
+
             await inventoryItem.save()
 
             return response.status(200).json({

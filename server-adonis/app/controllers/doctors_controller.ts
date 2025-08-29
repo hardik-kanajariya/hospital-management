@@ -107,7 +107,7 @@ export default class DoctorsController {
             doctor.department = payload.department
             doctor.availableDays = payload.availableDays || []
             doctor.availableHours = payload.availableHours || {}
-            doctor.consultationFee = payload.consultationFee
+            doctor.consultationFee = payload.consultationFee || 0
             doctor.isAvailable = payload.isAvailable ?? true
 
             await doctor.save()

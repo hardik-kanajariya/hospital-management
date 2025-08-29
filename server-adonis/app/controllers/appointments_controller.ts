@@ -125,14 +125,14 @@ export default class AppointmentsController {
             appointment.appointmentId = appointmentId
             appointment.patientId = payload.patientId
             appointment.doctorId = payload.doctorId
-            appointment.appointmentDate = payload.appointmentDate
-            appointment.appointmentTime = payload.appointmentTime
+            appointment.appointmentDate = DateTime.fromJSDate(payload.appointmentDate)
+            appointment.appointmentTime = DateTime.fromJSDate(payload.appointmentTime)
             appointment.duration = payload.duration || 30
             appointment.type = payload.type
             appointment.status = payload.status || 'scheduled'
             appointment.priority = payload.priority || 'normal'
             appointment.reason = payload.reason
-            appointment.notes = payload.notes
+            appointment.notes = payload.notes || null
             appointment.symptoms = payload.symptoms || []
             appointment.vitals = payload.vitals || {}
 
@@ -173,7 +173,18 @@ export default class AppointmentsController {
 
             const payload = await request.validateUsing(updateAppointmentValidator)
 
-            appointment.merge(payload)
+            if (payload.appointmentDate !== undefined) appointment.appointmentDate = DateTime.fromJSDate(payload.appointmentDate)
+            if (payload.appointmentTime !== undefined) appointment.appointmentTime = DateTime.fromJSDate(payload.appointmentTime)
+            if (payload.duration !== undefined) appointment.duration = payload.duration
+            if (payload.type !== undefined) appointment.type = payload.type
+            if (payload.status !== undefined) appointment.status = payload.status
+            if (payload.priority !== undefined) appointment.priority = payload.priority
+            if (payload.reason !== undefined) appointment.reason = payload.reason
+            if (payload.notes !== undefined) appointment.notes = payload.notes || null
+            if (payload.symptoms !== undefined) appointment.symptoms = payload.symptoms
+            if (payload.vitals !== undefined) appointment.vitals = payload.vitals
+            if (payload.roomNumber !== undefined) appointment.roomNumber = payload.roomNumber || null
+
             await appointment.save()
 
             await appointment.load('patient')

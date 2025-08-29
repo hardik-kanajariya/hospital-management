@@ -114,8 +114,8 @@ export default class NotificationsController {
             notification.priority = payload.priority || 'medium'
             notification.isRead = payload.isRead || false
             notification.data = payload.data || {}
-            notification.actionUrl = payload.actionUrl
-            notification.expiresAt = payload.expiresAt
+            notification.actionUrl = payload.actionUrl || null
+            notification.expiresAt = payload.expiresAt ? DateTime.fromJSDate(payload.expiresAt) : null
 
             await notification.save()
 
@@ -153,7 +153,15 @@ export default class NotificationsController {
 
             const payload = await request.validateUsing(updateNotificationValidator)
 
-            notification.merge(payload)
+            if (payload.type !== undefined) notification.type = payload.type
+            if (payload.title !== undefined) notification.title = payload.title
+            if (payload.message !== undefined) notification.message = payload.message
+            if (payload.priority !== undefined) notification.priority = payload.priority
+            if (payload.isRead !== undefined) notification.isRead = payload.isRead
+            if (payload.data !== undefined) notification.data = payload.data
+            if (payload.actionUrl !== undefined) notification.actionUrl = payload.actionUrl || null
+            if (payload.expiresAt !== undefined) notification.expiresAt = payload.expiresAt ? DateTime.fromJSDate(payload.expiresAt) : null
+
             await notification.save()
 
             await notification.load('user')

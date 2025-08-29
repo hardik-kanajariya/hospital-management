@@ -126,14 +126,14 @@ export default class PrescriptionsController {
             prescription.prescriptionId = prescriptionId
             prescription.patientId = payload.patientId
             prescription.doctorId = payload.doctorId
-            prescription.appointmentId = payload.appointmentId
-            prescription.prescriptionDate = payload.prescriptionDate || DateTime.now()
+            prescription.appointmentId = payload.appointmentId || null
+            prescription.prescriptionDate = payload.prescriptionDate ? DateTime.fromJSDate(payload.prescriptionDate) : DateTime.now()
             prescription.medications = payload.medications
-            prescription.instructions = payload.instructions
+            prescription.instructions = payload.instructions || null
             prescription.diagnosis = payload.diagnosis
             prescription.status = payload.status || 'active'
-            prescription.validUntil = payload.validUntil
-            prescription.notes = payload.notes
+            prescription.validUntil = payload.validUntil ? DateTime.fromJSDate(payload.validUntil) : null
+            prescription.notes = payload.notes || null
 
             await prescription.save()
 
@@ -172,7 +172,14 @@ export default class PrescriptionsController {
 
             const payload = await request.validateUsing(updatePrescriptionValidator)
 
-            prescription.merge(payload)
+            if (payload.medications !== undefined) prescription.medications = payload.medications
+            if (payload.diagnosis !== undefined) prescription.diagnosis = payload.diagnosis
+            if (payload.instructions !== undefined) prescription.instructions = payload.instructions || null
+            if (payload.notes !== undefined) prescription.notes = payload.notes || null
+            if (payload.status !== undefined) prescription.status = payload.status
+            if (payload.validUntil !== undefined) prescription.validUntil = payload.validUntil ? DateTime.fromJSDate(payload.validUntil) : null
+            if (payload.dispensedBy !== undefined) prescription.dispensedBy = payload.dispensedBy || null
+
             await prescription.save()
 
             await prescription.load('patient')

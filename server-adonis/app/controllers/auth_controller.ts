@@ -103,9 +103,9 @@ export default class AuthController {
             user.passwordHash = payload.password // Will be hashed by model hook
             user.name = payload.name
             user.role = payload.role
-            user.phone = payload.phone
-            user.department = payload.department
-            user.employeeId = payload.employeeId
+            user.phone = payload.phone || null
+            user.department = payload.department || null
+            user.employeeId = payload.employeeId || null
             user.isActive = true
 
             await user.save()

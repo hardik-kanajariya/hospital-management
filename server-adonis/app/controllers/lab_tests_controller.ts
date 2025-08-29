@@ -126,15 +126,15 @@ export default class LabTestsController {
             labTest.testType = payload.testType
             labTest.testName = payload.testName
             labTest.category = payload.category
-            labTest.description = payload.description
-            labTest.orderedDate = payload.orderedDate || DateTime.now()
-            labTest.sampleCollectedDate = payload.sampleCollectedDate
+            labTest.description = payload.description || null
+            labTest.orderedDate = payload.orderedDate ? DateTime.fromJSDate(payload.orderedDate) : DateTime.now()
+            labTest.sampleCollectedDate = payload.sampleCollectedDate ? DateTime.fromJSDate(payload.sampleCollectedDate) : null
             labTest.status = payload.status || 'ordered'
             labTest.priority = payload.priority || 'normal'
             labTest.results = payload.results || {}
             labTest.referenceRanges = payload.referenceRanges || {}
-            labTest.notes = payload.notes
-            labTest.technicianId = payload.technicianId
+            labTest.notes = payload.notes || null
+            labTest.technicianId = payload.technicianId || null
 
             await labTest.save()
 
@@ -173,7 +173,23 @@ export default class LabTestsController {
 
             const payload = await request.validateUsing(updateLabTestValidator)
 
-            labTest.merge(payload)
+            if (payload.testName !== undefined) labTest.testName = payload.testName
+            if (payload.testType !== undefined) labTest.testType = payload.testType
+            if (payload.category !== undefined) labTest.category = payload.category
+            if (payload.description !== undefined) labTest.description = payload.description || null
+            if (payload.orderedDate !== undefined) labTest.orderedDate = payload.orderedDate ? DateTime.fromJSDate(payload.orderedDate) : labTest.orderedDate
+            if (payload.sampleCollectedDate !== undefined) labTest.sampleCollectedDate = payload.sampleCollectedDate ? DateTime.fromJSDate(payload.sampleCollectedDate) : null
+            if (payload.resultDate !== undefined) labTest.resultDate = payload.resultDate ? DateTime.fromJSDate(payload.resultDate) : null
+            if (payload.status !== undefined) labTest.status = payload.status
+            if (payload.priority !== undefined) labTest.priority = payload.priority
+            if (payload.results !== undefined) labTest.results = payload.results
+            if (payload.referenceRanges !== undefined) labTest.referenceRanges = payload.referenceRanges
+            if (payload.interpretation !== undefined) labTest.interpretation = payload.interpretation || null
+            if (payload.notes !== undefined) labTest.notes = payload.notes || null
+            if (payload.technicianId !== undefined) labTest.technicianId = payload.technicianId || null
+            if (payload.verifiedBy !== undefined) labTest.verifiedBy = payload.verifiedBy || null
+            if (payload.attachments !== undefined) labTest.attachments = payload.attachments
+
             await labTest.save()
 
             await labTest.load('patient')

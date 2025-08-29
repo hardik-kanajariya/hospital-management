@@ -103,9 +103,9 @@ export default class BillsController {
             bill.id = uuid()
             bill.billId = billId
             bill.patientId = payload.patientId
-            bill.appointmentId = payload.appointmentId
-            bill.billDate = payload.billDate || DateTime.now()
-            bill.dueDate = payload.dueDate
+            bill.appointmentId = payload.appointmentId || null
+            bill.billDate = payload.billDate ? DateTime.fromJSDate(payload.billDate) : DateTime.now()
+            bill.dueDate = DateTime.fromJSDate(payload.dueDate)
             bill.services = payload.services || []
             bill.medications = payload.medications || []
             bill.subtotal = payload.subtotal || 0
@@ -115,9 +115,9 @@ export default class BillsController {
             bill.paidAmount = payload.paidAmount || 0
             bill.outstandingAmount = payload.totalAmount - (payload.paidAmount || 0)
             bill.status = payload.status || 'pending'
-            bill.paymentMethod = payload.paymentMethod
+            bill.paymentMethod = payload.paymentMethod || null
             bill.insuranceDetails = payload.insuranceDetails || {}
-            bill.notes = payload.notes
+            bill.notes = payload.notes || null
 
             await bill.save()
 
@@ -155,7 +155,22 @@ export default class BillsController {
 
             const payload = await request.validateUsing(updateBillValidator)
 
-            bill.merge(payload)
+            if (payload.dueDate !== undefined) bill.dueDate = payload.dueDate ? DateTime.fromJSDate(payload.dueDate) : bill.dueDate
+            if (payload.services !== undefined) bill.services = payload.services
+            if (payload.medications !== undefined) bill.medications = payload.medications
+            if (payload.subtotal !== undefined) bill.subtotal = payload.subtotal
+            if (payload.taxAmount !== undefined) bill.taxAmount = payload.taxAmount
+            if (payload.discountAmount !== undefined) bill.discountAmount = payload.discountAmount
+            if (payload.totalAmount !== undefined) bill.totalAmount = payload.totalAmount
+            if (payload.paidAmount !== undefined) bill.paidAmount = payload.paidAmount
+            if (payload.status !== undefined) bill.status = payload.status
+            if (payload.paymentMethod !== undefined) bill.paymentMethod = payload.paymentMethod || null
+            if (payload.insuranceDetails !== undefined) bill.insuranceDetails = payload.insuranceDetails
+            if (payload.notes !== undefined) bill.notes = payload.notes || null
+
+            // Recalculate outstanding amount
+            bill.outstandingAmount = bill.totalAmount - bill.paidAmount
+
             await bill.save()
 
             await bill.load('patient')

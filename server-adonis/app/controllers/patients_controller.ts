@@ -1,4 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
+import { DateTime } from 'luxon'
 import Patient from '#models/patient'
 import { v4 as uuid } from 'uuid'
 import { patientValidator, updatePatientValidator } from '#validators/patient'
@@ -87,12 +88,12 @@ export default class PatientsController {
             patient.patientId = patientId
             patient.name = payload.name
             patient.phone = payload.phone
-            patient.email = payload.email
-            patient.dateOfBirth = payload.dateOfBirth
+            patient.email = payload.email || null
+            patient.dateOfBirth = DateTime.fromJSDate(payload.dateOfBirth)
             patient.gender = payload.gender
             patient.address = payload.address
             patient.emergencyContact = payload.emergencyContact || {}
-            patient.bloodGroup = payload.bloodGroup
+            patient.bloodGroup = payload.bloodGroup || null
             patient.allergies = payload.allergies || []
             patient.chronicConditions = payload.chronicConditions || []
             patient.vaccinationRecords = payload.vaccinationRecords || []
@@ -131,7 +132,19 @@ export default class PatientsController {
 
             const payload = await request.validateUsing(updatePatientValidator)
 
-            patient.merge(payload)
+            if (payload.name !== undefined) patient.name = payload.name
+            if (payload.email !== undefined) patient.email = payload.email || null
+            if (payload.phone !== undefined) patient.phone = payload.phone
+            if (payload.dateOfBirth !== undefined) patient.dateOfBirth = DateTime.fromJSDate(payload.dateOfBirth)
+            if (payload.gender !== undefined) patient.gender = payload.gender
+            if (payload.address !== undefined) patient.address = payload.address
+            if (payload.emergencyContact !== undefined) patient.emergencyContact = payload.emergencyContact
+            if (payload.bloodGroup !== undefined) patient.bloodGroup = payload.bloodGroup || null
+            if (payload.allergies !== undefined) patient.allergies = payload.allergies
+            if (payload.chronicConditions !== undefined) patient.chronicConditions = payload.chronicConditions
+            if (payload.vaccinationRecords !== undefined) patient.vaccinationRecords = payload.vaccinationRecords
+            if (payload.insuranceInfo !== undefined) patient.insuranceInfo = payload.insuranceInfo
+
             await patient.save()
 
             return response.status(200).json({
