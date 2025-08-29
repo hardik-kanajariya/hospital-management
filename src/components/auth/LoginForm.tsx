@@ -40,7 +40,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
 
       console.log('LoginForm: Login result:', result);
 
-      if (result.success) {
+      if (result) {
         toast.success('Login successful! Redirecting...');
         console.log('LoginForm: Login successful, navigating to:', from);
 
@@ -53,8 +53,8 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
           navigate(from, { replace: true });
         }, 100);
       } else {
-        console.log('LoginForm: Login failed:', result.error);
-        toast.error(result.error || 'Login failed');
+        console.log('LoginForm: Login failed:', result);
+        toast.error(result || 'Login failed');
       }
     } catch (error) {
       console.error('LoginForm: Login error:', error);

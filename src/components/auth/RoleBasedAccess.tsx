@@ -42,7 +42,7 @@ export default function RoleBasedAccess({
   }
 
   // Check permission-based access
-  if (requiredModule && !hasPermission(requiredModule, requiredAction)) {
+  if (requiredModule && !hasPermission(requiredModule)) {
     if (fallback) return <>{fallback}</>;
     if (showMessage) {
       return (

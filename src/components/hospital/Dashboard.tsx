@@ -3,8 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/hooks/useAuth'
 import { useNotifications } from '@/hooks/useNotifications'
-import { useSyncManager } from '@/hooks/useSyncManager'
-import SyncStatus from '@/components/common/SyncStatus'
+import { useConnectionStatus } from '@/hooks/useConnectionStatus'
+import ConnectionStatus from '@/components/common/SyncStatus'
 import { Patient, Appointment, Bill, InventoryItem } from '@/types/hospital'
 import {
   UsersIcon,
@@ -105,7 +105,7 @@ export default function Dashboard() {
       {/* Key Metrics - Role Based */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Patients - Always show for most roles */}
-        {hasPermission('patients', 'read') && (
+        {hasPermission('patients') && (
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Patients</CardTitle>
@@ -121,7 +121,7 @@ export default function Dashboard() {
         )}
 
         {/* Appointments - Show for doctors, nurses, receptionists, admins */}
-        {hasPermission('appointments', 'read') && (
+        {hasPermission('appointments') && (
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Today's Appointments</CardTitle>
@@ -137,7 +137,7 @@ export default function Dashboard() {
         )}
 
         {/* Revenue - Show for billing managers and admins */}
-        {hasPermission('billing', 'read') && (
+        {hasPermission('billing') && (
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Today's Revenue</CardTitle>
@@ -153,7 +153,7 @@ export default function Dashboard() {
         )}
 
         {/* Inventory - Show for pharmacists, store managers, admins */}
-        {hasPermission('inventory', 'read') && (
+        {hasPermission('inventory') && (
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Low Stock Items</CardTitle>
@@ -478,7 +478,7 @@ export default function Dashboard() {
       {(user?.role === 'super_admin' || user?.role === 'receptionist') && (
         <div className="space-y-6">
           <h3 className="text-lg font-semibold">System Status</h3>
-          <SyncStatus className="w-full" />
+          <ConnectionStatus className="w-full" />
         </div>
       )}
     </div>

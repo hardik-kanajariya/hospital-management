@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { useNotificationsData } from './useDatabase';
 import { Notification } from '@/types/hospital';
 import { toast } from 'sonner';
+import { useNotificationsData } from './useDatabase';
 
 export function useNotifications() {
-  const { 
-    notifications, 
-    loading: isLoading, 
-    addNotificationRecord 
+  const {
+    notifications,
+    loading: isLoading,
+    createNotification
   } = useNotificationsData();
 
   const addNotification = (notification: { message: string; type: 'success' | 'error' | 'info' | 'warning' }) => {
@@ -22,7 +22,7 @@ export function useNotifications() {
     try {
       // Simulate SMS API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       const notification: Notification = {
         id: crypto.randomUUID(),
         type: 'sms',
@@ -36,9 +36,9 @@ export function useNotifications() {
         templateType
       };
 
-      await addNotificationRecord(notification);
+      await createNotification(notification);
       toast.success('SMS notification sent successfully');
-      
+
       return { success: true };
     } catch (error) {
       toast.error('Failed to send SMS notification');
@@ -55,7 +55,7 @@ export function useNotifications() {
     try {
       // Simulate email API call
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
+
       const notification: Notification = {
         id: crypto.randomUUID(),
         type: 'email',
@@ -69,9 +69,9 @@ export function useNotifications() {
         templateType
       };
 
-      await addNotificationRecord(notification);
+      await createNotification(notification);
       toast.success('Email notification sent successfully');
-      
+
       return { success: true };
     } catch (error) {
       toast.error('Failed to send email notification');
@@ -90,7 +90,7 @@ export function useNotifications() {
     }
   ) => {
     const smsMessage = `Dear ${appointmentDetails.patientName}, your appointment with Dr. ${appointmentDetails.doctorName} is scheduled for ${appointmentDetails.date} at ${appointmentDetails.time}. Please arrive 15 minutes early. MedCare Rural`;
-    
+
     const emailMessage = `
       Dear ${appointmentDetails.patientName},
       
@@ -110,7 +110,7 @@ export function useNotifications() {
 
     // Send SMS
     await sendSMSNotification(patientPhone, smsMessage, 'appointment_reminder');
-    
+
     // Send Email if available
     if (patientEmail) {
       await sendEmailNotification(
@@ -129,7 +129,7 @@ export function useNotifications() {
     testName: string
   ) => {
     const smsMessage = `Dear ${patientName}, your ${testName} results are ready. Please visit the hospital to collect your report. MedCare Rural`;
-    
+
     const emailMessage = `
       Dear ${patientName},
       
@@ -145,7 +145,7 @@ export function useNotifications() {
 
     // Send SMS
     await sendSMSNotification(patientPhone, smsMessage, 'lab_result');
-    
+
     // Send Email if available
     if (patientEmail) {
       await sendEmailNotification(
@@ -165,7 +165,7 @@ export function useNotifications() {
     dueDate: string
   ) => {
     const smsMessage = `Dear ${patientName}, you have an outstanding bill of ₹${amountDue} due on ${dueDate}. Please make payment to avoid late fees. MedCare Rural`;
-    
+
     const emailMessage = `
       Dear ${patientName},
       
@@ -184,7 +184,7 @@ export function useNotifications() {
 
     // Send SMS
     await sendSMSNotification(patientPhone, smsMessage, 'billing_reminder');
-    
+
     // Send Email if available
     if (patientEmail) {
       await sendEmailNotification(
@@ -197,7 +197,7 @@ export function useNotifications() {
   };
 
   const getNotificationHistory = () => {
-    return notifications.sort((a, b) => 
+    return notifications.sort((a, b) =>
       new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime()
     );
   };

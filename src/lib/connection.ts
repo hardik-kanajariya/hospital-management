@@ -1,80 +1,96 @@
-// Simplified connection manager that works with the main database instance
-import { db } from './database';
+/**
+ * Simple connection manager for HTTP-only communication
+ * Monitors internet connectivity and server availability
+ */
+
+import { httpService } from '@/services/HttpService';
 import { toast } from 'sonner';
 
-interface SyncConflict {
-  id: string
-  table: string
-  recordId: string
-  localData: any
-  serverData: any
-  timestamp: string
+interface ConnectionStats {
+  isOnline: boolean;
+  isConnected: boolean;
+  lastCheck: string;
+  serverAvailable: boolean;
 }
 
 class ConnectionManager {
-  private isOnline: boolean = navigator.onLine
-  private syncInProgress: boolean = false
+  private isOnline: boolean = navigator.onLine;
+  private serverAvailable: boolean = false;
+  private lastCheck: Date = new Date();
 
   constructor() {
-    this.setupEventListeners()
+    this.setupEventListeners();
+    this.checkServerHealth();
   }
 
   private setupEventListeners() {
     window.addEventListener('online', () => {
-      this.isOnline = true
-      console.log('Connection restored')
-      toast.success('Back online - you can now continue working')
-    })
+      this.isOnline = true;
+      console.log('Internet connection restored');
+      this.checkServerHealth();
+    });
 
     window.addEventListener('offline', () => {
-      this.isOnline = false
-      console.log('Connection lost - application requires internet connection')
-      toast.error('Internet connection lost - please check your connection')
-    })
+      this.isOnline = false;
+      this.serverAvailable = false;
+      console.log('Internet connection lost');
+    });
+  }
+
+  private async checkServerHealth() {
+    try {
+      this.serverAvailable = await httpService.checkHealth();
+      this.lastCheck = new Date();
+
+      if (this.serverAvailable) {
+        console.log('Server is healthy and accessible');
+      } else {
+        console.warn('Server health check failed');
+      }
+    } catch (error) {
+      this.serverAvailable = false;
+      this.lastCheck = new Date();
+      console.error('Server health check error:', error);
+    }
   }
 
   // Public methods
   isConnected(): boolean {
-    return this.isOnline
+    return this.isOnline && this.serverAvailable;
   }
 
-  isSyncing(): boolean {
-    return this.syncInProgress
+  isInternetAvailable(): boolean {
+    return this.isOnline;
   }
 
-  async forcSync(): Promise<void> {
+  isServerAvailable(): boolean {
+    return this.serverAvailable;
+  }
+
+  async forceCheck(): Promise<boolean> {
     if (!this.isOnline) {
-      throw new Error('Cannot sync while offline - internet connection is required')
+      throw new Error('No internet connection available');
     }
 
-    if (!db.isInitialized()) {
-      throw new Error('Database not initialized')
-    }
-
-    // In online-only mode, no sync is needed - data is always current
-    console.log('Online-only mode - no sync required')
+    await this.checkServerHealth();
+    return this.serverAvailable;
   }
 
-  async getSyncConflicts(): Promise<SyncConflict[]> {
-    // Simplified - no conflicts in this implementation
-    return []
-  }
-
-  async resolveConflict(conflictId: string, resolution: 'local' | 'server'): Promise<void> {
-    console.log(`Conflict resolution not implemented in simplified version`)
-  }
-
-  async getStats() {
+  async getStats(): Promise<ConnectionStats> {
     return {
       isOnline: this.isOnline,
-      isSyncing: this.syncInProgress,
-      dbInitialized: db.isInitialized(),
-      lastCheck: new Date().toISOString(),
-      pendingOperations: 0, // Always 0 in online-only mode
-      offlineMode: false // Always false - offline mode disabled
-    }
+      isConnected: this.isConnected(),
+      lastCheck: this.lastCheck.toISOString(),
+      serverAvailable: this.serverAvailable
+    };
+  }
+
+  // Legacy method for compatibility
+  async forcSync(): Promise<void> {
+    // In online-only mode, just check server health
+    await this.forceCheck();
   }
 }
 
-export const connectionManager = new ConnectionManager()
-export default ConnectionManager
+export const connectionManager = new ConnectionManager();
+export default ConnectionManager;

@@ -5,7 +5,7 @@ import { useNavigation } from '@/hooks/useNavigation'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
 import { useAuth } from '@/hooks/useAuth'
-import { useSyncManager } from '@/hooks/useSyncManager'
+import { useConnectionStatus } from '@/hooks/useConnectionStatus'
 import {
   Sidebar,
   SidebarContent,
@@ -42,7 +42,7 @@ import {
 function App() {
   const { user, isAuthenticated, logout, hasPermission } = useAuth()
   const { activeTab, setActiveTab } = useNavigation()
-  const { syncState } = useSyncManager()
+  const { connectionState } = useConnectionStatus()
   const location = useLocation()
 
   // Initialize database on app start
@@ -110,7 +110,7 @@ function App() {
     if (['landing', 'dashboard'].includes(tab.id)) return true;
 
     // Check module permission
-    if (!hasPermission(tab.module, 'read')) return false;
+    if (!hasPermission(tab.module)) return false;
 
     // Check role requirement if specified
     if (tab.requiresRole && user?.role !== tab.requiresRole) return false;
@@ -255,11 +255,11 @@ function App() {
 
               {/* Connection Status for larger screens */}
               <div className="hidden sm:flex items-center gap-4">
-                <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${syncState.isOnline
+                <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${connectionState.isOnline
                   ? 'bg-green-100 text-green-800'
                   : 'bg-red-100 text-red-800'
                   }`}>
-                  {syncState.isOnline ? (
+                  {connectionState.isOnline ? (
                     <>
                       <CloudArrowUpIcon className="w-3 h-3" />
                       {import.meta.env.VITE_OFFLINE_ENABLED === 'false' ? 'Online-Only Mode' : 'Online'}
@@ -276,7 +276,7 @@ function App() {
           </header>
 
           {/* Offline Warning Banner */}
-          {!syncState.isOnline && (
+          {!connectionState.isOnline && (
             <div className="bg-red-50 border-b border-red-200 px-6 py-3">
               <div className="flex items-center gap-2 text-red-800">
                 <WifiSlashIcon className="w-4 h-4" />

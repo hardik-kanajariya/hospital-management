@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { usePatients } from '@/hooks/useDatabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -32,6 +31,7 @@ import {
   SyringeIcon,
   UserIcon
 } from '@phosphor-icons/react'
+import { usePatientApi } from '@/hooks/useApiHooks'
 
 interface Patient {
   id: string
@@ -69,7 +69,7 @@ interface InsuranceInfo {
 }
 
 export default function PatientManagement() {
-  const { patients, loading, error, addPatient, updatePatient, deletePatient, refreshPatients } = usePatients()
+  const { patients, loading, error, createPatient, updatePatient, deletePatient, refreshPatients } = usePatientApi()
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
@@ -105,7 +105,7 @@ export default function PatientManagement() {
         await updatePatient(selectedPatient.id, formData)
         toast.success('Patient updated successfully')
       } else {
-        await addPatient({
+        await createPatient({
           ...formData,
           name: formData.name || '',
           phone: formData.phone || '',
@@ -248,24 +248,24 @@ export default function PatientManagement() {
             <h1 className="text-2xl font-bold">Patient Management</h1>
           </div>
 
-          {/* Sync Status */}
+          {/* Connection Status */}
           <div className="flex items-center gap-2">
-            {patients.isOnline ? (
+            {navigator.onLine ? (
               <Badge variant="outline" className="text-green-600 border-green-600">
                 <CloudArrowUpIcon className="w-3 h-3 mr-1" />
-                Online
+                Connected
               </Badge>
             ) : (
-              <Badge variant="outline" className="text-orange-600 border-orange-600">
+              <Badge variant="outline" className="text-red-600 border-red-600">
                 <WifiSlashIcon className="w-3 h-3 mr-1" />
-                Offline
+                No Connection
               </Badge>
             )}
 
-            {patients.syncing && (
+            {loading && (
               <Badge variant="outline" className="text-blue-600 border-blue-600">
                 <PulseIcon className="w-3 h-3 mr-1 animate-spin" />
-                Syncing
+                Loading
               </Badge>
             )}
           </div>
@@ -615,7 +615,7 @@ export default function PatientManagement() {
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={patients.loading}>
+                  <Button type="submit" disabled={loading}>
                     {selectedPatient ? 'Update Patient' : 'Create Patient'}
                   </Button>
                 </div>
@@ -643,15 +643,10 @@ export default function PatientManagement() {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Patients ({filteredPatients.length})</span>
-            {patients.lastSyncTime && (
-              <span className="text-sm text-muted-foreground">
-                Last sync: {patients.lastSyncTime.toLocaleTimeString()}
-              </span>
-            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {patients.loading ? (
+          {loading ? (
             <div className="text-center py-8">
               <PulseIcon className="w-8 h-8 animate-spin mx-auto mb-2" />
               <p>Loading patients...</p>
@@ -947,12 +942,12 @@ export default function PatientManagement() {
         </DialogContent>
       </Dialog>
 
-      {patients.error && (
+      {error && (
         <Card className="border-destructive">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-destructive">
               <WarningIcon className="w-4 h-4" />
-              <p className="text-sm">Error: {patients.error}</p>
+              <p className="text-sm">Error: {error}</p>
             </div>
           </CardContent>
         </Card>
