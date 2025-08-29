@@ -115,7 +115,7 @@ export function useAuth() {
       // Store user data safely
       setUserData(user);
 
-      // Update auth state
+      // Update auth state and force re-render
       setAuthState({
         user: user,
         isAuthenticated: true,
@@ -123,6 +123,9 @@ export function useAuth() {
       });
 
       console.log('Auth state updated - user authenticated:', user.name, user.role);
+
+      // Force a small delay to ensure state is properly updated
+      await new Promise(resolve => setTimeout(resolve, 50));
 
       return user;
 

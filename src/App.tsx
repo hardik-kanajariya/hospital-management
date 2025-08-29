@@ -186,7 +186,7 @@ function App() {
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider key={isAuthenticated ? user?.id || 'authenticated' : 'unauthenticated'}>
       <div className="min-h-screen flex w-full bg-background">
         {/* Sidebar */}
         <Sidebar variant="inset">

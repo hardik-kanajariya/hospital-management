@@ -43,19 +43,16 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
       console.log('LoginForm: Login result:', result);
 
       if (result) {
-        toast.success('Login successful! Redirecting...');
+        toast.success('Login successful!');
         console.log('LoginForm: Login successful, navigating to dashboard');
 
         // Call the onLogin callback if provided (for backward compatibility)
         onLogin?.();
 
-        // Use navigation hook to force dashboard navigation
+        // Small delay to ensure auth state is updated before navigation
         setTimeout(() => {
-          console.log('LoginForm: Forcing navigation to dashboard');
-          navigateToDashboard();
-          // Also ensure we're at dashboard route
           navigate('/dashboard', { replace: true });
-        }, 200);
+        }, 100);
       } else {
         console.log('LoginForm: Login failed:', result);
         toast.error(result || 'Login failed');
