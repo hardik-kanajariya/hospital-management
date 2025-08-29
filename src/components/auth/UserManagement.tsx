@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/hooks/useAuth';
-import { User, UserRole, Permission, ROLE_CONFIGS } from '@/types/auth';
+import { User, UserRole, Permission, LegacyPermission, ROLE_CONFIGS } from '@/types/auth';
 import { toast } from 'sonner';
 import RoleBasedAccess from '@/components/auth/RoleBasedAccess';
 import {
@@ -30,10 +30,17 @@ export default function UserManagement() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [formData, setFormData] = useState<Partial<User>>({
-    role: 'receptionist',
+  const [formData, setFormData] = useState<{
+    name?: string;
+    email?: string;
+    userRole?: UserRole;
+    department?: string;
+    isActive: boolean;
+    legacyPermissions: LegacyPermission[];
+  }>({
+    userRole: 'receptionist',
     isActive: true,
-    permissions: []
+    legacyPermissions: []
   });
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState('');
@@ -52,9 +59,9 @@ export default function UserManagement() {
   // Reset form
   const resetForm = () => {
     setFormData({
-      role: 'receptionist',
+      userRole: 'receptionist',
       isActive: true,
-      permissions: []
+      legacyPermissions: []
     });
     setPassword('');
     setSelectedUser(null);
@@ -65,19 +72,19 @@ export default function UserManagement() {
     const roleConfig = ROLE_CONFIGS.find(r => r.role === role);
     setFormData({
       ...formData,
-      role,
-      permissions: roleConfig?.permissions || []
+      userRole: role,
+      legacyPermissions: roleConfig?.permissions || []
     });
   };
 
   // Handle custom permission toggle
   const togglePermission = (module: string, action: 'create' | 'read' | 'update' | 'delete') => {
-    const permissions = [...(formData.permissions || [])];
+    const permissions = [...formData.legacyPermissions];
     const existingPermIndex = permissions.findIndex(p => p.module === module);
 
     if (existingPermIndex >= 0) {
       const existingPerm = permissions[existingPermIndex];
-      if (existingPerm.actions.includes(action)) {
+      if (existingPerm.actions && existingPerm.actions.includes(action)) {
         // Remove action
         existingPerm.actions = existingPerm.actions.filter(a => a !== action);
         if (existingPerm.actions.length === 0) {
@@ -85,6 +92,7 @@ export default function UserManagement() {
         }
       } else {
         // Add action
+        if (!existingPerm.actions) existingPerm.actions = [];
         existingPerm.actions.push(action);
       }
     } else {
@@ -92,14 +100,14 @@ export default function UserManagement() {
       permissions.push({ module, actions: [action] });
     }
 
-    setFormData({ ...formData, permissions });
+    setFormData({ ...formData, legacyPermissions: permissions });
   };
 
   // Check if user has specific permission
   const hasModulePermission = (module: string, action: 'create' | 'read' | 'update' | 'delete'): boolean => {
-    const permissions = formData.permissions || [];
+    const permissions = formData.legacyPermissions || [];
     const modulePermission = permissions.find(p => p.module === module);
-    return modulePermission ? modulePermission.actions.includes(action) : false;
+    return modulePermission ? (modulePermission.actions || []).includes(action) : false;
   };
 
   // Handle add/edit user
@@ -116,14 +124,27 @@ export default function UserManagement() {
     }
 
     const now = new Date().toISOString();
+
+    // Convert legacy permissions to new Permission format for storage
+    const permissions: Permission[] = formData.legacyPermissions.map(lp => ({
+      id: crypto.randomUUID(),
+      name: `${lp.module}_permission`,
+      displayName: `${lp.module.charAt(0).toUpperCase() + lp.module.slice(1)} Permission`,
+      module: lp.module,
+      isActive: true,
+      actions: lp.actions,
+      createdAt: now,
+      updatedAt: now
+    }));
+
     const newUser: User = {
       id: selectedUser?.id || crypto.randomUUID(),
       email: formData.email!,
       name: formData.name!,
-      role: formData.role as UserRole,
+      // Don't set role as Role object since the system expects string compatibility
       department: formData.department,
       isActive: formData.isActive ?? true,
-      permissions: formData.permissions || [],
+      permissions,
       createdAt: selectedUser?.createdAt || now,
       lastLogin: selectedUser?.lastLogin
     };
@@ -171,11 +192,12 @@ export default function UserManagement() {
   };
 
   // Filter users
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = users.filter(user => {
+    const roleText = typeof user.role === 'string' ? user.role : user.role?.name || '';
+    return user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      roleText.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   const modules = [
     'dashboard', 'patients', 'appointments', 'medical_records', 'doctors',
@@ -247,7 +269,7 @@ export default function UserManagement() {
                     <div className="space-y-2">
                       <Label htmlFor="role">Role *</Label>
                       <Select
-                        value={formData.role}
+                        value={formData.userRole}
                         onValueChange={(value) => handleRoleChange(value as UserRole)}
                       >
                         <SelectTrigger>
@@ -323,7 +345,7 @@ export default function UserManagement() {
                         <div className="flex items-center justify-between mb-3">
                           <h4 className="font-medium capitalize">{module.replace('_', ' ')}</h4>
                           <Badge variant="outline" className="text-xs">
-                            {formData.permissions?.find(p => p.module === module)?.actions.length || 0} permissions
+                            {formData.legacyPermissions?.find(p => p.module === module)?.actions?.length || 0} permissions
                           </Badge>
                         </div>
                         <div className="grid grid-cols-4 gap-2">
@@ -392,7 +414,10 @@ export default function UserManagement() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {users.filter(u => u.role === 'doctor').length}
+                {users.filter(u => {
+                  const roleText = typeof u.role === 'string' ? u.role : u.role?.name;
+                  return roleText === 'doctor';
+                }).length}
               </div>
             </CardContent>
           </Card>
@@ -404,7 +429,10 @@ export default function UserManagement() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {users.filter(u => u.role === 'super_admin').length}
+                {users.filter(u => {
+                  const roleText = typeof u.role === 'string' ? u.role : u.role?.name;
+                  return roleText === 'super_admin';
+                }).length}
               </div>
             </CardContent>
           </Card>
@@ -430,7 +458,8 @@ export default function UserManagement() {
                 </div>
               ) : (
                 filteredUsers.map((user) => {
-                  const roleConfig = ROLE_CONFIGS.find(r => r.role === user.role);
+                  const roleText = typeof user.role === 'string' ? user.role : user.role?.name || '';
+                  const roleConfig = ROLE_CONFIGS.find(r => r.role === roleText);
                   return (
                     <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors">
                       <div className="flex items-center gap-4">
@@ -444,7 +473,7 @@ export default function UserManagement() {
                               {user.isActive ? 'Active' : 'Inactive'}
                             </Badge>
                             <Badge variant="outline">
-                              {roleConfig?.displayName || user.role}
+                              {roleConfig?.displayName || roleText}
                             </Badge>
                           </div>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -473,7 +502,21 @@ export default function UserManagement() {
                           size="sm"
                           onClick={() => {
                             setSelectedUser(user);
-                            setFormData(user);
+                            // Convert user data to form format
+                            const userRoleText = typeof user.role === 'string' ? user.role : user.role?.name || 'receptionist';
+                            const legacyPermissions: LegacyPermission[] = user.permissions.map(p => ({
+                              module: p.module,
+                              actions: p.actions || []
+                            }));
+
+                            setFormData({
+                              name: user.name,
+                              email: user.email,
+                              userRole: userRoleText as UserRole,
+                              department: user.department,
+                              isActive: user.isActive,
+                              legacyPermissions
+                            });
                             setIsDialogOpen(true);
                           }}
                         >

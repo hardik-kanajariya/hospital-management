@@ -5,7 +5,6 @@ import { useNavigation } from '@/hooks/useNavigation'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
 import { useAuth } from '@/hooks/useAuth'
-import { useConnectionStatus } from '@/hooks/useConnectionStatus'
 import {
   Sidebar,
   SidebarContent,
@@ -42,7 +41,6 @@ import {
 function App() {
   const { user, isAuthenticated, logout, hasPermission } = useAuth()
   const { activeTab, setActiveTab } = useNavigation()
-  const { connectionState } = useConnectionStatus()
   const location = useLocation()
 
   // Initialize database on app start
@@ -302,40 +300,8 @@ function App() {
                   <p className="text-sm text-muted-foreground">{getPageDescription()}</p>
                 </div>
               </div>
-
-              {/* Connection Status for larger screens */}
-              <div className="hidden sm:flex items-center gap-4">
-                <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${connectionState.isOnline
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-red-100 text-red-800'
-                  }`}>
-                  {connectionState.isOnline ? (
-                    <>
-                      <CloudArrowUpIcon className="w-3 h-3" />
-                      Online
-                    </>
-                  ) : (
-                    <>
-                      <WifiSlashIcon className="w-3 h-3" />
-                      Connection Required
-                    </>
-                  )}
-                </div>
-              </div>
             </div>
           </header>
-
-          {/* Offline Warning Banner */}
-          {!connectionState.isOnline && (
-            <div className="bg-red-50 border-b border-red-200 px-6 py-3">
-              <div className="flex items-center gap-2 text-red-800">
-                <WifiSlashIcon className="w-4 h-4" />
-                <p className="text-sm">
-                  <strong>Internet connection required</strong> - This application requires an active internet connection to function. Please check your connection and refresh the page.
-                </p>
-              </div>
-            </div>
-          )}
 
           {/* Page Content */}
           <main className="flex-1 p-6 space-y-6 overflow-auto">
