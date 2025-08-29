@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { db } from '@/lib/database'
 import { useNavigation } from '@/hooks/useNavigation'
@@ -60,66 +60,41 @@ function App() {
     initializeApp()
   }, [])
 
-  // Show minimal layout for login page
-  if (location.pathname === '/login') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-        <Outlet />
-        <Toaster />
-      </div>
-    )
-  }
+  // Filter tabs based on user permissions (memoized for performance)
+  // Always define this hook, even if user is not authenticated
+  const availableTabs = useMemo(() => {
+    if (!isAuthenticated || !user) return [];
 
-  // Show minimal layout for landing page
-  if (location.pathname === '/landing') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-        <Outlet />
-        <Toaster />
-      </div>
-    )
-  }
+    return [
+      { id: 'landing', label: 'Home', icon: HouseIcon, module: 'dashboard', path: '/landing' },
+      { id: 'dashboard', label: 'Dashboard', icon: PulseIcon, module: 'dashboard', path: '/dashboard' },
+      { id: 'patients', label: 'Patients', icon: UsersIcon, module: 'patients', path: '/patients' },
+      { id: 'appointments', label: 'Appointments', icon: CalendarIcon, module: 'appointments', path: '/appointments' },
+      { id: 'doctors', label: 'Doctors', icon: UserCircleIcon, module: 'doctors', path: '/doctors' },
+      { id: 'records', label: 'Records', icon: FileTextIcon, module: 'medical_records', path: '/records' },
+      { id: 'lab', label: 'Lab', icon: TestTubeIcon, module: 'lab_tests', path: '/lab' },
+      { id: 'beds', label: 'Beds', icon: BedIcon, module: 'beds', path: '/beds' },
+      { id: 'billing', label: 'Billing', icon: CreditCardIcon, module: 'billing', path: '/billing' },
+      { id: 'inventory', label: 'Inventory', icon: PackageIcon, module: 'inventory', path: '/inventory' },
+      { id: 'notifications', label: 'Notifications', icon: BellIcon, module: 'notifications', path: '/notifications' },
+      { id: 'users', label: 'Users', icon: ShieldIcon, module: 'user_management', path: '/users', requiresRole: 'super_admin' }
+    ].filter(tab => {
+      // Always show landing and dashboard
+      if (['landing', 'dashboard'].includes(tab.id)) return true;
 
-  // If user is not authenticated and tries to access protected routes, 
-  // let ProtectedRoute handle the redirect
-  if (!isAuthenticated && !['/login', '/landing', '/'].includes(location.pathname)) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-        <Outlet />
-        <Toaster />
-      </div>
-    )
-  }
+      // Check module permission
+      if (!hasPermission(tab.module)) return false;
 
-  // Filter tabs based on user permissions
-  const availableTabs = [
-    { id: 'landing', label: 'Home', icon: HouseIcon, module: 'dashboard', path: '/landing' },
-    { id: 'dashboard', label: 'Dashboard', icon: PulseIcon, module: 'dashboard', path: '/dashboard' },
-    { id: 'patients', label: 'Patients', icon: UsersIcon, module: 'patients', path: '/patients' },
-    { id: 'appointments', label: 'Appointments', icon: CalendarIcon, module: 'appointments', path: '/appointments' },
-    { id: 'doctors', label: 'Doctors', icon: UserCircleIcon, module: 'doctors', path: '/doctors' },
-    { id: 'records', label: 'Records', icon: FileTextIcon, module: 'medical_records', path: '/records' },
-    { id: 'lab', label: 'Lab', icon: TestTubeIcon, module: 'lab_tests', path: '/lab' },
-    { id: 'beds', label: 'Beds', icon: BedIcon, module: 'beds', path: '/beds' },
-    { id: 'billing', label: 'Billing', icon: CreditCardIcon, module: 'billing', path: '/billing' },
-    { id: 'inventory', label: 'Inventory', icon: PackageIcon, module: 'inventory', path: '/inventory' },
-    { id: 'notifications', label: 'Notifications', icon: BellIcon, module: 'notifications', path: '/notifications' },
-    { id: 'users', label: 'Users', icon: ShieldIcon, module: 'user_management', path: '/users', requiresRole: 'super_admin' }
-  ].filter(tab => {
-    // Always show landing and dashboard
-    if (['landing', 'dashboard'].includes(tab.id)) return true;
+      // Check role requirement if specified
+      if (tab.requiresRole && user?.role !== tab.requiresRole) return false;
 
-    // Check module permission
-    if (!hasPermission(tab.module)) return false;
+      return true;
+    });
+  }, [isAuthenticated, user, hasPermission]);
 
-    // Check role requirement if specified
-    if (tab.requiresRole && user?.role !== tab.requiresRole) return false;
-
-    return true;
-  })
-
-  // Group navigation items by category
-  const navigationGroups = [
+  // Group navigation items by category (memoized)
+  // Always define this hook, even if availableTabs is empty
+  const navigationGroups = useMemo(() => [
     {
       label: 'Overview',
       items: availableTabs.filter(tab => ['landing', 'dashboard'].includes(tab.id))
@@ -136,8 +111,9 @@ function App() {
       label: 'Administration',
       items: availableTabs.filter(tab => ['billing', 'notifications', 'users'].includes(tab.id))
     }
-  ].filter(group => group.items.length > 0)
+  ].filter(group => group.items.length > 0), [availableTabs]);
 
+  // Helper functions (also moved before conditional returns)
   const getPageTitle = () => {
     const currentPath = location.pathname.slice(1)
     switch (currentPath) {
@@ -174,6 +150,39 @@ function App() {
       case 'landing': return 'Welcome to MedCare Rural Hospital Management System'
       default: return 'Hospital management system'
     }
+  }
+
+  // NOW we can do conditional returns after all hooks are defined
+
+  // Show minimal layout for login page
+  if (location.pathname === '/login') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+        <Outlet />
+        <Toaster />
+      </div>
+    )
+  }
+
+  // Show minimal layout for landing page
+  if (location.pathname === '/landing') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+        <Outlet />
+        <Toaster />
+      </div>
+    )
+  }
+
+  // If user is not authenticated and tries to access protected routes, 
+  // let ProtectedRoute handle the redirect
+  if (!isAuthenticated && !['/login', '/landing', '/'].includes(location.pathname)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+        <Outlet />
+        <Toaster />
+      </div>
+    )
   }
 
   return (

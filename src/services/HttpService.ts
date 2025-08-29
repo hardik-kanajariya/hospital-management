@@ -3,6 +3,8 @@
  * Handles all API communication with proper error handling and retry logic
  */
 
+import { Permission } from '@/types/auth';
+
 export interface ApiResponse<T = any> {
     success: boolean;
     data?: T;
@@ -29,7 +31,7 @@ export interface AuthResponse {
         email: string;
         name: string;
         role: string;
-        permissions: string[];
+        permissions: Permission[];
     };
     expires_at: string;
 }

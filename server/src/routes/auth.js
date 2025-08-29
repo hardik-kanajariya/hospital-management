@@ -112,9 +112,20 @@ router.post('/login', [
         );
 
         console.log('✅ Login successful for user:', user.email);
+
+        // Get permissions for the user's role
+        const permissions = User.getPermissionsForRole(user.role);
+
         sendResponse(res, {
-            user,
-            token
+            user: {
+                ...user.toJSON(),
+                permissions
+            },
+            token: {
+                type: 'Bearer',
+                token: token,
+                expiresAt: new Date(Date.now() + (24 * 60 * 60 * 1000)).toISOString() // 24 hours
+            }
         }, 'Login successful');
     } catch (error) {
         console.error('❌ Login error:', error);

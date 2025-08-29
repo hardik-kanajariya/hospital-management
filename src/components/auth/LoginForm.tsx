@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
+import { useNavigation } from '@/hooks/useNavigation';
 import { ROLE_CONFIGS } from '@/types/auth';
 import { HospitalIcon, SignInIcon, EyeSlashIcon } from '@phosphor-icons/react';
 import { toast } from 'sonner';
@@ -21,6 +22,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
+  const { navigateToDashboard } = useNavigation();
   const location = useLocation();
 
   // Get the intended destination from the location state or default to dashboard
@@ -42,16 +44,18 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
 
       if (result) {
         toast.success('Login successful! Redirecting...');
-        console.log('LoginForm: Login successful, navigating to:', from);
+        console.log('LoginForm: Login successful, navigating to dashboard');
 
         // Call the onLogin callback if provided (for backward compatibility)
         onLogin?.();
 
-        // Small delay to ensure auth state is updated
+        // Use navigation hook to force dashboard navigation
         setTimeout(() => {
-          console.log('LoginForm: Executing navigation to:', from);
-          navigate(from, { replace: true });
-        }, 100);
+          console.log('LoginForm: Forcing navigation to dashboard');
+          navigateToDashboard();
+          // Also ensure we're at dashboard route
+          navigate('/dashboard', { replace: true });
+        }, 200);
       } else {
         console.log('LoginForm: Login failed:', result);
         toast.error(result || 'Login failed');

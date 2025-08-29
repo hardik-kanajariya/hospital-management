@@ -109,7 +109,7 @@ export function useAuth() {
         role: authResponse.user.role as UserRole,
         isActive: true,
         createdAt: new Date().toISOString(),
-        permissions: authResponse.user.permissions.map(p => ({ module: p, actions: ['read'] as const }))
+        permissions: authResponse.user.permissions || []
       };
 
       // Store user data safely

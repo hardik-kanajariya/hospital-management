@@ -110,23 +110,25 @@ export function useConnectionStatus(): ConnectionHook {
         };
     }, [checkServerConnection, user?.role]);
 
-    // Initial connection check
+    // Initial connection check (only if user is authenticated)
     useEffect(() => {
-        if (navigator.onLine) {
+        if (navigator.onLine && user) {
             checkServerConnection();
         }
-    }, [checkServerConnection]);
+    }, [checkServerConnection, user]);
 
-    // Periodic connection check (every 2 minutes)
+    // Periodic connection check (every 5 minutes, only if user is authenticated)
     useEffect(() => {
+        if (!user) return; // Don't check if not authenticated
+
         const interval = setInterval(() => {
             if (navigator.onLine) {
                 checkServerConnection();
             }
-        }, 120000); // 2 minutes
+        }, 300000); // 5 minutes instead of 2
 
         return () => clearInterval(interval);
-    }, [checkServerConnection]);
+    }, [checkServerConnection, user]);
 
     const clearError = useCallback(() => {
         setConnectionState(prev => ({ ...prev, error: null }));

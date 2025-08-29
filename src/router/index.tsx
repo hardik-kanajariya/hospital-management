@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import App from '../App';
-import LoginForm from '../components/auth/LoginForm';
+import LoginRedirect from '../components/auth/LoginRedirect';
 import LandingPage from '../components/landing/LandingPage';
 import Dashboard from '../components/hospital/Dashboard';
 import PatientManagement from '../components/hospital/PatientManagement';
@@ -33,7 +33,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: 'login',
-                element: <LoginForm />
+                element: <LoginRedirect />
             },
             {
                 path: 'dashboard',
