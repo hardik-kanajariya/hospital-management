@@ -33,8 +33,14 @@ export function useSyncManager(): SyncManagerHook {
     const lastNotificationRef = useRef<string>('');
     const syncInProgressRef = useRef(false);
 
-    // Debounced sync function
+    // Debounced sync function (disabled in online-only mode)
     const debouncedSync = useCallback(() => {
+        // OFFLINE FUNCTIONALITY DISABLED - No automatic sync needed in online-only mode
+        console.log('Automatic sync disabled - running in online-only mode');
+        return;
+
+        // Original sync code commented out:
+        /*
         if (syncTimeoutRef.current) {
             clearTimeout(syncTimeoutRef.current);
         }
@@ -71,6 +77,7 @@ export function useSyncManager(): SyncManagerHook {
                 syncInProgressRef.current = false;
             }
         }, 2000); // 2 second debounce
+        */
     }, [user?.role]);
 
     // Handle online/offline events
@@ -78,14 +85,12 @@ export function useSyncManager(): SyncManagerHook {
         const handleOnline = () => {
             setSyncState(prev => ({ ...prev, isOnline: true }));
 
-            // Only show "back online" notification if we were previously offline
-            // and only to relevant roles
+            // Show "back online" notification
             if (!syncState.isOnline && (user?.role === 'super_admin' || user?.role === 'receptionist')) {
-                toast.success('Connection restored - syncing data...');
+                toast.success('Connection restored - you can now continue working');
             }
 
-            // Trigger sync when coming back online
-            debouncedSync();
+            // No sync needed in online-only mode
         };
 
         const handleOffline = () => {
@@ -97,10 +102,8 @@ export function useSyncManager(): SyncManagerHook {
             }
             syncInProgressRef.current = false;
 
-            // Only show offline notification to relevant roles
-            if (user?.role === 'super_admin' || user?.role === 'receptionist') {
-                toast.warning('Working offline - changes will sync when connection is restored');
-            }
+            // Show offline notification to all users since app won't work offline
+            toast.error('Internet connection lost - application requires internet connection to function');
         };
 
         window.addEventListener('online', handleOnline);
@@ -115,18 +118,18 @@ export function useSyncManager(): SyncManagerHook {
         };
     }, [debouncedSync, syncState.isOnline, user?.role]);
 
-    // Monitor pending sync operations
+    // Monitor pending sync operations (always 0 in online-only mode)
     useEffect(() => {
         const checkPendingSync = async () => {
             try {
                 const stats = await connectionManager.getStats();
                 setSyncState(prev => ({
                     ...prev,
-                    pendingSync: stats.pendingOperations,
-                    hasUnsyncedChanges: stats.pendingOperations > 0
+                    pendingSync: 0, // Always 0 in online-only mode
+                    hasUnsyncedChanges: false // Always false in online-only mode
                 }));
             } catch (error) {
-                console.warn('Failed to check pending sync operations:', error);
+                console.warn('Failed to check connection stats:', error);
             }
         };
 
@@ -137,15 +140,15 @@ export function useSyncManager(): SyncManagerHook {
         return () => clearInterval(interval);
     }, []);
 
-    // Force sync function for manual sync
+    // Force sync function for manual sync (disabled in online-only mode)
     const forceSync = useCallback(async () => {
         if (!navigator.onLine) {
-            toast.error('Cannot sync while offline');
+            toast.error('Cannot sync while offline - internet connection is required');
             return;
         }
 
         if (syncInProgressRef.current) {
-            toast.info('Sync already in progress...');
+            toast.info('Application is running in online-only mode - no sync required');
             return;
         }
 
@@ -153,9 +156,9 @@ export function useSyncManager(): SyncManagerHook {
             syncInProgressRef.current = true;
             setSyncState(prev => ({ ...prev, isSyncing: true, syncError: null }));
 
-            // Show sync started notification only to relevant roles
+            // Show message about online-only mode
             if (user?.role === 'super_admin' || user?.role === 'receptionist') {
-                toast.info('Starting manual sync...');
+                toast.info('Application is running in online-only mode - all data is automatically current');
             }
 
             await connectionManager.forcSync();
@@ -167,13 +170,8 @@ export function useSyncManager(): SyncManagerHook {
                 hasUnsyncedChanges: false
             }));
 
-            // Show success notification only to relevant roles
-            if (user?.role === 'super_admin' || user?.role === 'receptionist') {
-                toast.success('Sync completed successfully');
-            }
-
         } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Sync failed';
+            const errorMessage = error instanceof Error ? error.message : 'Operation failed';
             setSyncState(prev => ({
                 ...prev,
                 isSyncing: false,
@@ -182,7 +180,7 @@ export function useSyncManager(): SyncManagerHook {
 
             // Show error notification only to relevant roles
             if (user?.role === 'super_admin' || user?.role === 'receptionist') {
-                toast.error(`Manual sync failed: ${errorMessage}`);
+                toast.error(`Error: ${errorMessage}`);
             }
         } finally {
             syncInProgressRef.current = false;

@@ -431,10 +431,22 @@ export class HospitalDatabase {
     if (this.initialized) return;
 
     try {
-      await this.offlineDb.initialize();
-      await this.syncManager.initialize();
+      // Check if offline functionality is disabled via environment variable
+      const offlineEnabled = import.meta.env.VITE_OFFLINE_ENABLED !== 'false';
+
+      if (!offlineEnabled) {
+        console.log('Offline functionality disabled via environment variable - running in online-only mode');
+        this.initialized = true;
+        console.log('Hospital database initialized successfully (online-only mode)');
+        return;
+      }
+
+      // Original offline initialization (commented out for now)
+      // await this.offlineDb.initialize();
+      // await this.syncManager.initialize();
+
       this.initialized = true;
-      console.log('Hospital database initialized successfully');
+      console.log('Hospital database initialized successfully (online-only mode)');
     } catch (error) {
       console.error('Failed to initialize database:', error);
       throw error;
@@ -446,54 +458,34 @@ export class HospitalDatabase {
       throw new Error('Database not initialized. Please wait for initialization to complete.');
     }
 
-    // Try online first, fallback to offline
-    if (navigator.onLine) {
-      try {
-        const response = await this.apiClient.get(`/${tableName}`);
-
-        // Handle different API response structures
-        let data: any[] = [];
-        if (response && response.success && response.data) {
-          // New standardized response format
-          if (Array.isArray(response.data)) {
-            data = response.data;
-          } else if (response.data.data && Array.isArray(response.data.data)) {
-            // Paginated response
-            data = response.data.data;
-          }
-        } else if (Array.isArray(response)) {
-          // Old direct array response
-          data = response;
-        }
-
-        // Store in offline database for caching
-        if (data.length > 0) {
-          try {
-            // Clear existing data and add new data
-            const existingData = await this.offlineDb.getAll(tableName);
-            for (const item of existingData) {
-              if (item && typeof item === 'object' && item.id) {
-                await this.offlineDb.delete(tableName, item.id);
-              }
-            }
-            for (const item of data) {
-              if (item && typeof item === 'object') {
-                await this.offlineDb.add(tableName, { ...item, sync_status: 'synced' });
-              }
-            }
-          } catch (offlineError) {
-            console.warn('Failed to cache data offline:', offlineError);
-          }
-        }
-
-        return data;
-      } catch (error) {
-        console.warn('API call failed, falling back to offline data:', error);
-      }
+    // OFFLINE FUNCTIONALITY DISABLED - Only try online API
+    if (!navigator.onLine) {
+      throw new Error('Internet connection is required. Please check your connection and try again.');
     }
 
-    // Fallback to offline data
-    return this.offlineDb.getAll(tableName);
+    try {
+      const response = await this.apiClient.get(`/${tableName}`);
+
+      // Handle different API response structures
+      let data: any[] = [];
+      if (response && response.success && response.data) {
+        // New standardized response format
+        if (Array.isArray(response.data)) {
+          data = response.data;
+        } else if (response.data.data && Array.isArray(response.data.data)) {
+          // Paginated response
+          data = response.data.data;
+        }
+      } else if (Array.isArray(response)) {
+        // Old direct array response
+        data = response;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('API call failed:', error);
+      throw new Error('Failed to fetch data from server. Please check your connection and try again.');
+    }
   }
 
   async add(tableName: string, data: any): Promise<number> {
@@ -501,37 +493,25 @@ export class HospitalDatabase {
       throw new Error('Database not initialized. Please wait for initialization to complete.');
     }
 
-    // Add to offline storage first
-    const offlineId = await this.offlineDb.add(tableName, {
-      ...data,
-      sync_status: navigator.onLine ? 'pending' : 'offline',
-      local_changes: true
-    });
-
-    // Try to sync with server if online
-    if (navigator.onLine) {
-      try {
-        const response = await this.apiClient.post(`/${tableName}`, data);
-
-        // Update offline record with server ID if successful
-        let serverData = response;
-        if (response && response.success && response.data) {
-          serverData = response.data;
-        }
-
-        await this.offlineDb.update(tableName, offlineId, {
-          ...serverData,
-          sync_status: 'synced',
-          local_changes: false
-        });
-
-        return serverData.id || offlineId;
-      } catch (error) {
-        console.warn('Failed to sync with server, data saved offline:', error);
-      }
+    // OFFLINE FUNCTIONALITY DISABLED - Only allow online operations
+    if (!navigator.onLine) {
+      throw new Error('Internet connection is required to add data. Please check your connection and try again.');
     }
 
-    return offlineId;
+    try {
+      const response = await this.apiClient.post(`/${tableName}`, data);
+
+      // Handle response
+      let serverData = response;
+      if (response && response.success && response.data) {
+        serverData = response.data;
+      }
+
+      return serverData.id || response.id || Date.now(); // Fallback to timestamp if no ID
+    } catch (error) {
+      console.error('Failed to add data to server:', error);
+      throw new Error('Failed to save data to server. Please check your connection and try again.');
+    }
   }
 
   async update(tableName: string, id: number, data: any): Promise<void> {
@@ -539,27 +519,16 @@ export class HospitalDatabase {
       throw new Error('Database not initialized. Please wait for initialization to complete.');
     }
 
-    // Update offline storage first
-    await this.offlineDb.update(tableName, id, {
-      ...data,
-      sync_status: navigator.onLine ? 'pending' : 'offline',
-      local_changes: true,
-      updated_at: new Date().toISOString()
-    });
+    // OFFLINE FUNCTIONALITY DISABLED - Only allow online operations
+    if (!navigator.onLine) {
+      throw new Error('Internet connection is required to update data. Please check your connection and try again.');
+    }
 
-    // Try to sync with server if online
-    if (navigator.onLine) {
-      try {
-        await this.apiClient.put(`/${tableName}/${id}`, data);
-
-        // Mark as synced
-        await this.offlineDb.update(tableName, id, {
-          sync_status: 'synced',
-          local_changes: false
-        });
-      } catch (error) {
-        console.warn('Failed to sync update with server:', error);
-      }
+    try {
+      await this.apiClient.put(`/${tableName}/${id}`, data);
+    } catch (error) {
+      console.error('Failed to update data on server:', error);
+      throw new Error('Failed to update data on server. Please check your connection and try again.');
     }
   }
 
@@ -568,17 +537,17 @@ export class HospitalDatabase {
       throw new Error('Database not initialized. Please wait for initialization to complete.');
     }
 
-    // Try server delete first if online
-    if (navigator.onLine) {
-      try {
-        await this.apiClient.delete(`/${tableName}/${id}`);
-      } catch (error) {
-        console.warn('Failed to delete from server:', error);
-      }
+    // OFFLINE FUNCTIONALITY DISABLED - Only allow online operations
+    if (!navigator.onLine) {
+      throw new Error('Internet connection is required to delete data. Please check your connection and try again.');
     }
 
-    // Delete from offline storage
-    await this.offlineDb.delete(tableName, id);
+    try {
+      await this.apiClient.delete(`/${tableName}/${id}`);
+    } catch (error) {
+      console.error('Failed to delete data from server:', error);
+      throw new Error('Failed to delete data from server. Please check your connection and try again.');
+    }
   }
 
   async authenticate(email: string, password: string): Promise<any> {

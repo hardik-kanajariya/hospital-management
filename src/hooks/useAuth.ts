@@ -92,36 +92,20 @@ export function useAuth() {
     try {
       console.log('Login attempt for:', email, 'isOnline:', db.isOnline());
 
-      let authenticatedUser: User;
+      // Check if offline functionality is disabled
+      const offlineEnabled = import.meta.env.VITE_OFFLINE_ENABLED !== 'false';
 
-      if (db.isOnline()) {
-        // Try database authentication first
-        console.log('Attempting database authentication...');
-        authenticatedUser = await db.authenticate(email, password);
-        console.log('Database authentication successful:', authenticatedUser);
-      } else {
-        // Offline mode - use demo users
-        console.log('Using offline demo authentication...');
-        const userRole = getUserRoleFromEmail(email);
-
-        // Simple password check for demo (admin123 for all demo accounts)
-        if (password !== 'admin123') {
-          throw new Error('Invalid credentials');
+      if (!offlineEnabled || !db.isOnline()) {
+        // Force online-only authentication when offline functionality is disabled
+        if (!db.isOnline()) {
+          throw new Error('Internet connection is required for authentication. Please check your connection and try again.');
         }
-
-        authenticatedUser = {
-          id: crypto.randomUUID(),
-          email,
-          name: getNameFromEmail(email),
-          role: userRole,
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          lastLogin: new Date().toISOString(),
-          permissions: ROLE_CONFIGS.find(r => r.role === userRole)?.permissions || []
-        };
-
-        console.log('Demo authentication successful:', authenticatedUser);
       }
+
+      // Only try database authentication
+      console.log('Attempting database authentication...');
+      const authenticatedUser = await db.authenticate(email, password);
+      console.log('Database authentication successful:', authenticatedUser);
 
       // Store user data safely
       setUserData(authenticatedUser);

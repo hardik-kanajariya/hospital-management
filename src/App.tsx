@@ -257,21 +257,18 @@ function App() {
               <div className="hidden sm:flex items-center gap-4">
                 <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${syncState.isOnline
                   ? 'bg-green-100 text-green-800'
-                  : 'bg-orange-100 text-orange-800'
+                  : 'bg-red-100 text-red-800'
                   }`}>
                   {syncState.isOnline ? (
                     <>
                       <CloudArrowUpIcon className="w-3 h-3" />
-                      Online
+                      {import.meta.env.VITE_OFFLINE_ENABLED === 'false' ? 'Online-Only Mode' : 'Online'}
                     </>
                   ) : (
                     <>
                       <WifiSlashIcon className="w-3 h-3" />
-                      Offline
+                      Connection Required
                     </>
-                  )}
-                  {syncState.pendingSync > 0 && (
-                    <span className="ml-1">({syncState.pendingSync} pending)</span>
                   )}
                 </div>
               </div>
@@ -280,11 +277,11 @@ function App() {
 
           {/* Offline Warning Banner */}
           {!syncState.isOnline && (
-            <div className="bg-orange-50 border-b border-orange-200 px-6 py-3">
-              <div className="flex items-center gap-2 text-orange-800">
+            <div className="bg-red-50 border-b border-red-200 px-6 py-3">
+              <div className="flex items-center gap-2 text-red-800">
                 <WifiSlashIcon className="w-4 h-4" />
                 <p className="text-sm">
-                  Working offline - Your changes are saved locally and will sync when connection is restored.
+                  <strong>Internet connection required</strong> - This application requires an active internet connection to function. Please check your connection and refresh the page.
                 </p>
               </div>
             </div>

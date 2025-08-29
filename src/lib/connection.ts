@@ -23,13 +23,13 @@ class ConnectionManager {
     window.addEventListener('online', () => {
       this.isOnline = true
       console.log('Connection restored')
-      toast.success('Back online')
+      toast.success('Back online - you can now continue working')
     })
 
     window.addEventListener('offline', () => {
       this.isOnline = false
-      console.log('Connection lost - entering offline mode')
-      toast.warning('Working offline')
+      console.log('Connection lost - application requires internet connection')
+      toast.error('Internet connection lost - please check your connection')
     })
   }
 
@@ -44,17 +44,15 @@ class ConnectionManager {
 
   async forcSync(): Promise<void> {
     if (!this.isOnline) {
-      throw new Error('Cannot sync while offline')
+      throw new Error('Cannot sync while offline - internet connection is required')
     }
 
     if (!db.isInitialized()) {
       throw new Error('Database not initialized')
     }
 
-    // The main database instance handles all sync automatically
-    // This is just a notification that sync was requested
-    console.log('Sync completed via main database instance')
-    toast.success('Data synchronized')
+    // In online-only mode, no sync is needed - data is always current
+    console.log('Online-only mode - no sync required')
   }
 
   async getSyncConflicts(): Promise<SyncConflict[]> {
@@ -71,7 +69,9 @@ class ConnectionManager {
       isOnline: this.isOnline,
       isSyncing: this.syncInProgress,
       dbInitialized: db.isInitialized(),
-      lastCheck: new Date().toISOString()
+      lastCheck: new Date().toISOString(),
+      pendingOperations: 0, // Always 0 in online-only mode
+      offlineMode: false // Always false - offline mode disabled
     }
   }
 }

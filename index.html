@@ -20,9 +20,13 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
 
-    <!-- Service Worker Registration -->
+    <!-- Service Worker Registration (disabled when offline functionality is disabled) -->
     <script>
-        if ('serviceWorker' in navigator) {
+        // Service Worker is disabled when offline functionality is turned off
+        // This can be controlled via the VITE_OFFLINE_ENABLED environment variable
+        const shouldRegisterSW = window.location.search.includes('enableSW=true');
+
+        if ('serviceWorker' in navigator && shouldRegisterSW) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
                     .then((registration) => {
@@ -55,6 +59,8 @@
                     window.dispatchEvent(new CustomEvent('service-worker-sync'));
                 }
             });
+        } else {
+            console.log('Service Worker disabled - offline functionality is turned off');
         }
     </script>
 </body>
