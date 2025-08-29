@@ -19,11 +19,7 @@
 <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-
-    <!-- Service Worker Registration (disabled when offline functionality is disabled) -->
     <script>
-        // Service Worker is disabled when offline functionality is turned off
-        // This can be controlled via the VITE_OFFLINE_ENABLED environment variable
         const shouldRegisterSW = window.location.search.includes('enableSW=true');
 
         if ('serviceWorker' in navigator && shouldRegisterSW) {

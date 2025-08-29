@@ -271,7 +271,7 @@ function App() {
                   {connectionState.isOnline ? (
                     <>
                       <CloudArrowUpIcon className="w-3 h-3" />
-                      {import.meta.env.VITE_OFFLINE_ENABLED === 'false' ? 'Online-Only Mode' : 'Online'}
+                      Online
                     </>
                   ) : (
                     <>

@@ -289,4 +289,3 @@ self.addEventListener('message', (event) => {
   }
 });
 
-console.log('HTTP Service Worker loaded successfully - Online-only mode');
