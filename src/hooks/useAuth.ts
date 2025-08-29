@@ -12,8 +12,7 @@ interface AuthState {
 const setUserData = (user: User) => {
   try {
     localStorage.setItem('current_user', JSON.stringify(user));
-    // Set a dummy token for offline mode (or real token for online mode)
-    localStorage.setItem('auth_token', 'demo_token_' + user.id);
+    localStorage.setItem('auth_token', user.id);
   } catch (error) {
     console.error('Failed to save user data:', error);
   }
@@ -45,7 +44,6 @@ export function useAuth() {
 
   // Clear invalid localStorage data on mount
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
     const savedUser = localStorage.getItem('current_user');
 
     // Clear invalid data
