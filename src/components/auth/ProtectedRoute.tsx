@@ -18,27 +18,39 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         isAuthenticated,
         isLoading,
         userRole: user?.role,
+        userName: user?.name,
         requiredRole,
-        currentPath: location.pathname
+        currentPath: location.pathname,
+        hasUser: !!user,
+        timestamp: new Date().toISOString()
     });
 
     // Show loading state if auth is still loading
     if (isLoading) {
-        return <div>Loading...</div>;
+        console.log('ProtectedRoute: Showing loading state');
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p>Loading...</p>
+                </div>
+            </div>
+        );
     }
 
     // If not authenticated, redirect to login with return path
     if (!isAuthenticated) {
-        console.log('Redirecting to login from:', location.pathname);
+        console.log('ProtectedRoute: User not authenticated, redirecting to login from:', location.pathname);
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
     // If role is required and user doesn't have it, redirect to dashboard
     if (requiredRole && user?.role !== requiredRole) {
-        console.log('User role mismatch, redirecting to dashboard');
+        console.log('ProtectedRoute: User role mismatch, redirecting to dashboard. Required:', requiredRole, 'User role:', user?.role);
         return <Navigate to="/dashboard" replace />;
     }
 
+    console.log('ProtectedRoute: Access granted for user:', user?.name);
     return <>{children}</>;
 };
 

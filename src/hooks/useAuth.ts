@@ -12,6 +12,8 @@ interface AuthState {
 const setUserData = (user: User) => {
   try {
     localStorage.setItem('current_user', JSON.stringify(user));
+    // Set a dummy token for offline mode (or real token for online mode)
+    localStorage.setItem('auth_token', 'demo_token_' + user.id);
   } catch (error) {
     console.error('Failed to save user data:', error);
   }
@@ -38,7 +40,7 @@ export function useAuth() {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
     isAuthenticated: false,
-    isLoading: false
+    isLoading: true  // Start with loading true to prevent premature redirects
   });
 
   // Clear invalid localStorage data on mount
@@ -71,11 +73,16 @@ export function useAuth() {
         } else {
           // Invalid user object, clear storage
           clearUserData();
+          setAuthState(prev => ({ ...prev, isLoading: false }));
         }
       } catch (error) {
         console.error('Failed to parse saved user:', error);
         clearUserData();
+        setAuthState(prev => ({ ...prev, isLoading: false }));
       }
+    } else {
+      // No existing session, set loading to false
+      setAuthState(prev => ({ ...prev, isLoading: false }));
     }
   }, []);
 

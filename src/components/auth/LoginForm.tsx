@@ -35,19 +35,29 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
     }
 
     try {
+      console.log('LoginForm: Starting login process for:', email);
       const result = await login(email, password);
+
+      console.log('LoginForm: Login result:', result);
 
       if (result.success) {
         toast.success('Login successful! Redirecting...');
+        console.log('LoginForm: Login successful, navigating to:', from);
+
         // Call the onLogin callback if provided (for backward compatibility)
         onLogin?.();
-        // Navigate to the intended page or dashboard
-        navigate(from, { replace: true });
+
+        // Small delay to ensure auth state is updated
+        setTimeout(() => {
+          console.log('LoginForm: Executing navigation to:', from);
+          navigate(from, { replace: true });
+        }, 100);
       } else {
+        console.log('LoginForm: Login failed:', result.error);
         toast.error(result.error || 'Login failed');
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('LoginForm: Login error:', error);
       toast.error('Login failed. Please try again.');
     }
   };
