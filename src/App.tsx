@@ -1,11 +1,8 @@
 import React, { useEffect, useMemo } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
-import { db } from '@/lib/database'
-import { useNavigation } from '@/hooks/useNavigation'
+import { initializeApp, useAuth, useNavigation, useConnectionStatus } from '@/lib'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
-import { useAuth } from '@/hooks/useAuth'
-import { useConnectionStatus } from '@/hooks/useConnectionStatus'
 import {
   Sidebar,
   SidebarContent,
@@ -45,19 +42,19 @@ function App() {
   const { connectionState } = useConnectionStatus()
   const location = useLocation()
 
-  // Initialize database on app start
+  // Initialize application on start
   useEffect(() => {
-    const initializeApp = async () => {
+    const initApp = async () => {
       try {
-        // Initialize the main database instance
-        await db.initialize()
-        console.log('Database initialized successfully')
+        // Initialize the application systems
+        await initializeApp()
+        console.log('Application initialized successfully')
       } catch (error) {
-        console.error('Failed to initialize database:', error)
+        console.error('Failed to initialize application:', error)
       }
     }
 
-    initializeApp()
+    initApp()
   }, [])
 
   // Filter tabs based on user permissions (memoized for performance)
