@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +20,11 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const { login, isLoading } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get the intended destination from the location state or default to dashboard
+  const from = location.state?.from?.pathname || '/dashboard';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,8 +39,10 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
 
       if (result.success) {
         toast.success('Login successful! Redirecting...');
-        // Call the onLogin callback immediately
+        // Call the onLogin callback if provided (for backward compatibility)
         onLogin?.();
+        // Navigate to the intended page or dashboard
+        navigate(from, { replace: true });
       } else {
         toast.error(result.error || 'Login failed');
       }

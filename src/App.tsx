@@ -1,14 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
+import { Outlet, useLocation } from 'react-router-dom'
 import { db } from '@/lib/database'
 import { useNavigation } from '@/hooks/useNavigation'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
 import { useAuth } from '@/hooks/useAuth'
 import { useSyncManager } from '@/hooks/useSyncManager'
-import LoginForm from '@/components/auth/LoginForm'
-import RoleBasedAccess from '@/components/auth/RoleBasedAccess'
-import LandingPage from '@/components/landing/LandingPage'
-import { SyncStatusCard } from '@/components/common/SyncStatus'
 import {
   Sidebar,
   SidebarContent,
@@ -42,23 +39,11 @@ import {
   CloudArrowUpIcon
 } from '@phosphor-icons/react'
 
-// Hospital components
-import Dashboard from '@/components/hospital/Dashboard'
-import PatientManagement from '@/components/hospital/PatientManagement'
-import AppointmentScheduling from '@/components/hospital/AppointmentScheduling'
-import MedicalRecords from '@/components/hospital/MedicalRecords'
-import EnhancedBillingSystem from '@/components/hospital/EnhancedBillingSystem'
-import InventoryManagement from '@/components/hospital/InventoryManagement'
-import DoctorSchedule from '@/components/hospital/DoctorSchedule'
-import LabManagement from '@/components/hospital/LabManagement'
-import BedManagement from '@/components/hospital/BedManagement'
-import UserManagement from '@/components/auth/UserManagement'
-import NotificationCenter from '@/components/hospital/NotificationCenter'
-
 function App() {
   const { user, isAuthenticated, logout, hasPermission } = useAuth()
-  const { activeTab, setActiveTab, navigateToDashboard } = useNavigation()
+  const { activeTab, setActiveTab } = useNavigation()
   const { syncState } = useSyncManager()
+  const location = useLocation()
 
   // Initialize database on app start
   useEffect(() => {
@@ -81,39 +66,47 @@ function App() {
       isAuthenticated,
       user: user?.name,
       role: user?.role,
-      activeTab
+      currentPath: location.pathname
     });
-  }, [isAuthenticated, user, activeTab])
+  }, [isAuthenticated, user, location.pathname])
 
-  // Show login form when not authenticated
-  if (!isAuthenticated) {
+  // Show minimal layout for login page
+  if (location.pathname === '/login') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-        <LoginForm onLogin={() => {
-          console.log('Login callback triggered, navigating to dashboard');
-          navigateToDashboard();
-        }} />
+        <Outlet />
+        <Toaster />
+      </div>
+    )
+  }
+
+  // Show minimal layout for landing page
+  if (location.pathname === '/landing') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+        <Outlet />
+        <Toaster />
       </div>
     )
   }
 
   // Filter tabs based on user permissions
   const availableTabs = [
-    { id: 'landing', label: 'Home', icon: HouseIcon, module: 'dashboard' },
-    { id: 'dashboard', label: 'Dashboard', icon: PulseIcon, module: 'dashboard' },
-    { id: 'patients', label: 'Patients', icon: UsersIcon, module: 'patients' },
-    { id: 'appointments', label: 'Appointments', icon: CalendarIcon, module: 'appointments' },
-    { id: 'doctors', label: 'Doctors', icon: UserCircleIcon, module: 'doctors' },
-    { id: 'records', label: 'Records', icon: FileTextIcon, module: 'medical_records' },
-    { id: 'lab', label: 'Lab', icon: TestTubeIcon, module: 'lab_tests' },
-    { id: 'beds', label: 'Beds', icon: BedIcon, module: 'beds' },
-    { id: 'billing', label: 'Billing', icon: CreditCardIcon, module: 'billing' },
-    { id: 'inventory', label: 'Inventory', icon: PackageIcon, module: 'inventory' },
-    { id: 'notifications', label: 'Notifications', icon: BellIcon, module: 'notifications' },
-    { id: 'users', label: 'Users', icon: ShieldIcon, module: 'user_management', requiresRole: 'super_admin' }
+    { id: 'landing', label: 'Home', icon: HouseIcon, module: 'dashboard', path: '/landing' },
+    { id: 'dashboard', label: 'Dashboard', icon: PulseIcon, module: 'dashboard', path: '/dashboard' },
+    { id: 'patients', label: 'Patients', icon: UsersIcon, module: 'patients', path: '/patients' },
+    { id: 'appointments', label: 'Appointments', icon: CalendarIcon, module: 'appointments', path: '/appointments' },
+    { id: 'doctors', label: 'Doctors', icon: UserCircleIcon, module: 'doctors', path: '/doctors' },
+    { id: 'records', label: 'Records', icon: FileTextIcon, module: 'medical_records', path: '/records' },
+    { id: 'lab', label: 'Lab', icon: TestTubeIcon, module: 'lab_tests', path: '/lab' },
+    { id: 'beds', label: 'Beds', icon: BedIcon, module: 'beds', path: '/beds' },
+    { id: 'billing', label: 'Billing', icon: CreditCardIcon, module: 'billing', path: '/billing' },
+    { id: 'inventory', label: 'Inventory', icon: PackageIcon, module: 'inventory', path: '/inventory' },
+    { id: 'notifications', label: 'Notifications', icon: BellIcon, module: 'notifications', path: '/notifications' },
+    { id: 'users', label: 'Users', icon: ShieldIcon, module: 'user_management', path: '/users', requiresRole: 'super_admin' }
   ].filter(tab => {
-    // Always show landing page
-    if (tab.id === 'landing') return true;
+    // Always show landing and dashboard
+    if (['landing', 'dashboard'].includes(tab.id)) return true;
 
     // Check module permission
     if (!hasPermission(tab.module, 'read')) return false;
@@ -144,74 +137,9 @@ function App() {
     }
   ].filter(group => group.items.length > 0)
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'landing':
-        return <LandingPage />
-      case 'dashboard':
-        return <Dashboard />
-      case 'patients':
-        return (
-          <RoleBasedAccess requiredModule="patients">
-            <PatientManagement />
-          </RoleBasedAccess>
-        )
-      case 'appointments':
-        return (
-          <RoleBasedAccess requiredModule="appointments">
-            <AppointmentScheduling />
-          </RoleBasedAccess>
-        )
-      case 'records':
-        return (
-          <RoleBasedAccess requiredModule="medical_records">
-            <MedicalRecords />
-          </RoleBasedAccess>
-        )
-      case 'doctors':
-        return (
-          <RoleBasedAccess requiredModule="doctors">
-            <DoctorSchedule />
-          </RoleBasedAccess>
-        )
-      case 'lab':
-        return (
-          <RoleBasedAccess requiredModule="lab_tests">
-            <LabManagement />
-          </RoleBasedAccess>
-        )
-      case 'beds':
-        return (
-          <RoleBasedAccess requiredModule="beds">
-            <BedManagement />
-          </RoleBasedAccess>
-        )
-      case 'billing':
-        return (
-          <RoleBasedAccess requiredModule="billing">
-            <EnhancedBillingSystem />
-          </RoleBasedAccess>
-        )
-      case 'inventory':
-        return (
-          <RoleBasedAccess requiredModule="inventory">
-            <InventoryManagement />
-          </RoleBasedAccess>
-        )
-      case 'notifications':
-        return <NotificationCenter />
-      case 'users':
-        return <UserManagement />
-      default:
-        return <Dashboard />
-    }
-  }
-
   const getPageTitle = () => {
-    const currentTab = availableTabs.find(tab => tab.id === activeTab)
-    if (!currentTab) return 'Dashboard'
-
-    switch (activeTab) {
+    const currentPath = location.pathname.slice(1)
+    switch (currentPath) {
       case 'dashboard': return 'Dashboard'
       case 'patients': return 'Patient Management'
       case 'appointments': return 'Appointment Scheduling'
@@ -223,12 +151,14 @@ function App() {
       case 'inventory': return 'Inventory Management'
       case 'notifications': return 'Notification Center'
       case 'users': return 'User Management'
-      default: return currentTab.label
+      case 'landing': return 'Home'
+      default: return 'Hospital Management'
     }
   }
 
   const getPageDescription = () => {
-    switch (activeTab) {
+    const currentPath = location.pathname.slice(1)
+    switch (currentPath) {
       case 'dashboard': return 'Overview of hospital operations'
       case 'patients': return 'Manage patient records and information'
       case 'appointments': return 'Schedule and manage patient appointments'
@@ -240,6 +170,7 @@ function App() {
       case 'inventory': return 'Track medical supplies and medications'
       case 'notifications': return 'Send and track SMS and email notifications'
       case 'users': return 'Manage hospital staff access and permissions'
+      case 'landing': return 'Welcome to MedCare Rural Hospital Management System'
       default: return 'Hospital management system'
     }
   }
@@ -273,7 +204,7 @@ function App() {
                         <SidebarMenuItem key={item.id}>
                           <SidebarMenuButton
                             onClick={() => setActiveTab(item.id)}
-                            isActive={activeTab === item.id}
+                            isActive={location.pathname === item.path}
                           >
                             <Icon className="w-4 h-4" />
                             <span>{item.label}</span>
@@ -288,28 +219,23 @@ function App() {
           </SidebarContent>
 
           <SidebarFooter className="border-t">
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <div className="px-3 py-2 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
-                      {user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U'}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">{user?.name || 'User'}</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {user?.role ? user.role.replace('_', ' ').toUpperCase() : 'USER'}
-                      </p>
-                    </div>
-                  </div>
-                  {/* <SyncStatusCard /> */}
-                  <Button variant="outline" size="sm" onClick={logout} className="w-full">
-                    <SignOutIcon className="w-4 h-4 mr-2" />
-                    Sign Out
-                  </Button>
+            <div className="px-3 py-2 space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
+                  {user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U'}
                 </div>
-              </SidebarMenuItem>
-            </SidebarMenu>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">{user?.name || 'User'}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {user?.role ? user.role.replace('_', ' ').toUpperCase() : 'USER'}
+                  </p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" onClick={logout} className="w-full">
+                <SignOutIcon className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
           </SidebarFooter>
         </Sidebar>
 
@@ -365,7 +291,7 @@ function App() {
 
           {/* Page Content */}
           <main className="flex-1 p-6 space-y-6 overflow-auto">
-            {renderContent()}
+            <Outlet />
           </main>
         </div>
       </div>
