@@ -199,8 +199,26 @@ export function useDatabase(tableName: string) {
           headers: { Authorization: `Bearer ${token}` }
         });
 
+        // Handle new API response structure with pagination
+        let dataArray;
+        if (response.data.success && response.data.data) {
+          // New paginated response structure
+          if (response.data.data.data && Array.isArray(response.data.data.data)) {
+            dataArray = response.data.data.data;
+          } else if (Array.isArray(response.data.data)) {
+            dataArray = response.data.data;
+          } else {
+            dataArray = [];
+          }
+        } else if (Array.isArray(response.data)) {
+          // Old direct array response
+          dataArray = response.data;
+        } else {
+          dataArray = [];
+        }
+
         // Store in offline DB
-        for (const item of response.data) {
+        for (const item of dataArray) {
           try {
             await offlineDB.update(tableName, item);
           } catch (e) {
@@ -208,7 +226,7 @@ export function useDatabase(tableName: string) {
           }
         }
 
-        setData(response.data);
+        setData(dataArray);
       } else {
         // Fetch from offline storage
         const offlineData = await offlineDB.getAll(tableName);
@@ -309,13 +327,21 @@ export function useDatabase(tableName: string) {
           headers: { Authorization: `Bearer ${token}` }
         });
 
+        // Handle new API response structure
+        let responseData;
+        if (response.data.success && response.data.data) {
+          responseData = response.data.data;
+        } else {
+          responseData = response.data;
+        }
+
         // Update local storage
-        await offlineDB.update(tableName, response.data);
-        setData(prevData => [...prevData, response.data]);
+        await offlineDB.update(tableName, responseData);
+        setData(prevData => [...prevData, responseData]);
 
         toast.success(`${tableName.slice(0, -1)} added successfully`);
 
-        return response.data;
+        return responseData;
       } else {
         // Add to offline storage
         const savedRecord = await offlineDB.add(tableName, newRecord);
@@ -357,13 +383,21 @@ export function useDatabase(tableName: string) {
           headers: { Authorization: `Bearer ${token}` }
         });
 
+        // Handle new API response structure
+        let responseData;
+        if (response.data.success && response.data.data) {
+          responseData = response.data.data;
+        } else {
+          responseData = response.data;
+        }
+
         // Update local storage
-        await offlineDB.update(tableName, response.data);
-        setData(prevData => prevData.map(item => item.id === id ? response.data : item));
+        await offlineDB.update(tableName, responseData);
+        setData(prevData => prevData.map(item => item.id === id ? responseData : item));
 
         toast.success(`${tableName.slice(0, -1)} updated successfully`);
 
-        return response.data;
+        return responseData;
       } else {
         // Update offline storage
         await offlineDB.update(tableName, updatedRecord);

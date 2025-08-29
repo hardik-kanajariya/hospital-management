@@ -2,6 +2,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import { body, validationResult } from 'express-validator';
 import User from '../models/User.js';
+import { sendResponse, sendError } from '../utils/response.js';
 
 const router = express.Router();
 
@@ -17,11 +18,7 @@ router.post('/register', [
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({
-                success: false,
-                message: 'Validation failed',
-                errors: errors.array()
-            });
+            return sendError(res, 'Validation failed', 400, errors.array());
         }
 
         const { email, password, name, role, phone, department, employee_id } = req.body;
@@ -29,10 +26,7 @@ router.post('/register', [
         // Check if user already exists
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
-            return res.status(400).json({
-                success: false,
-                message: 'User with this email already exists'
-            });
+            return sendError(res, 'User with this email already exists', 400);
         }
 
         // Create user
@@ -53,20 +47,13 @@ router.post('/register', [
             { expiresIn: process.env.JWT_EXPIRE }
         );
 
-        res.status(201).json({
-            success: true,
-            message: 'User created successfully',
-            data: {
-                user,
-                token
-            }
-        });
+        sendResponse(res, {
+            user,
+            token
+        }, 'User created successfully', 201);
     } catch (error) {
         console.error('Registration error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Server error during registration'
-        });
+        sendError(res, 'Server error during registration', 500);
     }
 });
 
@@ -83,11 +70,7 @@ router.post('/login', [
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             console.log('❌ Validation errors:', errors.array());
-            return res.status(400).json({
-                success: false,
-                message: 'Validation failed',
-                errors: errors.array()
-            });
+            return sendError(res, 'Validation failed', 400, errors.array());
         }
 
         const { email, password } = req.body;
@@ -97,10 +80,7 @@ router.post('/login', [
         const user = await User.findOne({ where: { email } });
         if (!user) {
             console.log('❌ User not found:', email);
-            return res.status(401).json({
-                success: false,
-                message: 'Invalid credentials'
-            });
+            return sendError(res, 'Invalid credentials', 401);
         }
 
         console.log('✅ User found:', user.email, 'Active:', user.is_active);
@@ -108,10 +88,7 @@ router.post('/login', [
         // Check if user is active
         if (!user.is_active) {
             console.log('❌ User account is deactivated');
-            return res.status(401).json({
-                success: false,
-                message: 'Account is deactivated'
-            });
+            return sendError(res, 'Account is deactivated', 401);
         }
 
         // Verify password
@@ -121,10 +98,7 @@ router.post('/login', [
 
         if (!isMatch) {
             console.log('❌ Password does not match');
-            return res.status(401).json({
-                success: false,
-                message: 'Invalid credentials'
-            });
+            return sendError(res, 'Invalid credentials', 401);
         }
 
         // Update last login
@@ -138,20 +112,13 @@ router.post('/login', [
         );
 
         console.log('✅ Login successful for user:', user.email);
-        res.json({
-            success: true,
-            message: 'Login successful',
-            data: {
-                user,
-                token
-            }
-        });
+        sendResponse(res, {
+            user,
+            token
+        }, 'Login successful');
     } catch (error) {
         console.error('❌ Login error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Server error during login'
-        });
+        sendError(res, 'Server error during login', 500);
     }
 });
 
@@ -163,32 +130,20 @@ router.get('/me', async (req, res) => {
         const token = req.header('Authorization')?.replace('Bearer ', '');
 
         if (!token) {
-            return res.status(401).json({
-                success: false,
-                message: 'Access denied. No token provided.'
-            });
+            return sendError(res, 'Access denied. No token provided.', 401);
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findByPk(decoded.id);
 
         if (!user || !user.is_active) {
-            return res.status(401).json({
-                success: false,
-                message: 'User not found or inactive'
-            });
+            return sendError(res, 'User not found or inactive', 401);
         }
 
-        res.json({
-            success: true,
-            data: { user }
-        });
+        sendResponse(res, { user }, 'User profile retrieved successfully');
     } catch (error) {
         console.error('Get profile error:', error);
-        res.status(401).json({
-            success: false,
-            message: 'Invalid token'
-        });
+        sendError(res, 'Invalid token', 401);
     }
 });
 
@@ -196,10 +151,7 @@ router.get('/me', async (req, res) => {
 // @route   POST /api/auth/logout
 // @access  Private
 router.post('/logout', (req, res) => {
-    res.json({
-        success: true,
-        message: 'Logout successful'
-    });
+    sendResponse(res, null, 'Logout successful');
 });
 
 export default router;

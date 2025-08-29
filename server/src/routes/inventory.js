@@ -1,4 +1,5 @@
 import express from 'express';
+import { sendResponse } from '../utils/response.js';
 
 const router = express.Router();
 
@@ -6,11 +7,7 @@ const router = express.Router();
 // @route   GET /api/inventory
 // @access  Private
 router.get('/', async (req, res) => {
-    res.json({
-        success: true,
-        message: 'Inventory endpoint - Coming soon',
-        data: []
-    });
+    sendResponse(res, [], 'Inventory endpoint - Coming soon');
 });
 
 export default router;

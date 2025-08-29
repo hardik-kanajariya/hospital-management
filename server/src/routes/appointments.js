@@ -95,13 +95,15 @@ router.get('/', [
             offset
         });
 
-        sendResponse(res, {
+        const paginatedResponse = {
             data: appointments.rows,
             total: appointments.count,
             page: parseInt(page),
             limit: parseInt(limit),
             totalPages: Math.ceil(appointments.count / parseInt(limit))
-        }, 'Appointments retrieved successfully');
+        };
+
+        sendResponse(res, paginatedResponse, 'Appointments retrieved successfully');
 
     } catch (error) {
         console.error('Error fetching appointments:', error);

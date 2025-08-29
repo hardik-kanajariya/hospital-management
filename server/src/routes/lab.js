@@ -1,4 +1,5 @@
 import express from 'express';
+import { sendResponse } from '../utils/response.js';
 
 const router = express.Router();
 
@@ -6,11 +7,7 @@ const router = express.Router();
 // @route   GET /api/lab
 // @access  Private
 router.get('/', async (req, res) => {
-    res.json({
-        success: true,
-        message: 'Lab endpoint - Coming soon',
-        data: []
-    });
+    sendResponse(res, [], 'Lab endpoint - Coming soon');
 });
 
 export default router;

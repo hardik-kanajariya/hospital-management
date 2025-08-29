@@ -41,13 +41,15 @@ router.get('/', async (req, res) => {
             offset: (parseInt(page) - 1) * parseInt(limit)
         });
 
-        sendResponse(res, {
+        const paginatedResponse = {
             data: notifications.rows,
             total: notifications.count,
             page: parseInt(page),
             limit: parseInt(limit),
             totalPages: Math.ceil(notifications.count / parseInt(limit))
-        }, 'Notifications retrieved successfully');
+        };
+
+        sendResponse(res, paginatedResponse, 'Notifications retrieved successfully');
     } catch (error) {
         console.error('Error fetching notifications:', error);
         sendError(res, 'Failed to fetch notifications', 500);

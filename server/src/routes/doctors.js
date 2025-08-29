@@ -62,13 +62,15 @@ router.get('/', [
             offset
         });
 
-        sendResponse(res, {
+        const paginatedResponse = {
             data: doctors.rows,
             total: doctors.count,
             page: parseInt(page),
             limit: parseInt(limit),
             totalPages: Math.ceil(doctors.count / parseInt(limit))
-        }, 'Doctors retrieved successfully');
+        };
+
+        sendResponse(res, paginatedResponse, 'Doctors retrieved successfully');
 
     } catch (error) {
         console.error('Error fetching doctors:', error);

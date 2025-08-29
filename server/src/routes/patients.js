@@ -3,6 +3,7 @@ import { body, validationResult, query } from 'express-validator';
 import { Op } from 'sequelize';
 import Patient from '../models/Patient.js';
 import { roleMiddleware } from '../middleware/auth.js';
+import { sendResponse, sendError } from '../utils/response.js';
 
 const router = express.Router();
 
@@ -17,11 +18,7 @@ router.get('/', [
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({
-                success: false,
-                message: 'Validation failed',
-                errors: errors.array()
-            });
+            return sendError(res, 'Validation failed', 400, errors.array());
         }
 
         const page = parseInt(req.query.page) || 1;
@@ -50,24 +47,18 @@ router.get('/', [
             order: [['created_at', 'DESC']]
         });
 
-        const totalPages = Math.ceil(count / limit);
+        const paginatedResponse = {
+            data: patients,
+            total: count,
+            page: page,
+            limit: limit,
+            totalPages: Math.ceil(count / limit)
+        };
 
-        res.json({
-            success: true,
-            data: {
-                data: patients,
-                total: count,
-                page: page,
-                limit: limit,
-                totalPages: totalPages
-            }
-        });
+        sendResponse(res, paginatedResponse, 'Patients retrieved successfully');
     } catch (error) {
         console.error('Get patients error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Server error while fetching patients'
-        });
+        sendError(res, 'Server error while fetching patients', 500);
     }
 });
 
@@ -79,22 +70,13 @@ router.get('/:id', async (req, res) => {
         const patient = await Patient.findByPk(req.params.id);
 
         if (!patient) {
-            return res.status(404).json({
-                success: false,
-                message: 'Patient not found'
-            });
+            return sendError(res, 'Patient not found', 404);
         }
 
-        res.json({
-            success: true,
-            data: patient
-        });
+        sendResponse(res, patient, 'Patient retrieved successfully');
     } catch (error) {
         console.error('Get patient error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Server error while fetching patient'
-        });
+        sendError(res, 'Server error while fetching patient', 500);
     }
 });
 
@@ -115,11 +97,7 @@ router.post('/', [
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({
-                success: false,
-                message: 'Validation failed',
-                errors: errors.array()
-            });
+            return sendError(res, 'Validation failed', 400, errors.array());
         }
 
         // Generate patient ID
@@ -148,17 +126,10 @@ router.post('/', [
 
         const patient = await Patient.create(patientData);
 
-        res.status(201).json({
-            success: true,
-            message: 'Patient created successfully',
-            data: { patient }
-        });
+        sendResponse(res, patient, 'Patient created successfully', 201);
     } catch (error) {
         console.error('Create patient error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Server error while creating patient'
-        });
+        sendError(res, 'Server error while creating patient', 500);
     }
 });
 
@@ -176,20 +147,13 @@ router.put('/:id', [
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({
-                success: false,
-                message: 'Validation failed',
-                errors: errors.array()
-            });
+            return sendError(res, 'Validation failed', 400, errors.array());
         }
 
         const patient = await Patient.findByPk(req.params.id);
 
         if (!patient) {
-            return res.status(404).json({
-                success: false,
-                message: 'Patient not found'
-            });
+            return sendError(res, 'Patient not found', 404);
         }
 
         // Don't allow updating patient_id
@@ -197,17 +161,10 @@ router.put('/:id', [
 
         await patient.update(updateData);
 
-        res.json({
-            success: true,
-            message: 'Patient updated successfully',
-            data: { patient }
-        });
+        sendResponse(res, patient, 'Patient updated successfully');
     } catch (error) {
         console.error('Update patient error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Server error while updating patient'
-        });
+        sendError(res, 'Server error while updating patient', 500);
     }
 });
 
@@ -219,25 +176,16 @@ router.delete('/:id', roleMiddleware('admin'), async (req, res) => {
         const patient = await Patient.findByPk(req.params.id);
 
         if (!patient) {
-            return res.status(404).json({
-                success: false,
-                message: 'Patient not found'
-            });
+            return sendError(res, 'Patient not found', 404);
         }
 
         // Soft delete
         await patient.update({ is_active: false });
 
-        res.json({
-            success: true,
-            message: 'Patient deleted successfully'
-        });
+        sendResponse(res, null, 'Patient deleted successfully');
     } catch (error) {
         console.error('Delete patient error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Server error while deleting patient'
-        });
+        sendError(res, 'Server error while deleting patient', 500);
     }
 });
 

@@ -3,6 +3,7 @@ import { body, validationResult, query } from 'express-validator';
 import { Op } from 'sequelize';
 import User from '../models/User.js';
 import { roleMiddleware } from '../middleware/auth.js';
+import { sendResponse, sendError } from '../utils/response.js';
 
 const router = express.Router();
 
@@ -19,11 +20,7 @@ router.get('/', [
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({
-                success: false,
-                message: 'Validation failed',
-                errors: errors.array()
-            });
+            return sendError(res, 'Validation failed', 400, errors.array());
         }
 
         const page = parseInt(req.query.page) || 1;
@@ -54,24 +51,18 @@ router.get('/', [
             order: [['created_at', 'DESC']]
         });
 
-        const totalPages = Math.ceil(count / limit);
+        const paginatedResponse = {
+            data: users,
+            total: count,
+            page: page,
+            limit: limit,
+            totalPages: Math.ceil(count / limit)
+        };
 
-        res.json({
-            success: true,
-            data: {
-                data: users,
-                total: count,
-                page: page,
-                limit: limit,
-                totalPages: totalPages
-            }
-        });
+        sendResponse(res, paginatedResponse, 'Users retrieved successfully');
     } catch (error) {
         console.error('Get users error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Server error while fetching users'
-        });
+        sendError(res, 'Server error while fetching users', 500);
     }
 });
 
@@ -89,20 +80,13 @@ router.put('/:id', [
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({
-                success: false,
-                message: 'Validation failed',
-                errors: errors.array()
-            });
+            return sendError(res, 'Validation failed', 400, errors.array());
         }
 
         const user = await User.findByPk(req.params.id);
 
         if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: 'User not found'
-            });
+            return sendError(res, 'User not found', 404);
         }
 
         // Don't allow updating sensitive fields
@@ -110,17 +94,10 @@ router.put('/:id', [
 
         await user.update(updateData);
 
-        res.json({
-            success: true,
-            message: 'User updated successfully',
-            data: { user }
-        });
+        sendResponse(res, user, 'User updated successfully');
     } catch (error) {
         console.error('Update user error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Server error while updating user'
-        });
+        sendError(res, 'Server error while updating user', 500);
     }
 });
 

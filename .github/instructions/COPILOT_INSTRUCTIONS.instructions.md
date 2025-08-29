@@ -1,3 +1,6 @@
+---
+applyTo: '**'
+---
 # GitHub Copilot Instructions for Hospital Management System
 
 ## System Overview
