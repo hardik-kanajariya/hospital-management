@@ -229,10 +229,41 @@ export default class SystemController {
         try {
             // This would typically come from a settings table
             const settings = {
+                // General Settings
                 hospitalName: 'City General Hospital',
                 hospitalAddress: '123 Medical Center Dr, Healthcare City',
                 hospitalPhone: '+1 (555) 123-4567',
-                hospitalEmail: 'admin@citygeneralhospital.com'
+                hospitalEmail: 'admin@citygeneralhospital.com',
+
+                // System Settings
+                sessionTimeout: 30,
+                maxLoginAttempts: 5,
+                backupFrequency: 'daily',
+                enableAuditLog: true,
+                enableNotifications: true,
+                enableEmailAlerts: true,
+                autoBackupTime: '02:00',
+                maintenanceMode: false,
+
+                // Security Settings
+                passwordMinLength: 8,
+                requireSpecialChars: true,
+                requireNumbers: true,
+                requireUppercase: true,
+                enableTwoFactor: false,
+                lockoutDuration: 15,
+                sessionIdleTimeout: 30,
+                maxFileUploadSize: 10,
+
+                // Performance Settings
+                cacheEnabled: true,
+                databaseOptimization: true,
+                enableCompression: true,
+                maxConcurrentUsers: 100,
+                apiTimeout: 30,
+                enableApiRateLimiting: true,
+                maxRequestsPerMinute: 100,
+                enableCDN: false,
             }
 
             return response.status(200).json({
@@ -256,26 +287,74 @@ export default class SystemController {
     async updateHospitalSettings({ request, response }: HttpContext) {
         try {
             const settingsData = request.only([
+                // General Settings
                 'hospitalName',
                 'hospitalAddress',
                 'hospitalPhone',
                 'hospitalEmail',
+
+                // System Settings
                 'sessionTimeout',
                 'maxLoginAttempts',
                 'backupFrequency',
                 'enableAuditLog',
                 'enableNotifications',
                 'enableEmailAlerts',
+                'autoBackupTime',
+                'maintenanceMode',
+
+                // Security Settings
                 'passwordMinLength',
                 'requireSpecialChars',
                 'requireNumbers',
+                'requireUppercase',
                 'enableTwoFactor',
                 'lockoutDuration',
+                'sessionIdleTimeout',
+                'maxFileUploadSize',
+
+                // Performance Settings
                 'cacheEnabled',
-                'maxConcurrentUsers',
                 'databaseOptimization',
-                'enableCompression'
+                'enableCompression',
+                'maxConcurrentUsers',
+                'apiTimeout',
+                'enableApiRateLimiting',
+                'maxRequestsPerMinute',
+                'enableCDN'
             ])
+
+            // Validate required fields
+            const validationErrors: string[] = []
+
+            if (!settingsData.hospitalName?.trim()) {
+                validationErrors.push('Hospital name is required')
+            }
+            if (!settingsData.hospitalEmail?.trim()) {
+                validationErrors.push('Hospital email is required')
+            }
+            if (!settingsData.hospitalPhone?.trim()) {
+                validationErrors.push('Hospital phone is required')
+            }
+
+            // Validate numeric ranges
+            if (settingsData.sessionTimeout && (settingsData.sessionTimeout < 5 || settingsData.sessionTimeout > 480)) {
+                validationErrors.push('Session timeout must be between 5 and 480 minutes')
+            }
+            if (settingsData.maxLoginAttempts && (settingsData.maxLoginAttempts < 1 || settingsData.maxLoginAttempts > 10)) {
+                validationErrors.push('Max login attempts must be between 1 and 10')
+            }
+            if (settingsData.passwordMinLength && (settingsData.passwordMinLength < 6 || settingsData.passwordMinLength > 32)) {
+                validationErrors.push('Password minimum length must be between 6 and 32 characters')
+            }
+
+            if (validationErrors.length > 0) {
+                return response.status(400).json({
+                    success: false,
+                    message: 'Validation failed',
+                    errors: validationErrors
+                })
+            }
 
             // This would typically update a settings table
             console.log('Updating hospital settings:', settingsData)
