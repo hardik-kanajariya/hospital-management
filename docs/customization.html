@@ -521,11 +521,11 @@ const ruralBillingWorkflow = {
             <code>
 // Custom report for rural health statistics
 import React from 'react';
-import { useKV } from '@/hooks/useLocalStorage';
+import { usePatientApi, useAppointmentApi } from '@/hooks/useApiHooks';
 
 const RuralHealthReport = () => {
-  const [patients] = useKV('hospital-patients', []);
-  const [appointments] = useKV('hospital-appointments', []);
+  const { patients } = usePatientApi();
+  const { appointments } = useAppointmentApi();
   
   // Calculate rural-specific metrics
   const ruralPatients = patients.filter(p => p.location_type === 'rural');

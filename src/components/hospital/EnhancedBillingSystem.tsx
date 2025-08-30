@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useKV } from '@/hooks/useLocalStorage'
+import { useState } from 'react'
+import { useBillingApi, usePatientApi } from '@/hooks/useApiHooks'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -51,8 +51,8 @@ const taxRates = {
 }
 
 export default function EnhancedBillingSystem() {
-  const [bills, setBills] = useKV<Bill[]>('hospital-bills', [])
-  const [patients] = useKV<Patient[]>('hospital-patients', [])
+  const { bills, createBill: createBillAPI, updateBill: updateBillAPI } = useBillingApi()
+  const { patients } = usePatientApi()
   const [searchTerm, setSearchTerm] = useState('')
   const [isNewBillDialogOpen, setIsNewBillDialogOpen] = useState(false)
   const [isViewBillDialogOpen, setIsViewBillDialogOpen] = useState(false)
@@ -147,7 +147,7 @@ export default function EnhancedBillingSystem() {
   }
 
   // Create new bill
-  const createBill = async () => {
+  const handleCreateBill = async () => {
     if (!newBill.patientId || newBill.items.length === 0) {
       toast.error('Please select a patient and add at least one item')
       return
@@ -178,20 +178,24 @@ export default function EnhancedBillingSystem() {
       insuranceClaim: newBill.insuranceClaim || undefined
     }
 
-    setBills(prev => [...prev, bill])
+    try {
+      await createBillAPI(bill)
 
-    // Send payment reminder if enabled
-    await sendBillingReminder(
-      patient.phoneNumber,
-      patient.email,
-      `${patient.firstName} ${patient.lastName}`,
-      totalAmount,
-      new Date(bill.dueDate).toLocaleDateString()
-    )
+      // Send payment reminder if enabled
+      await sendBillingReminder(
+        patient.phoneNumber,
+        patient.email,
+        `${patient.firstName} ${patient.lastName}`,
+        totalAmount,
+        new Date(bill.dueDate).toLocaleDateString()
+      )
 
-    resetNewBill()
-    setIsNewBillDialogOpen(false)
-    toast.success('Bill created successfully')
+      resetNewBill()
+      setIsNewBillDialogOpen(false)
+      toast.success('Bill created successfully')
+    } catch (error) {
+      console.error('Failed to create bill:', error)
+    }
   }
 
   // Reset new bill form
@@ -208,25 +212,26 @@ export default function EnhancedBillingSystem() {
   }
 
   // Update payment
-  const updatePayment = (billId: string, paidAmount: number, paymentMethod: string) => {
-    setBills(prev => prev.map(bill => {
-      if (bill.id === billId) {
+  const updatePayment = async (billId: string, paidAmount: number, paymentMethod: string) => {
+    try {
+      const bill = bills.find(b => b.id === billId)
+      if (bill) {
         const newPaidAmount = bill.paidAmount + paidAmount
         const balanceAmount = bill.totalAmount - newPaidAmount
         const status = balanceAmount <= 0 ? 'paid' : balanceAmount < bill.totalAmount ? 'partially_paid' : 'pending'
 
-        return {
-          ...bill,
+        await updateBillAPI(billId, {
           paidAmount: newPaidAmount,
           balanceAmount,
           status,
           paymentMethod: paymentMethod as any
-        }
+        })
+        
+        toast.success('Payment updated successfully')
       }
-      return bill
-    }))
-
-    toast.success('Payment updated successfully')
+    } catch (error) {
+      console.error('Failed to update payment:', error)
+    }
   }
 
   // Generate reports
@@ -532,7 +537,7 @@ export default function EnhancedBillingSystem() {
                     }}>
                       Cancel
                     </Button>
-                    <Button onClick={createBill} disabled={newBill.items.length === 0}>
+                    <Button onClick={handleCreateBill} disabled={newBill.items.length === 0}>
                       Create Bill
                     </Button>
                   </DialogFooter>

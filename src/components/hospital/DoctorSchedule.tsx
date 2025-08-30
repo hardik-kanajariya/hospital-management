@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useKV } from '@/hooks/useLocalStorage'
+import { useDoctorApi } from '@/hooks/useApiHooks'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -71,9 +71,10 @@ const daysOfWeek = [
 ]
 
 export default function DoctorSchedule() {
-  const [doctors, setDoctors] = useKV<Doctor[]>('hospital-doctors', [])
-  const [schedules, setSchedules] = useKV<Schedule[]>('doctor-schedules', [])
-  const [availability, setAvailability] = useKV<Availability[]>('doctor-availability', [])
+  const { doctors, createDoctor, updateDoctor } = useDoctorApi()
+  // For schedules and availability, we'll use local state for now since they're not in the API hooks
+  const [schedules, setSchedules] = useState<Schedule[]>([])
+  const [availability, setAvailability] = useState<Availability[]>([])
 
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null)
   const [isDoctorDialogOpen, setIsDoctorDialogOpen] = useState(false)
@@ -93,30 +94,33 @@ export default function DoctorSchedule() {
     isAvailable: false
   })
 
-  const handleAddDoctor = () => {
+  const handleAddDoctor = async () => {
     if (!doctorFormData.name || !doctorFormData.specialization || !doctorFormData.phone) {
       toast.error('Please fill in all required fields')
       return
     }
 
-    const newDoctor: Doctor = {
-      id: `DR${Date.now()}`,
-      name: doctorFormData.name!,
-      specialization: doctorFormData.specialization!,
-      phone: doctorFormData.phone!,
-      email: doctorFormData.email || '',
-      licenseNumber: doctorFormData.licenseNumber || '',
-      experience: Number(doctorFormData.experience) || 0,
-      consultationFee: Number(doctorFormData.consultationFee) || 0,
-      department: doctorFormData.department || '',
-      status: doctorFormData.status as 'active' | 'inactive',
-      joiningDate: new Date().toISOString().split('T')[0]
-    }
+    try {
+      const newDoctor: Omit<Doctor, 'id'> = {
+        name: doctorFormData.name!,
+        specialization: doctorFormData.specialization!,
+        phone: doctorFormData.phone!,
+        email: doctorFormData.email || '',
+        licenseNumber: doctorFormData.licenseNumber || '',
+        experience: Number(doctorFormData.experience) || 0,
+        consultationFee: Number(doctorFormData.consultationFee) || 0,
+        department: doctorFormData.department || '',
+        status: doctorFormData.status as 'active' | 'inactive',
+        joiningDate: new Date().toISOString().split('T')[0]
+      }
 
-    setDoctors(current => [...current, newDoctor])
-    setDoctorFormData({ status: 'active' })
-    setIsDoctorDialogOpen(false)
-    toast.success('Doctor added successfully')
+      await createDoctor(newDoctor)
+      setDoctorFormData({ status: 'active' })
+      setIsDoctorDialogOpen(false)
+      toast.success('Doctor added successfully')
+    } catch (error) {
+      console.error('Failed to create doctor:', error)
+    }
   }
 
   const handleAddSchedule = () => {

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useKV } from '@/hooks/useLocalStorage'
+import { usePatientApi, useDoctorApi, useBedApi } from '@/hooks/useApiHooks'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -91,11 +91,13 @@ const amenities = [
 ]
 
 export default function BedManagement() {
-  const [patients] = useKV<Patient[]>('hospital-patients', [])
-  const [doctors] = useKV<Doctor[]>('hospital-doctors', [])
-  const [rooms, setRooms] = useKV<Room[]>('hospital-rooms', [])
-  const [beds, setBeds] = useKV<BedInfo[]>('hospital-beds', [])
-  const [admissions, setAdmissions] = useKV<Admission[]>('hospital-admissions', [])
+  const { patients } = usePatientApi()
+  const { doctors } = useDoctorApi()
+  const { beds, createBed, updateBed } = useBedApi()
+  
+  // For rooms and admissions, we need to add these to the API hooks or use local state temporarily
+  const [rooms, setRooms] = useState<Room[]>([])
+  const [admissions, setAdmissions] = useState<Admission[]>([])
 
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
@@ -124,7 +126,7 @@ export default function BedManagement() {
     }
   })
 
-  const handleAddRoom = () => {
+  const handleAddRoom = async () => {
     if (!roomFormData.number || !roomFormData.type || !roomFormData.department) {
       toast.error('Please fill in all required fields')
       return
@@ -156,24 +158,27 @@ export default function BedManagement() {
     // Create beds for the room
     const newBeds: BedInfo[] = []
     for (let i = 1; i <= newRoom.capacity; i++) {
-      newBeds.push({
-        id: `BD${Date.now()}_${i}`,
+      const bedData = {
         roomId: newRoom.id,
         roomNumber: newRoom.number,
         bedNumber: `${newRoom.number}-${i}`,
         type: newRoom.type,
-        status: 'available',
+        status: 'available' as const,
         lastCleaned: new Date().toISOString().split('T')[0]
-      })
+      }
+      
+      try {
+        await createBed(bedData)
+      } catch (error) {
+        console.error('Failed to create bed:', error)
+      }
     }
-
-    setBeds(current => [...current, ...newBeds])
     setRoomFormData({ status: 'active', floor: 1, amenities: [] })
     setIsRoomDialogOpen(false)
     toast.success('Room and beds added successfully')
   }
 
-  const handleAdmitPatient = () => {
+  const handleAdmitPatient = async () => {
     if (!admissionFormData.patientId || !admissionFormData.bedId || !admissionFormData.admittingDoctor) {
       toast.error('Please fill in all required fields')
       return
@@ -209,20 +214,17 @@ export default function BedManagement() {
     }
 
     // Update bed status to occupied
-    setBeds(current =>
-      current.map(b =>
-        b.id === bed.id
-          ? {
-            ...b,
-            status: 'occupied',
-            patientId: patient.id,
-            patientName: `${patient.firstName} ${patient.lastName}`,
-            admissionDate: newAdmission.admissionDate,
-            expectedDischarge: newAdmission.expectedDischarge
-          }
-          : b
-      )
-    )
+    try {
+      await updateBed(bed.id, {
+        status: 'occupied',
+        patientId: patient.id,
+        patientName: `${patient.firstName} ${patient.lastName}`,
+        admissionDate: newAdmission.admissionDate,
+        expectedDischarge: newAdmission.expectedDischarge
+      })
+    } catch (error) {
+      console.error('Failed to update bed status:', error)
+    }
 
     setAdmissions(current => [...current, newAdmission])
     setAdmissionFormData({
@@ -238,7 +240,7 @@ export default function BedManagement() {
     toast.success('Patient admitted successfully')
   }
 
-  const handleDischargePatient = (admission: Admission) => {
+  const handleDischargePatient = async (admission: Admission) => {
     // Update admission status
     setAdmissions(current =>
       current.map(a =>
@@ -249,34 +251,29 @@ export default function BedManagement() {
     )
 
     // Update bed status to available
-    setBeds(current =>
-      current.map(b =>
-        b.id === admission.bedId
-          ? {
-            ...b,
-            status: 'available',
-            patientId: undefined,
-            patientName: undefined,
-            admissionDate: undefined,
-            expectedDischarge: undefined,
-            lastCleaned: new Date().toISOString().split('T')[0]
-          }
-          : b
-      )
-    )
+    try {
+      await updateBed(admission.bedId, {
+        status: 'available',
+        patientId: undefined,
+        patientName: undefined,
+        admissionDate: undefined,
+        expectedDischarge: undefined,
+        lastCleaned: new Date().toISOString().split('T')[0]
+      })
+    } catch (error) {
+      console.error('Failed to update bed status:', error)
+    }
 
     toast.success('Patient discharged successfully')
   }
 
-  const handleBedStatusUpdate = (bedId: string, newStatus: BedInfo['status']) => {
-    setBeds(current =>
-      current.map(b =>
-        b.id === bedId
-          ? { ...b, status: newStatus }
-          : b
-      )
-    )
-    toast.success('Bed status updated')
+  const handleBedStatusUpdate = async (bedId: string, newStatus: BedInfo['status']) => {
+    try {
+      await updateBed(bedId, { status: newStatus })
+      toast.success('Bed status updated')
+    } catch (error) {
+      console.error('Failed to update bed status:', error)
+    }
   }
 
   const filteredBeds = beds.filter(bed =>

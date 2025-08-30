@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useKV } from '@/hooks/useLocalStorage'
+import { useInventoryApi } from '@/hooks/useApiHooks'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -109,9 +109,10 @@ const commonSuppliers = [
 ]
 
 export default function InventoryManagement() {
-  const [inventory, setInventory] = useKV<InventoryItem[]>('hospital-inventory', [])
-  const [transactions, setTransactions] = useKV<StockTransaction[]>('stock-transactions', [])
-  const [purchaseOrders, setPurchaseOrders] = useKV<PurchaseOrder[]>('purchase-orders', [])
+  const { inventory, createInventoryItem, updateInventoryItem } = useInventoryApi()
+  // For transactions and purchase orders, we'll use local state for now since they're not in the API hooks
+  const [transactions, setTransactions] = useState<StockTransaction[]>([])
+  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([])
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isTransactionDialogOpen, setIsTransactionDialogOpen] = useState(false)
@@ -143,7 +144,7 @@ export default function InventoryManagement() {
     totalAmount: 0
   })
 
-  const handleAddItem = () => {
+  const handleAddItem = async () => {
     if (!itemFormData.name || !itemFormData.category || !itemFormData.supplier) {
       toast.error('Please fill in all required fields')
       return
@@ -173,7 +174,11 @@ export default function InventoryManagement() {
       createdAt: new Date().toISOString()
     }
 
-    setInventory(current => [...current, newItem])
+    try {
+      await createInventoryItem(newItem)
+    } catch (error) {
+      console.error('Failed to create inventory item:', error)
+    }
 
     // Create initial stock transaction
     if (newItem.quantity > 0) {
@@ -206,7 +211,7 @@ export default function InventoryManagement() {
     toast.success('Inventory item added successfully')
   }
 
-  const handleAddTransaction = () => {
+  const handleAddTransaction = async () => {
     if (!selectedItem || !transactionFormData.quantity || !transactionFormData.type) {
       toast.error('Please fill in all required fields')
       return
@@ -236,18 +241,18 @@ export default function InventoryManagement() {
         transactionFormData.type === 'issue' || transactionFormData.type === 'expired' ? -quantity :
           quantity // adjustment can be positive or negative
 
-    setInventory(current =>
-      current.map(item =>
-        item.id === selectedItem.id
-          ? {
-            ...item,
-            quantity: Math.max(0, item.quantity + quantityChange),
-            status: (item.quantity + quantityChange) <= 0 ? 'out_of_stock' : item.status,
-            lastUpdated: new Date().toISOString()
-          }
-          : item
-      )
-    )
+    try {
+      if (selectedItem) {
+        const newQuantity = Math.max(0, selectedItem.quantity + quantityChange)
+        await updateInventoryItem(selectedItem.id, {
+          quantity: newQuantity,
+          status: newQuantity <= 0 ? 'out_of_stock' : selectedItem.status,
+          lastUpdated: new Date().toISOString()
+        })
+      }
+    } catch (error) {
+      console.error('Failed to update inventory item:', error)
+    }
 
     setTransactions(current => [...current, newTransaction])
     setTransactionFormData({
@@ -265,23 +270,22 @@ export default function InventoryManagement() {
     setIsEditDialogOpen(true)
   }
 
-  const handleUpdateItem = () => {
+  const handleUpdateItem = async () => {
     if (!selectedItem || !itemFormData.name) {
       toast.error('Please fill in required fields')
       return
     }
 
-    setInventory(current =>
-      current.map(item =>
-        item.id === selectedItem.id
-          ? {
-            ...item,
-            ...itemFormData,
-            lastUpdated: new Date().toISOString()
-          }
-          : item
-      )
-    )
+    try {
+      if (selectedItem) {
+        await updateInventoryItem(selectedItem.id, {
+          ...itemFormData,
+          lastUpdated: new Date().toISOString()
+        })
+      }
+    } catch (error) {
+      console.error('Failed to update inventory item:', error)
+    }
 
     setIsEditDialogOpen(false)
     setSelectedItem(null)

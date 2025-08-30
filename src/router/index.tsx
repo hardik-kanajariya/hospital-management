@@ -18,7 +18,6 @@ import RoleManagement from '../components/hospital/RoleManagement';
 import SuperAdminUserManagement from '../components/hospital/SuperAdminUserManagement';
 import RoleBasedAccess from '../components/auth/RoleBasedAccess';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
-import RootRedirect from '../components/common/RootRedirect';
 
 export const router = createBrowserRouter([
     {

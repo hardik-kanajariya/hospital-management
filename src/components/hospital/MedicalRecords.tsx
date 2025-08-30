@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useKV } from '@/hooks/useLocalStorage'
+import { usePatientApi, useDoctorApi, useMedicalRecordApi } from '@/hooks/useApiHooks'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -111,10 +111,10 @@ const commonTests = [
 ]
 
 export default function MedicalRecords() {
-  const [records, setRecords] = useKV<MedicalRecord[]>('medical-records', [])
-  const [prescriptions, setPrescriptions] = useKV<Prescription[]>('prescriptions', [])
-  const [patients] = useKV<Patient[]>('hospital-patients', [])
-  const [doctors] = useKV<Doctor[]>('hospital-doctors', [])
+  const { medicalRecords, createMedicalRecord, updateMedicalRecord } = useMedicalRecordApi()
+  const [prescriptions, setPrescriptions] = useState<Prescription[]>([])
+  const { patients } = usePatientApi()
+  const { doctors } = useDoctorApi()
 
   const [isRecordDialogOpen, setIsRecordDialogOpen] = useState(false)
   const [isPrescriptionDialogOpen, setIsPrescriptionDialogOpen] = useState(false)
@@ -152,7 +152,7 @@ export default function MedicalRecords() {
     }]
   })
 
-  const handleAddRecord = () => {
+  const handleAddRecord = async () => {
     if (!recordFormData.patientId || !recordFormData.doctor || !recordFormData.chiefComplaint) {
       toast.error('Please fill in all required fields')
       return
@@ -164,44 +164,47 @@ export default function MedicalRecords() {
       return
     }
 
-    const newRecord: MedicalRecord = {
-      id: `MR${Date.now()}`,
-      patientId: recordFormData.patientId!,
-      patientName: `${patient?.firstName || ''} ${patient?.lastName || ''}`.trim(),
-      doctor: recordFormData.doctor!,
-      date: recordFormData.date!,
-      type: recordFormData.type as any,
-      chiefComplaint: recordFormData.chiefComplaint!,
-      symptoms: recordFormData.symptoms || '',
-      vitals: recordFormData.vitals!,
-      diagnosis: recordFormData.diagnosis || '',
-      treatment: recordFormData.treatment || '',
-      prescriptions: recordFormData.prescriptions || [],
-      labTests: recordFormData.labTests || [],
-      followUpDate: recordFormData.followUpDate,
-      notes: recordFormData.notes || '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
+    try {
+      const newRecord: Omit<MedicalRecord, 'id'> = {
+        patientId: recordFormData.patientId!,
+        patientName: `${patient?.firstName || ''} ${patient?.lastName || ''}`.trim(),
+        doctor: recordFormData.doctor!,
+        date: recordFormData.date!,
+        type: recordFormData.type as any,
+        chiefComplaint: recordFormData.chiefComplaint!,
+        symptoms: recordFormData.symptoms || '',
+        vitals: recordFormData.vitals!,
+        diagnosis: recordFormData.diagnosis || '',
+        treatment: recordFormData.treatment || '',
+        prescriptions: recordFormData.prescriptions || [],
+        labTests: recordFormData.labTests || [],
+        followUpDate: recordFormData.followUpDate,
+        notes: recordFormData.notes || '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
 
-    setRecords(current => [...current, newRecord])
-    setRecordFormData({
-      type: 'consultation',
-      date: new Date().toISOString().split('T')[0],
-      vitals: {
-        temperature: '',
-        bloodPressure: '',
-        heartRate: '',
-        respiratoryRate: '',
-        weight: '',
-        height: '',
-        oxygenSaturation: ''
-      },
-      prescriptions: [],
-      labTests: []
-    })
-    setIsRecordDialogOpen(false)
-    toast.success('Medical record created successfully')
+      await createMedicalRecord(newRecord)
+      setRecordFormData({
+        type: 'consultation',
+        date: new Date().toISOString().split('T')[0],
+        vitals: {
+          temperature: '',
+          bloodPressure: '',
+          heartRate: '',
+          respiratoryRate: '',
+          weight: '',
+          height: '',
+          oxygenSaturation: ''
+        },
+        prescriptions: [],
+        labTests: []
+      })
+      setIsRecordDialogOpen(false)
+      toast.success('Medical record created successfully')
+    } catch (error) {
+      console.error('Failed to create medical record:', error)
+    }
   }
 
   const handleAddPrescription = () => {
@@ -314,7 +317,7 @@ export default function MedicalRecords() {
     }))
   }
 
-  const filteredRecords = records.filter(record => {
+  const filteredRecords = medicalRecords.filter(record => {
     const matchesSearch = record.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       record.doctor.toLowerCase().includes(searchTerm.toLowerCase()) ||
       record.diagnosis.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -325,12 +328,12 @@ export default function MedicalRecords() {
     return matchesSearch && matchesType
   })
 
-  const recentRecords = records
+  const recentRecords = medicalRecords
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5)
 
-  const todayRecords = records.filter(r => r.date === new Date().toISOString().split('T')[0])
-  const activeRecords = records.filter(r => r.followUpDate && r.followUpDate >= new Date().toISOString().split('T')[0])
+  const todayRecords = medicalRecords.filter(r => r.date === new Date().toISOString().split('T')[0])
+  const activeRecords = medicalRecords.filter(r => r.followUpDate && r.followUpDate >= new Date().toISOString().split('T')[0])
 
   return (
     <div className="space-y-6">
@@ -873,7 +876,7 @@ export default function MedicalRecords() {
             <FileTextIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{records.length}</div>
+            <div className="text-2xl font-bold">{medicalRecords.length}</div>
           </CardContent>
         </Card>
 
@@ -919,7 +922,7 @@ export default function MedicalRecords() {
             <CardHeader>
               <CardTitle>Medical Records</CardTitle>
               <CardDescription>
-                {filteredRecords.length} of {records.length} records
+                {filteredRecords.length} of {medicalRecords.length} records
               </CardDescription>
             </CardHeader>
             <CardContent>

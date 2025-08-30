@@ -1,8 +1,8 @@
-import { useKV } from '@/hooks/useLocalStorage'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/hooks/useAuth'
 import { useNotifications } from '@/hooks/useNotifications'
+import { usePatientApi, useAppointmentApi, useBillingApi, useInventoryApi } from '@/hooks/useApiHooks'
 import { Patient, Appointment, Bill, InventoryItem } from '@/types/hospital'
 import {
   UsersIcon,
@@ -19,10 +19,10 @@ import {
 export default function Dashboard() {
   const { user, hasPermission } = useAuth()
   const { getNotificationHistory } = useNotifications()
-  const [patients] = useKV<Patient[]>('hospital-patients', [])
-  const [appointments] = useKV<Appointment[]>('hospital-appointments', [])
-  const [bills] = useKV<Bill[]>('hospital-bills', [])
-  const [inventory] = useKV<InventoryItem[]>('hospital-inventory', [])
+  const { patients } = usePatientApi()
+  const { appointments } = useAppointmentApi()
+  const { bills } = useBillingApi()
+  const { inventory } = useInventoryApi()
 
   const notifications = getNotificationHistory()
   const recentNotifications = notifications.slice(0, 5)

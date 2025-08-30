@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useKV } from '@/hooks/useLocalStorage'
+import { usePatientApi, useAppointmentApi } from '@/hooks/useApiHooks'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -36,8 +36,8 @@ const timeSlots = [
 ]
 
 export default function AppointmentScheduling() {
-  const [appointments, setAppointments] = useKV<Appointment[]>('hospital-appointments', [])
-  const [patients] = useKV<Patient[]>('hospital-patients', [])
+  const { appointments, createAppointment, updateAppointment } = useAppointmentApi()
+  const { patients } = usePatientApi()
   const [searchTerm, setSearchTerm] = useState('')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [formData, setFormData] = useState<Partial<Appointment>>({
@@ -46,7 +46,6 @@ export default function AppointmentScheduling() {
   })
   const [sendReminder, setSendReminder] = useState(true)
   const { sendAppointmentReminder, isLoading: isNotificationLoading } = useNotifications()
-  const [todayAppointments, setTodayAppointments] = useKV<Appointment[]>('today-appointments', [])
 
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterDate, setFilterDate] = useState('all')
@@ -111,8 +110,7 @@ export default function AppointmentScheduling() {
       return
     }
 
-    const appointment: Appointment = {
-      id: crypto.randomUUID(),
+    const appointment: Omit<Appointment, 'id'> = {
       patientId: formData.patientId,
       doctorId: formData.doctorId,
       appointmentDate: formData.appointmentDate,
@@ -127,26 +125,30 @@ export default function AppointmentScheduling() {
       updatedAt: new Date().toISOString()
     }
 
-    setAppointments(currentAppointments => [...currentAppointments, appointment])
+    try {
+      await createAppointment(appointment)
 
-    // Send appointment reminder if enabled
-    if (sendReminder) {
-      const doctorName = formData.doctorId; // In a real app, you'd look up the doctor name
-      await sendAppointmentReminder(
-        patient.phoneNumber,
-        patient.email,
-        {
-          doctorName,
-          date: new Date(formData.appointmentDate).toLocaleDateString(),
-          time: formData.appointmentTime,
-          patientName: `${patient.firstName} ${patient.lastName}`
-        }
-      );
+      // Send appointment reminder if enabled
+      if (sendReminder) {
+        const doctorName = formData.doctorId; // In a real app, you'd look up the doctor name
+        await sendAppointmentReminder(
+          patient.phoneNumber,
+          patient.email,
+          {
+            doctorName,
+            date: new Date(formData.appointmentDate).toLocaleDateString(),
+            time: formData.appointmentTime,
+            patientName: `${patient.firstName} ${patient.lastName}`
+          }
+        );
+      }
+
+      resetForm()
+      setIsDialogOpen(false)
+      toast.success(`Appointment scheduled successfully`)
+    } catch (error) {
+      console.error('Failed to create appointment:', error)
     }
-
-    resetForm()
-    setIsDialogOpen(false)
-    toast.success(`Appointment scheduled successfully`)
   }
 
   const resetForm = () => {
@@ -157,25 +159,13 @@ export default function AppointmentScheduling() {
     setSendReminder(true)
   }
 
-  const updateAppointmentStatus = (appointmentId: string, newStatus: Appointment['status']) => {
-    setAppointments(currentAppointments =>
-      currentAppointments.map(appointment =>
-        appointment.id === appointmentId
-          ? { ...appointment, status: newStatus }
-          : appointment
-      )
-    )
-
-    // Update today's appointments if needed
-    setTodayAppointments(current =>
-      current.map(appointment =>
-        appointment.id === appointmentId
-          ? { ...appointment, status: newStatus }
-          : appointment
-      )
-    )
-
-    toast.success(`Appointment status updated to ${newStatus}`)
+  const updateAppointmentStatus = async (appointmentId: string, newStatus: Appointment['status']) => {
+    try {
+      await updateAppointment(appointmentId, { status: newStatus })
+      toast.success(`Appointment status updated to ${newStatus}`)
+    } catch (error) {
+      console.error('Failed to update appointment status:', error)
+    }
   }
 
   const getStatusBadge = (status: string) => {

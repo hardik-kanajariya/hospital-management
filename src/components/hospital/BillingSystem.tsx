@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useKV } from '@/hooks/useLocalStorage'
+import { useBillingApi, usePatientApi } from '@/hooks/useApiHooks'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -66,8 +66,8 @@ const insuranceProviders = [
 ]
 
 export default function BillingSystem() {
-  const [bills, setBills] = useKV<ExtendedBill[]>('hospital-bills', [])
-  const [patients] = useKV<Patient[]>('hospital-patients', [])
+  const { bills, createBill, updateBill } = useBillingApi()
+  const { patients } = usePatientApi()
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null)
@@ -223,7 +223,7 @@ export default function BillingSystem() {
     )
   }
 
-  const handleCreateBill = () => {
+  const handleCreateBill = async () => {
     if (!newBill.patientId || billItems.length === 0 || !billItems[0].description) {
       toast.error('Please fill in all required fields and add at least one item')
       return
@@ -259,38 +259,42 @@ export default function BillingSystem() {
       } : undefined
     }
 
-    setBills(currentBills => [...currentBills, bill])
+    try {
+      await createBill(bill)
+      
+      // Reset form
+      setNewBill({
+        patientId: '',
+        patientName: '',
+        date: new Date().toISOString().split('T')[0],
+        discount: 0,
+        tax: 18,
+        notes: ''
+      })
+      setInsuranceClaim({
+        provider: '',
+        policyNumber: '',
+        claimAmount: 0,
+        hasInsurance: false
+      })
+      setBillItems([{
+        id: '1',
+        description: '',
+        quantity: 1,
+        unitPrice: 0,
+        totalPrice: 0,
+        taxRate: 0,
+        category: 'consultation'
+      }])
 
-    // Reset form
-    setNewBill({
-      patientId: '',
-      patientName: '',
-      date: new Date().toISOString().split('T')[0],
-      discount: 0,
-      tax: 18,
-      notes: ''
-    })
-    setInsuranceClaim({
-      provider: '',
-      policyNumber: '',
-      claimAmount: 0,
-      hasInsurance: false
-    })
-    setBillItems([{
-      id: '1',
-      description: '',
-      quantity: 1,
-      unitPrice: 0,
-      totalPrice: 0,
-      taxRate: 0,
-      category: 'consultation'
-    }])
-
-    setIsDialogOpen(false)
-    toast.success(`Bill ${bill.id} created successfully`)
+      setIsDialogOpen(false)
+      toast.success(`Bill created successfully`)
+    } catch (error) {
+      console.error('Failed to create bill:', error)
+    }
   }
 
-  const handlePayment = () => {
+  const handlePayment = async () => {
     if (!selectedBill || !paymentData.amount || !paymentData.method) {
       toast.error('Please fill in all payment details')
       return
@@ -311,44 +315,41 @@ export default function BillingSystem() {
       newStatus = 'pending'
     }
 
-    setBills(currentBills =>
-      currentBills.map(bill =>
-        bill.id === selectedBill.id
-          ? {
-            ...bill,
-            paidAmount: newPaidAmount,
-            balanceAmount: newDueAmount,
-            status: newStatus,
-            paymentMethod: paymentData.method as Bill['paymentMethod'],
-            paymentDate: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          } as ExtendedBill
-          : bill
-      )
-    )
+    try {
+      await updateBill(selectedBill.id, {
+        paidAmount: newPaidAmount,
+        balanceAmount: newDueAmount,
+        status: newStatus,
+        paymentMethod: paymentData.method as Bill['paymentMethod'],
+        paymentDate: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      })
 
-    setPaymentData({ amount: 0, method: '', notes: '' })
-    setIsPaymentDialogOpen(false)
-    toast.success(`Payment of ₹${paymentData.amount} recorded successfully`)
+      setPaymentData({ amount: 0, method: '', notes: '' })
+      setIsPaymentDialogOpen(false)
+      toast.success(`Payment of ₹${paymentData.amount} recorded successfully`)
+    } catch (error) {
+      console.error('Failed to update payment:', error)
+    }
   }
 
-  const handleInsuranceClaim = (billId: string, action: 'approve' | 'reject', rejectionReason?: string) => {
-    setBills(currentBills =>
-      currentBills.map(bill =>
-        bill.id === billId && bill.insuranceClaim
-          ? {
-            ...bill,
-            insuranceClaim: {
-              ...bill.insuranceClaim,
-              claimStatus: action === 'approve' ? 'approved' : 'rejected',
-              approvedDate: action === 'approve' ? new Date().toISOString() : undefined,
-              rejectionReason: action === 'reject' ? rejectionReason : undefined
-            }
+  const handleInsuranceClaim = async (billId: string, action: 'approve' | 'reject', rejectionReason?: string) => {
+    try {
+      const bill = bills.find(b => b.id === billId)
+      if (bill && bill.insuranceClaim) {
+        await updateBill(billId, {
+          insuranceClaim: {
+            ...bill.insuranceClaim,
+            claimStatus: action === 'approve' ? 'approved' : 'rejected',
+            approvedDate: action === 'approve' ? new Date().toISOString() : undefined,
+            rejectionReason: action === 'reject' ? rejectionReason : undefined
           }
-          : bill
-      )
-    )
-    toast.success(`Insurance claim ${action}ed successfully`)
+        })
+        toast.success(`Insurance claim ${action}ed successfully`)
+      }
+    } catch (error) {
+      console.error('Failed to update insurance claim:', error)
+    }
   }
 
   const getClaimStatusBadge = (status?: string) => {

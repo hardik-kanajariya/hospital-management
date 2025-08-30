@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useKV } from '@/hooks/useLocalStorage'
+import { usePatientApi, useDoctorApi, useLabTestApi } from '@/hooks/useApiHooks'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -89,11 +89,13 @@ const commonTests = [
 ]
 
 export default function LabManagement() {
-  const [patients] = useKV<Patient[]>('hospital-patients', [])
-  const [doctors] = useKV<Doctor[]>('hospital-doctors', [])
-  const [labTests, setLabTests] = useKV<LabTest[]>('lab-tests', [])
-  const [labOrders, setLabOrders] = useKV<LabOrder[]>('lab-orders', [])
-  const [labResults, setLabResults] = useKV<LabResult[]>('lab-results', [])
+  const { patients } = usePatientApi()
+  const { doctors } = useDoctorApi()
+  const { labTests, createLabTest, updateLabTest } = useLabTestApi()
+  
+  // For lab orders and results, we'll use local state for now
+  const [labOrders, setLabOrders] = useState<LabOrder[]>([])
+  const [labResults, setLabResults] = useState<LabResult[]>([])
 
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedOrder, setSelectedOrder] = useState<LabOrder | null>(null)
@@ -115,46 +117,50 @@ export default function LabManagement() {
   })
 
   // Initialize with common tests if empty
-  useState(() => {
-    if (labTests.length === 0) {
-      const initialTests = commonTests.map((test, index) => ({
-        id: `LT${String(index + 1).padStart(3, '0')}`,
-        name: test.name,
-        category: test.category,
-        price: test.price,
-        sampleType: test.sampleType,
-        reportTime: test.reportTime,
-        unit: test.unit,
-        normalRange: 'As per standard ranges',
-        status: 'active' as const
-      }))
-      setLabTests(initialTests)
-    }
-  })
+  // Initialization of demo data removed - now handled by API
+  // useState(() => {
+  //   if (labTests.length === 0) {
+  //     const initialTests = commonTests.map((test, index) => ({
+  //       id: `LT${String(index + 1).padStart(3, '0')}`,
+  //       name: test.name,
+  //       category: test.category,
+  //       price: test.price,
+  //       sampleType: test.sampleType,
+  //       reportTime: test.reportTime,
+  //       unit: test.unit,
+  //       normalRange: 'As per standard ranges',
+  //       status: 'active' as const
+  //     }))
+  //     setLabTests(initialTests)
+  //   }
+  // })
 
-  const handleAddTest = () => {
+  const handleAddTest = async () => {
     if (!testFormData.name || !testFormData.category || !testFormData.price) {
       toast.error('Please fill in all required fields')
       return
     }
 
-    const newTest: LabTest = {
-      id: `LT${Date.now()}`,
-      name: testFormData.name!,
-      category: testFormData.category!,
-      normalRange: testFormData.normalRange || 'As per standard ranges',
-      unit: testFormData.unit || 'unit',
-      price: Number(testFormData.price!),
-      preparationInstructions: testFormData.preparationInstructions,
-      sampleType: testFormData.sampleType || 'Blood',
-      reportTime: testFormData.reportTime || '4',
-      status: testFormData.status as 'active' | 'inactive'
-    }
+    try {
+      const newTest: Omit<LabTest, 'id'> = {
+        name: testFormData.name!,
+        category: testFormData.category!,
+        normalRange: testFormData.normalRange || 'As per standard ranges',
+        unit: testFormData.unit || 'unit',
+        price: Number(testFormData.price!),
+        preparationInstructions: testFormData.preparationInstructions,
+        sampleType: testFormData.sampleType || 'Blood',
+        reportTime: testFormData.reportTime || '4',
+        status: testFormData.status as 'active' | 'inactive'
+      }
 
-    setLabTests(current => [...current, newTest])
-    setTestFormData({ status: 'active' })
-    setIsTestDialogOpen(false)
-    toast.success('Lab test added successfully')
+      await createLabTest(newTest)
+      setTestFormData({ status: 'active' })
+      setIsTestDialogOpen(false)
+      toast.success('Lab test added successfully')
+    } catch (error) {
+      console.error('Failed to create lab test:', error)
+    }
   }
 
   const handleCreateOrder = () => {
