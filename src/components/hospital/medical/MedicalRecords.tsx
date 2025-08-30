@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { usePatientApi, useDoctorApi, useMedicalRecordApi } from '@/hooks/useApiHooks'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,6 +24,9 @@ import {
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { Patient, Doctor } from '@/types/hospital'
+import { useMedicalRecordApi } from '@/hooks/useMedicalRecordApi'
+import { useDoctorApi } from '@/hooks/useDoctorApi'
+import { usePatientApi } from '@/hooks/usePatientApi'
 
 interface MedicalRecord {
   id: string
@@ -167,7 +169,7 @@ export default function MedicalRecords() {
     try {
       const newRecord: Omit<MedicalRecord, 'id'> = {
         patientId: recordFormData.patientId!,
-        patientName: `${patient?.firstName || ''} ${patient?.lastName || ''}`.trim(),
+        patientName: `${patient?.name || ''}`.trim(),
         doctor: recordFormData.doctor!,
         date: recordFormData.date!,
         type: recordFormData.type as any,
@@ -224,7 +226,7 @@ export default function MedicalRecords() {
     const newPrescription: Prescription = {
       id: `RX${Date.now()}`,
       patientId: prescriptionFormData.patientId!,
-      patientName: `${patient?.firstName || ''} ${patient?.lastName || ''}`.trim(),
+      patientName: `${patient?.name || ''}`.trim(),
       doctorId: prescriptionFormData.doctorId!,
       doctorName: doctor?.name || '',
       date: prescriptionFormData.date!,
@@ -386,7 +388,7 @@ export default function MedicalRecords() {
                     <Label>Patient *</Label>
                     <Select value={prescriptionFormData.patientId} onValueChange={(value) => {
                       const patient = patients.find(p => p.id === value)
-                      setPrescriptionFormData({ ...prescriptionFormData, patientId: value, patientName: `${patient?.firstName || ''} ${patient?.lastName || ''}`.trim() })
+                      setPrescriptionFormData({ ...prescriptionFormData, patientId: value, patientName: `${patient?.name || ''}`.trim() })
                     }}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select patient" />
@@ -394,7 +396,7 @@ export default function MedicalRecords() {
                       <SelectContent>
                         {patients.map((patient) => (
                           <SelectItem key={patient.id} value={patient.id}>
-                            {`${patient.firstName || ''} ${patient.lastName || ''}`.trim()} - {patient.id}
+                            {`${patient.name || ''}`.trim()} - {patient.id}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -584,7 +586,7 @@ export default function MedicalRecords() {
                     <Label>Patient *</Label>
                     <Select value={recordFormData.patientId} onValueChange={(value) => {
                       const patient = patients.find(p => p.id === value)
-                      setRecordFormData({ ...recordFormData, patientId: value, patientName: `${patient?.firstName || ''} ${patient?.lastName || ''}`.trim() })
+                      setRecordFormData({ ...recordFormData, patientId: value, patientName: `${patient?.name || ''}`.trim() })
                     }}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select patient" />
@@ -592,7 +594,7 @@ export default function MedicalRecords() {
                       <SelectContent>
                         {patients.map((patient) => (
                           <SelectItem key={patient.id} value={patient.id}>
-                            {`${patient.firstName || ''} ${patient.lastName || ''}`.trim()} - {patient.id}
+                            {`${patient.name || ''}`.trim()} - {patient.id}
                           </SelectItem>
                         ))}
                       </SelectContent>

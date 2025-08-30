@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useBillingApi, usePatientApi } from '@/hooks/useApiHooks'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,7 +8,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ReceiptIcon, PlusIcon, MagnifyingGlassIcon, CreditCardIcon, EyeIcon, PrinterIcon, CurrencyDollarIcon, TrendUpIcon } from '@phosphor-icons/react';
 import { toast } from 'sonner'
-import { Bill, BillItem, Patient } from '@/types/hospital';
+import { Bill, BillItem } from '@/types/hospital';
+import { useBillingApi } from '@/hooks/useBillingApi';
+import { usePatientApi } from '@/hooks/usePatientApi';
 
 // Extended types for backward compatibility
 interface ExtendedBill extends Bill {
@@ -128,10 +129,10 @@ export default function BillingSystem() {
         }))
 
         // Pre-populate insurance if patient has it
-        if (patient?.insuranceInfo) {
+        if (patient?.insurance_info) {
           setInsuranceClaim({
-            provider: patient.insuranceInfo.provider,
-            policyNumber: patient.insuranceInfo.policyNumber,
+            provider: patient.insurance_info.provider,
+            policyNumber: patient.insurance_info.policy_number,
             claimAmount: 0,
             hasInsurance: true
           })
@@ -510,7 +511,7 @@ export default function BillingSystem() {
                       setNewBill({
                         ...newBill,
                         patientId: value,
-                        patientName: `${patient?.firstName || ''} ${patient?.lastName || ''}`.trim()
+                        patientName: `${patient?.name || ''}`.trim()
                       })
                     }}
                   >
@@ -520,7 +521,7 @@ export default function BillingSystem() {
                     <SelectContent>
                       {patients.map((patient) => (
                         <SelectItem key={patient.id} value={patient.id}>
-                          {`${patient.firstName || ''} ${patient.lastName || ''}`.trim()} - {patient.id}
+                          {`${patient.name || ''}`.trim()} - {patient.id}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -825,7 +826,7 @@ export default function BillingSystem() {
                             <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <Label className="text-sm font-medium text-muted-foreground">Patient</Label>
-                                <p>{patients.find(p => p.id === selectedBill.patientId)?.firstName + ' ' + patients.find(p => p.id === selectedBill.patientId)?.lastName}</p>
+                                <p>{patients.find(p => p.id === selectedBill.patientId)?.name}</p>
                               </div>
                               <div>
                                 <Label className="text-sm font-medium text-muted-foreground">Invoice ID</Label>

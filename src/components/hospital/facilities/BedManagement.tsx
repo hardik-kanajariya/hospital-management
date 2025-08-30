@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { usePatientApi, useDoctorApi, useBedApi } from '@/hooks/useApiHooks'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,6 +22,9 @@ import {
   HouseIcon,
 } from '@phosphor-icons/react';
 import { toast } from 'sonner'
+import { useBedApi } from '@/hooks/useBedApi'
+import { useDoctorApi } from '@/hooks/useDoctorApi'
+import { usePatientApi } from '@/hooks/usePatientApi'
 
 interface Room {
   id: string
@@ -200,7 +202,7 @@ export default function BedManagement() {
     const newAdmission: Admission = {
       id: `ADM${Date.now()}`,
       patientId: admissionFormData.patientId!,
-      patientName: `${patient.firstName} ${patient.lastName}`,
+      patientName: `${patient.name}`,
       bedId: admissionFormData.bedId!,
       roomNumber: bed.roomNumber,
       bedNumber: bed.bedNumber,
@@ -218,7 +220,7 @@ export default function BedManagement() {
       await updateBed(bed.id, {
         status: 'occupied',
         patientId: patient.id,
-        patientName: `${patient.firstName} ${patient.lastName}`,
+        patientName: `${patient.name}`,
         admissionDate: newAdmission.admissionDate,
         expectedDischarge: newAdmission.expectedDischarge
       })
@@ -455,7 +457,7 @@ export default function BedManagement() {
                       <SelectContent>
                         {patients.map((patient) => (
                           <SelectItem key={patient.id} value={patient.id}>
-                            {patient.firstName} {patient.lastName} - {patient.id}
+                            {patient.name} - {patient.id}
                           </SelectItem>
                         ))}
                       </SelectContent>

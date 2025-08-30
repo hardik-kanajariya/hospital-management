@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Notification } from '@/types/hospital';
 import { toast } from 'sonner';
-import { useNotificationApi } from './useApiHooks';
+import { useNotificationApi } from './useNotificationApi';
 
 export function useNotifications() {
   const {

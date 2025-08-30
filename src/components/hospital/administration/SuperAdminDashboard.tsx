@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -13,13 +13,11 @@ import {
     ShieldIcon,
     GearIcon,
     ChartBarIcon,
-    DatabaseIcon,
     WrenchIcon,
-    ArrowClockwise,
-    CloudArrowDown,
-    CheckCircle,
-    XCircle,
-    Warning
+    ArrowClockwiseIcon,
+    CloudArrowDownIcon,
+    CheckCircleIcon,
+    XCircleIcon,
 } from '@phosphor-icons/react';
 
 export default function SuperAdminDashboard() {
@@ -62,13 +60,13 @@ export default function SuperAdminDashboard() {
         return (
             <div className="space-y-6">
                 <Alert className="border-red-200 bg-red-50">
-                    <XCircle className="h-4 w-4 text-red-600" />
+                    <XCircleIcon className="h-4 w-4 text-red-600" />
                     <AlertDescription className="text-red-800">
                         {error}
                     </AlertDescription>
                 </Alert>
                 <Button onClick={refreshData} variant="outline">
-                    <ArrowClockwise className="h-4 w-4 mr-2" />
+                    <ArrowClockwiseIcon className="h-4 w-4 mr-2" />
                     Retry
                 </Button>
             </div>
@@ -127,7 +125,7 @@ export default function SuperAdminDashboard() {
                 </div>
                 <div className="flex items-center gap-2">
                     <Button onClick={refreshData} variant="outline" size="sm">
-                        <ArrowClockwise className="h-4 w-4 mr-1" />
+                        <ArrowClockwiseIcon className="h-4 w-4 mr-1" />
                         Refresh
                     </Button>
                     <Badge variant="outline" className="text-sm">
@@ -234,7 +232,7 @@ export default function SuperAdminDashboard() {
                                         className="p-4 border rounded-lg cursor-pointer hover:bg-muted transition-colors"
                                         onClick={handleCreateBackup}
                                     >
-                                        <CloudArrowDown className="h-8 w-8 text-purple-600 mb-2" />
+                                        <CloudArrowDownIcon className="h-8 w-8 text-purple-600 mb-2" />
                                         <h3 className="font-medium">
                                             {isCreatingBackup ? 'Creating...' : 'System Backup'}
                                         </h3>
@@ -270,9 +268,9 @@ export default function SuperAdminDashboard() {
                                 <div className="text-center">
                                     <div className="flex items-center justify-center mb-2">
                                         {data?.systemStatus.database === 'online' ? (
-                                            <CheckCircle className="h-6 w-6 text-green-600 mr-2" />
+                                            <CheckCircleIcon className="h-6 w-6 text-green-600 mr-2" />
                                         ) : (
-                                            <XCircle className="h-6 w-6 text-red-600 mr-2" />
+                                            <XCircleIcon className="h-6 w-6 text-red-600 mr-2" />
                                         )}
                                         <div className={`text-2xl font-bold ${data?.systemStatus.database === 'online' ? 'text-green-600' : 'text-red-600'}`}>
                                             {data?.systemStatus.database === 'online' ? 'Online' : 'Offline'}

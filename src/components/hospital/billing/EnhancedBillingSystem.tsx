@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useBillingApi, usePatientApi } from '@/hooks/useApiHooks'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,6 +24,8 @@ import {
 import { toast } from 'sonner'
 import { useNotifications } from '@/hooks/useNotifications'
 import { Bill, Patient, BillItem, InsuranceClaim } from '@/types/hospital'
+import { useBillingApi } from '@/hooks/useBillingApi'
+import { usePatientApi } from '@/hooks/usePatientApi'
 
 // Service items for quick billing
 const serviceItems = [
@@ -183,9 +184,9 @@ export default function EnhancedBillingSystem() {
 
       // Send payment reminder if enabled
       await sendBillingReminder(
-        patient.phoneNumber,
+        patient.name,
         patient.email,
-        `${patient.firstName} ${patient.lastName}`,
+        `${patient.name}`,
         totalAmount,
         new Date(bill.dueDate).toLocaleDateString()
       )
@@ -282,7 +283,7 @@ export default function EnhancedBillingSystem() {
   // Filter bills
   const filteredBills = bills.filter(bill => {
     const patient = patients.find(p => p.id === bill.patientId)
-    const patientName = patient ? `${patient.firstName} ${patient.lastName}` : ''
+    const patientName = patient ? `${patient.name}` : ''
 
     return patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       bill.id.toLowerCase().includes(searchTerm.toLowerCase())
@@ -345,7 +346,7 @@ export default function EnhancedBillingSystem() {
                         <SelectContent>
                           {patients.map((patient) => (
                             <SelectItem key={patient.id} value={patient.id}>
-                              {patient.firstName} {patient.lastName} - {patient.mrNumber}
+                              {patient.name} - {patient.patient_id}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -568,7 +569,7 @@ export default function EnhancedBillingSystem() {
                         <div className="flex items-center gap-4">
                           <div>
                             <h3 className="font-semibold">
-                              {patient ? `${patient.firstName} ${patient.lastName}` : 'Unknown Patient'}
+                              {patient ? `${patient.name}` : 'Unknown Patient'}
                             </h3>
                             <p className="text-sm text-muted-foreground">
                               Bill #{bill.id.slice(-8)} • {new Date(bill.billDate).toLocaleDateString()}

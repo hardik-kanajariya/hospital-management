@@ -6,14 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
     Table,
     TableBody,
@@ -23,18 +16,9 @@ import {
     TableRow
 } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { httpService } from '@/services/HttpService';
 import { Role, Permission, RolePermission } from '@/types/auth';
-import {
-    PlusIcon,
-    PencilIcon,
-    TrashIcon,
-    UsersIcon,
-    ShieldIcon,
-    CheckIcon,
-    XIcon
-} from '@phosphor-icons/react';
+import { PlusIcon, PencilIcon, TrashIcon, UsersIcon, ShieldIcon } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 
 interface RoleFormData {

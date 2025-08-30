@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { usePatientApi, useDoctorApi, useLabTestApi } from '@/hooks/useApiHooks'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,6 +21,9 @@ import {
 } from '@phosphor-icons/react';
 import { toast } from 'sonner'
 import { Patient, Doctor } from '@/types/hospital'
+import { useDoctorApi } from '@/hooks/useDoctorApi'
+import { useLabTestApi } from '@/hooks/useLabTestApi'
+import { usePatientApi } from '@/hooks/usePatientApi'
 
 interface LabTest {
   id: string
@@ -183,7 +185,7 @@ export default function LabManagement() {
     const newOrder: LabOrder = {
       id: `LO${Date.now()}`,
       patientId: orderFormData.patientId!,
-      patientName: `${patient?.firstName || ''} ${patient?.lastName || ''}`.trim(),
+      patientName: `${patient?.name || ''}`.trim(),
       doctorId: orderFormData.doctorId!,
       doctorName: `Dr. ${doctor?.name || ''}`,
       tests: orderFormData.tests!,
@@ -422,7 +424,7 @@ export default function LabManagement() {
                       <SelectContent>
                         {patients.map((patient) => (
                           <SelectItem key={patient.id} value={patient.id}>
-                            {`${patient.firstName || ''} ${patient.lastName || ''}`.trim()} - {patient.id}
+                            {`${patient.name || ''}`.trim()} - {patient.id}
                           </SelectItem>
                         ))}
                       </SelectContent>

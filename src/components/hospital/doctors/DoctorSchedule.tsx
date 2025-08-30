@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useDoctorApi } from '@/hooks/useApiHooks'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,6 +19,7 @@ import {
   CalendarBlankIcon,
 } from '@phosphor-icons/react';
 import { toast } from 'sonner'
+import { useDoctorApi } from '@/hooks/useDoctorApi'
 
 interface Doctor {
   id: string

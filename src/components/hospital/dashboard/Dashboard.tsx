@@ -2,8 +2,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/hooks/useAuth'
 import { useNotifications } from '@/hooks/useNotifications'
-import { usePatientApi, useAppointmentApi, useBillingApi, useInventoryApi } from '@/hooks/useApiHooks'
-import { Patient, Appointment, Bill, InventoryItem } from '@/types/hospital'
 import {
   UsersIcon,
   CalendarIcon,
@@ -15,6 +13,10 @@ import {
   StethoscopeIcon,
   TestTubeIcon,
 } from '@phosphor-icons/react';
+import { useAppointmentApi } from '@/hooks/useAppointmentApi';
+import { useBillingApi } from '@/hooks/useBillingApi';
+import { useInventoryApi } from '@/hooks/useInventoryApi';
+import { usePatientApi } from '@/hooks/usePatientApi';
 
 export default function Dashboard() {
   const { user, hasPermission } = useAuth()
@@ -50,7 +52,7 @@ export default function Dashboard() {
     .slice(0, 5)
 
   const recentPatients = patients
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 5)
 
   // Role-specific welcome messages
@@ -335,15 +337,15 @@ export default function Dashboard() {
                   <div key={patient.id} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
-                        {patient.firstName?.charAt(0)}{patient.lastName?.charAt(0)}
+                        {patient.name?.charAt(0)}
                       </div>
                       <div>
-                        <p className="text-sm font-medium">{patient.firstName} {patient.lastName}</p>
-                        <p className="text-xs text-muted-foreground">{patient.mrNumber}</p>
+                        <p className="text-sm font-medium">{patient.name}</p>
+                        <p className="text-xs text-muted-foreground">{patient.patient_id}</p>
                       </div>
                     </div>
                     <Badge variant="outline" className="text-xs">
-                      {new Date(patient.createdAt).toLocaleDateString()}
+                      {new Date(patient.created_at).toLocaleDateString()}
                     </Badge>
                   </div>
                 ))
@@ -374,7 +376,7 @@ export default function Dashboard() {
                     <div key={appointment.id} className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium">
-                          {patient ? `${patient.firstName} ${patient.lastName}` : 'Unknown Patient'}
+                          {patient ? `${patient.name}` : 'Unknown Patient'}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {appointment.appointmentTime} • {appointment.type}

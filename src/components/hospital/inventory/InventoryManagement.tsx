@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useInventoryApi } from '@/hooks/useApiHooks'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,6 +23,7 @@ import {
   FirstAidIcon,
 } from '@phosphor-icons/react';
 import { toast } from 'sonner'
+import { useInventoryApi } from '@/hooks/useInventoryApi'
 
 interface InventoryItem {
   id: string

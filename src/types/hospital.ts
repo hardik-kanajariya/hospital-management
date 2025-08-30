@@ -58,32 +58,36 @@ export interface InsuranceInfo {
 
 export interface Appointment {
   id: string;
-  patientId: string;
-  doctorId: string;
-  appointmentDate: string;
-  appointmentTime: string;
-  duration: number;
-  type: 'consultation' | 'follow_up' | 'procedure' | 'emergency';
+  patient_id: string;
+  doctor_id: string;
+  doctor_name?: string;
+  appointment_date: string;
+  appointment_time: string;
+  appointment_type: 'consultation' | 'follow_up' | 'emergency' | 'vaccination' | 'checkup' | 'surgery_consultation';
   status: 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
-  reason: string;
+  reason?: string;
   notes?: string;
-  reminderSent: boolean;
-  createdAt: string;
-  updatedAt: string;
+  duration?: number; // in minutes
+  reminder_sent?: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Doctor {
   id: string;
   name: string;
   specialization: string;
-  qualification: string;
-  licenseNumber: string;
-  phoneNumber: string;
-  email: string;
-  schedule: DoctorSchedule[];
-  consultationFee: number;
-  isActive: boolean;
+  qualification?: string;
+  license_number: string;
+  phone_number: string;
+  email?: string;
+  schedule?: DoctorSchedule[];
+  consultation_fee?: number;
+  is_active?: boolean;
   department: string;
+  availability_status?: 'available' | 'busy' | 'on_leave';
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface DoctorSchedule {

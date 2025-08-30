@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSuperAdminDashboard } from '@/hooks/useSuperAdminDashboard';
-import { WrenchIcon, FloppyDisk, ArrowClockwise } from '@phosphor-icons/react';
+import { WrenchIcon, FloppyDiskIcon, ArrowClockwiseIcon } from '@phosphor-icons/react';
 
 interface SystemSettingsProps {
     children: React.ReactNode;
@@ -343,12 +343,12 @@ export default function SystemSettings({ children }: SystemSettingsProps) {
                     <Button onClick={handleSave} disabled={loading}>
                         {loading ? (
                             <>
-                                <ArrowClockwise className="h-4 w-4 mr-2 animate-spin" />
+                                <ArrowClockwiseIcon className="h-4 w-4 mr-2 animate-spin" />
                                 Saving...
                             </>
                         ) : (
                             <>
-                                <FloppyDisk className="h-4 w-4 mr-2" />
+                                <FloppyDiskIcon className="h-4 w-4 mr-2" />
                                 Save Settings
                             </>
                         )}
