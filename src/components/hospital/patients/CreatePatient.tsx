@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -7,9 +7,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import {
-    PencilSimpleIcon,
+    UserPlusIcon,
     ArrowLeftIcon,
     PlusIcon,
     TrashIcon,
@@ -19,16 +19,14 @@ import {
     WarningIcon,
     HeartIcon
 } from '@phosphor-icons/react'
-import { usePatient } from '@/hooks/usePatientApi'
-import { PatientUpdateRequest, VaccinationRecord } from '@/types/patient'
+import { usePatientApi } from '@/hooks/usePatientApi'
+import { PatientCreateRequest, VaccinationRecord, InsuranceInfo, EmergencyContact } from '@/types/patient'
 
-export default function PatientEdit() {
+export default function CreatePatient() {
     const navigate = useNavigate()
-    const { id } = useParams<{ id: string }>()
-    const { patient, loading, updatePatient, fetchPatient } = usePatient(id)
+    const { createPatient, loading } = usePatientApi()
 
-    const [formData, setFormData] = useState<PatientUpdateRequest>({
-        id: id || '',
+    const [formData, setFormData] = useState<PatientCreateRequest>({
         name: '',
         phone: '',
         email: '',
@@ -50,40 +48,17 @@ export default function PatientEdit() {
     })
 
     const [activeTab, setActiveTab] = useState('basic')
-    const [isSubmitting, setIsSubmitting] = useState(false)
-
-    // Load patient data into form when patient is fetched
-    useEffect(() => {
-        if (patient) {
-            setFormData({
-                id: patient.id,
-                name: patient.name,
-                phone: patient.phone,
-                email: patient.email || '',
-                date_of_birth: patient.date_of_birth,
-                gender: patient.gender,
-                address: patient.address,
-                emergency_contact: patient.emergency_contact,
-                blood_group: patient.blood_group || '',
-                allergies: patient.allergies || [],
-                chronic_conditions: patient.chronic_conditions || [],
-                vaccination_records: patient.vaccination_records || [],
-                insurance_info: patient.insurance_info
-            })
-        }
-    }, [patient])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        setIsSubmitting(true)
 
         try {
             // Validate required fields
-            if (!formData.name?.trim()) {
+            if (!formData.name.trim()) {
                 toast.error('Name is required')
                 return
             }
-            if (!formData.phone?.trim()) {
+            if (!formData.phone.trim()) {
                 toast.error('Phone number is required')
                 return
             }
@@ -91,32 +66,31 @@ export default function PatientEdit() {
                 toast.error('Date of birth is required')
                 return
             }
-            if (!formData.address?.trim()) {
+            if (!formData.address.trim()) {
                 toast.error('Address is required')
                 return
             }
-            if (!formData.emergency_contact?.name?.trim()) {
+            if (!formData.emergency_contact.name.trim()) {
                 toast.error('Emergency contact name is required')
                 return
             }
-            if (!formData.emergency_contact?.phone?.trim()) {
+            if (!formData.emergency_contact.phone.trim()) {
                 toast.error('Emergency contact phone is required')
                 return
             }
 
-            await updatePatient(formData)
-            navigate(`/patients/${id}`)
+            const patient = await createPatient(formData)
+            toast.success('Patient created successfully')
+            navigate(`/patients/${patient.id}`)
         } catch (error) {
-            console.error('Error updating patient:', error)
+            console.error('Error creating patient:', error)
             // Error is already handled in the hook
-        } finally {
-            setIsSubmitting(false)
         }
     }
 
     const handleCancel = () => {
         if (window.confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
-            navigate(`/patients/${id}`)
+            navigate('/patients')
         }
     }
 
@@ -195,40 +169,17 @@ export default function PatientEdit() {
         }))
     }
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                <span className="ml-2">Loading patient details...</span>
-            </div>
-        )
-    }
-
-    if (!patient) {
-        return (
-            <div className="text-center py-8">
-                <p className="text-destructive">Patient not found</p>
-                <Button variant="outline" onClick={() => navigate('/patients')} className="mt-4">
-                    Back to Patients
-                </Button>
-            </div>
-        )
-    }
-
     return (
         <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center gap-4">
-                <Button variant="outline" onClick={() => navigate(`/patients/${id}`)}>
+                <Button variant="outline" onClick={() => navigate('/patients')}>
                     <ArrowLeftIcon className="w-4 h-4 mr-2" />
-                    Back to Patient
+                    Back to Patients
                 </Button>
                 <div className="flex items-center gap-2">
-                    <PencilSimpleIcon className="w-6 h-6 text-primary" />
-                    <div>
-                        <h1 className="text-2xl font-bold">Edit Patient</h1>
-                        <p className="text-muted-foreground">{patient.name} - {patient.patient_id}</p>
-                    </div>
+                    <UserPlusIcon className="w-6 h-6 text-primary" />
+                    <h1 className="text-2xl font-bold">Add New Patient</h1>
                 </div>
             </div>
 
@@ -255,7 +206,7 @@ export default function PatientEdit() {
                                             <Label htmlFor="name">Full Name *</Label>
                                             <Input
                                                 id="name"
-                                                value={formData.name || ''}
+                                                value={formData.name}
                                                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                                                 placeholder="Enter full name"
                                                 required
@@ -267,7 +218,7 @@ export default function PatientEdit() {
                                                 <Label htmlFor="phone">Phone Number *</Label>
                                                 <Input
                                                     id="phone"
-                                                    value={formData.phone || ''}
+                                                    value={formData.phone}
                                                     onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                                                     placeholder="Enter phone number"
                                                     required
@@ -292,7 +243,7 @@ export default function PatientEdit() {
                                                 <Input
                                                     id="dob"
                                                     type="date"
-                                                    value={formData.date_of_birth || ''}
+                                                    value={formData.date_of_birth}
                                                     onChange={(e) => setFormData(prev => ({ ...prev, date_of_birth: e.target.value }))}
                                                     required
                                                 />
@@ -301,7 +252,7 @@ export default function PatientEdit() {
                                             <div>
                                                 <Label htmlFor="gender">Gender *</Label>
                                                 <Select
-                                                    value={formData.gender || 'male'}
+                                                    value={formData.gender}
                                                     onValueChange={(value: 'male' | 'female' | 'other') =>
                                                         setFormData(prev => ({ ...prev, gender: value }))
                                                     }
@@ -328,7 +279,6 @@ export default function PatientEdit() {
                                                     <SelectValue placeholder="Select blood group" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="">Not specified</SelectItem>
                                                     <SelectItem value="A+">A+</SelectItem>
                                                     <SelectItem value="A-">A-</SelectItem>
                                                     <SelectItem value="B+">B+</SelectItem>
@@ -345,7 +295,7 @@ export default function PatientEdit() {
                                             <Label htmlFor="address">Address *</Label>
                                             <Textarea
                                                 id="address"
-                                                value={formData.address || ''}
+                                                value={formData.address}
                                                 onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
                                                 placeholder="Enter complete address"
                                                 required
@@ -360,13 +310,10 @@ export default function PatientEdit() {
                                             <Label htmlFor="emergency_name">Name *</Label>
                                             <Input
                                                 id="emergency_name"
-                                                value={formData.emergency_contact?.name || ''}
+                                                value={formData.emergency_contact.name}
                                                 onChange={(e) => setFormData(prev => ({
                                                     ...prev,
-                                                    emergency_contact: {
-                                                        ...prev.emergency_contact!,
-                                                        name: e.target.value
-                                                    }
+                                                    emergency_contact: { ...prev.emergency_contact, name: e.target.value }
                                                 }))}
                                                 placeholder="Emergency contact name"
                                                 required
@@ -378,13 +325,10 @@ export default function PatientEdit() {
                                                 <Label htmlFor="emergency_relationship">Relationship *</Label>
                                                 <Input
                                                     id="emergency_relationship"
-                                                    value={formData.emergency_contact?.relationship || ''}
+                                                    value={formData.emergency_contact.relationship}
                                                     onChange={(e) => setFormData(prev => ({
                                                         ...prev,
-                                                        emergency_contact: {
-                                                            ...prev.emergency_contact!,
-                                                            relationship: e.target.value
-                                                        }
+                                                        emergency_contact: { ...prev.emergency_contact, relationship: e.target.value }
                                                     }))}
                                                     placeholder="e.g., Spouse, Parent"
                                                     required
@@ -395,13 +339,10 @@ export default function PatientEdit() {
                                                 <Label htmlFor="emergency_phone">Phone *</Label>
                                                 <Input
                                                     id="emergency_phone"
-                                                    value={formData.emergency_contact?.phone || ''}
+                                                    value={formData.emergency_contact.phone}
                                                     onChange={(e) => setFormData(prev => ({
                                                         ...prev,
-                                                        emergency_contact: {
-                                                            ...prev.emergency_contact!,
-                                                            phone: e.target.value
-                                                        }
+                                                        emergency_contact: { ...prev.emergency_contact, phone: e.target.value }
                                                     }))}
                                                     placeholder="Emergency contact phone"
                                                     required
@@ -414,13 +355,10 @@ export default function PatientEdit() {
                                             <Input
                                                 id="emergency_email"
                                                 type="email"
-                                                value={formData.emergency_contact?.email || ''}
+                                                value={formData.emergency_contact.email || ''}
                                                 onChange={(e) => setFormData(prev => ({
                                                     ...prev,
-                                                    emergency_contact: {
-                                                        ...prev.emergency_contact!,
-                                                        email: e.target.value
-                                                    }
+                                                    emergency_contact: { ...prev.emergency_contact, email: e.target.value }
                                                 }))}
                                                 placeholder="Emergency contact email"
                                             />
@@ -430,13 +368,10 @@ export default function PatientEdit() {
                                             <Label htmlFor="emergency_address">Address</Label>
                                             <Textarea
                                                 id="emergency_address"
-                                                value={formData.emergency_contact?.address || ''}
+                                                value={formData.emergency_contact.address || ''}
                                                 onChange={(e) => setFormData(prev => ({
                                                     ...prev,
-                                                    emergency_contact: {
-                                                        ...prev.emergency_contact!,
-                                                        address: e.target.value
-                                                    }
+                                                    emergency_contact: { ...prev.emergency_contact, address: e.target.value }
                                                 }))}
                                                 placeholder="Emergency contact address"
                                             />
@@ -476,7 +411,7 @@ export default function PatientEdit() {
                                                     </Button>
                                                 </div>
                                             ))}
-                                            {(!formData.allergies || formData.allergies.length === 0) && (
+                                            {formData.allergies?.length === 0 && (
                                                 <p className="text-sm text-muted-foreground">No allergies recorded</p>
                                             )}
                                         </div>
@@ -511,7 +446,7 @@ export default function PatientEdit() {
                                                     </Button>
                                                 </div>
                                             ))}
-                                            {(!formData.chronic_conditions || formData.chronic_conditions.length === 0) && (
+                                            {formData.chronic_conditions?.length === 0 && (
                                                 <p className="text-sm text-muted-foreground">No chronic conditions recorded</p>
                                             )}
                                         </div>
@@ -603,7 +538,7 @@ export default function PatientEdit() {
                                         </Card>
                                     ))}
 
-                                    {(!formData.vaccination_records || formData.vaccination_records.length === 0) && (
+                                    {formData.vaccination_records?.length === 0 && (
                                         <div className="text-center py-8 text-muted-foreground">
                                             <SyringeIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
                                             <p>No vaccination records</p>
@@ -721,16 +656,16 @@ export default function PatientEdit() {
                             <Button type="button" variant="outline" onClick={handleCancel}>
                                 Cancel
                             </Button>
-                            <Button type="submit" disabled={isSubmitting}>
-                                {isSubmitting ? (
+                            <Button type="submit" disabled={loading}>
+                                {loading ? (
                                     <>
                                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                        Updating...
+                                        Creating...
                                     </>
                                 ) : (
                                     <>
                                         <FloppyDiskIcon className="w-4 h-4 mr-2" />
-                                        Update Patient
+                                        Create Patient
                                     </>
                                 )}
                             </Button>

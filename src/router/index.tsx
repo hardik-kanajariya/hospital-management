@@ -3,23 +3,25 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import App from '../App';
 import LoginRedirect from '../components/auth/LoginRedirect';
 import LandingPage from '../components/landing/LandingPage';
-import Dashboard from '../components/hospital/Dashboard';
-import PatientManagement from '../components/hospital/PatientManagement';
-import PatientList from '../components/hospital/PatientList';
-import PatientCreate from '../components/hospital/PatientCreate';
-import PatientProfile from '../components/hospital/PatientProfile';
-import PatientEdit from '../components/hospital/PatientEdit';
-import AppointmentScheduling from '../components/hospital/AppointmentScheduling';
-import MedicalRecords from '../components/hospital/MedicalRecords';
-import EnhancedBillingSystem from '../components/hospital/EnhancedBillingSystem';
-import InventoryManagement from '../components/hospital/InventoryManagement';
-import DoctorSchedule from '../components/hospital/DoctorSchedule';
-import LabManagement from '../components/hospital/LabManagement';
-import BedManagement from '../components/hospital/BedManagement';
-import NotificationCenter from '../components/hospital/NotificationCenter';
-import SuperAdminDashboard from '../components/hospital/SuperAdminDashboard';
-import RoleManagement from '../components/hospital/RoleManagement';
-import SuperAdminUserManagement from '../components/hospital/SuperAdminUserManagement';
+
+// Hospital Module Imports - Using new modular structure
+import Dashboard from '../components/hospital/dashboard/Dashboard';
+import PatientManagement from '../components/hospital/patients/PatientManagement';
+import PatientList from '../components/hospital/patients/PatientList';
+import CreatePatient from '../components/hospital/patients/CreatePatient';
+import PatientProfile from '../components/hospital/patients/PatientProfile';
+import EditPatient from '../components/hospital/patients/EditPatient';
+import AppointmentScheduling from '../components/hospital/appointments/AppointmentScheduling';
+import MedicalRecords from '../components/hospital/medical/MedicalRecords';
+import EnhancedBillingSystem from '../components/hospital/billing/EnhancedBillingSystem';
+import InventoryManagement from '../components/hospital/inventory/InventoryManagement';
+import DoctorSchedule from '../components/hospital/doctors/DoctorSchedule';
+import LabManagement from '../components/hospital/laboratory/LabManagement';
+import BedManagement from '../components/hospital/facilities/BedManagement';
+import NotificationCenter from '../components/hospital/notifications/NotificationCenter';
+import SuperAdminDashboard from '../components/hospital/administration/SuperAdminDashboard';
+import RoleManagement from '../components/hospital/administration/RoleManagement';
+import SuperAdminUserManagement from '../components/hospital/administration/SuperAdminUserManagement';
 import RoleBasedAccess from '../components/auth/RoleBasedAccess';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 
@@ -73,7 +75,7 @@ export const router = createBrowserRouter([
                 element: (
                     <ProtectedRoute>
                         <RoleBasedAccess requiredModule="patients">
-                            <PatientCreate />
+                            <CreatePatient />
                         </RoleBasedAccess>
                     </ProtectedRoute>
                 )
@@ -93,7 +95,7 @@ export const router = createBrowserRouter([
                 element: (
                     <ProtectedRoute>
                         <RoleBasedAccess requiredModule="patients">
-                            <PatientEdit />
+                            <EditPatient />
                         </RoleBasedAccess>
                     </ProtectedRoute>
                 )
