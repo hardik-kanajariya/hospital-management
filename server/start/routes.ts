@@ -57,6 +57,7 @@ router.group(() => {
     router.group(() => {
       router.get('/', '#controllers/users_controller.index')
       router.get('/:id', '#controllers/users_controller.show')
+      router.post('/', '#controllers/users_controller.store')
       router.put('/:id', '#controllers/users_controller.update')
       router.delete('/:id', '#controllers/users_controller.destroy')
     }).prefix('/users')

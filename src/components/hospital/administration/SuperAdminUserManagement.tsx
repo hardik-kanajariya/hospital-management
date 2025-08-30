@@ -131,7 +131,7 @@ export default function SuperAdminUserManagement() {
             roleId: '',
             phone: '',
             department: '',
-            employeeId: '',
+            employeeId: '', // Will be auto-generated for new users
             isActive: true
         });
         setDialogOpen(true);
@@ -204,12 +204,16 @@ export default function SuperAdminUserManagement() {
         }
 
         try {
-            const payload = {
+            let payload: any = {
                 ...formData,
                 phone: formData.phone || undefined,
-                department: formData.department || undefined,
-                employeeId: formData.employeeId || undefined
+                department: formData.department || undefined
             };
+
+            // Only include employeeId for updates, not for new users (it will be auto-generated)
+            if (editingUser) {
+                payload.employeeId = formData.employeeId || undefined;
+            }
 
             let response;
 
@@ -446,11 +450,20 @@ export default function SuperAdminUserManagement() {
                                 </div>
                                 <div>
                                     <Label htmlFor="employeeId">Employee ID</Label>
-                                    <Input
-                                        id="employeeId"
-                                        value={formData.employeeId}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, employeeId: e.target.value }))}
-                                    />
+                                    {editingUser ? (
+                                        <Input
+                                            id="employeeId"
+                                            value={formData.employeeId}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, employeeId: e.target.value }))}
+                                        />
+                                    ) : (
+                                        <Input
+                                            id="employeeId"
+                                            value="Auto-generated"
+                                            disabled
+                                            className="text-muted-foreground bg-muted"
+                                        />
+                                    )}
                                 </div>
                             </div>
 

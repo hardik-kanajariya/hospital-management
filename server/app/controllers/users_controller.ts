@@ -1,6 +1,9 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import User from '#models/user'
-import { updateUserValidator } from '#validators/user'
+import { updateUserValidator, createUserValidator } from '#validators/user'
+import Database from '@adonisjs/lucid/services/db'
+import { v4 as uuid } from 'uuid'
+import hash from '@adonisjs/core/services/hash'
 
 export default class UsersController {
     /**
@@ -76,6 +79,96 @@ export default class UsersController {
     }
 
     /**
+     * Create a new user with auto-generated employee code
+     */
+    async store({ request, response }: HttpContext) {
+        try {
+            const payload = await request.validateUsing(createUserValidator)
+
+            // Generate unique employee ID
+            const employeeId = await this.generateEmployeeId()
+
+            // Hash the password
+            const hashedPassword = await hash.make(payload.password)
+
+            // Create user
+            const user = new User()
+            user.id = uuid()
+            user.email = payload.email
+            user.passwordHash = hashedPassword
+            user.name = payload.name
+            user.roleId = payload.roleId
+            user.phone = payload.phone || null
+            user.department = payload.department || null
+            user.employeeId = employeeId
+            user.isActive = payload.isActive ?? true
+
+            await user.save()
+
+            // Load the created user with role and permissions
+            await user.load('role', (roleQuery) => {
+                roleQuery.preload('permissions')
+            })
+
+            return response.status(201).json({
+                success: true,
+                data: user,
+                message: 'User created successfully'
+            })
+
+        } catch (error) {
+            console.error('User store error:', error)
+
+            if (error.code === 'E_VALIDATION_ERROR') {
+                return response.status(422).json({
+                    success: false,
+                    message: 'Validation failed',
+                    errors: error.messages
+                })
+            }
+
+            if (error.code === '23505') { // PostgreSQL unique constraint violation
+                return response.status(409).json({
+                    success: false,
+                    message: 'Email already exists'
+                })
+            }
+
+            return response.status(500).json({
+                success: false,
+                message: 'Server error while creating user'
+            })
+        }
+    }
+
+    /**
+     * Generate unique employee ID
+     */
+    private async generateEmployeeId(): Promise<string> {
+        const currentYear = new Date().getFullYear()
+        const prefix = `EMP${currentYear}`
+
+        // Get the latest employee ID for the current year
+        const latestUser = await Database
+            .from('users')
+            .where('employee_id', 'like', `${prefix}%`)
+            .orderBy('employee_id', 'desc')
+            .first()
+
+        if (!latestUser) {
+            return `${prefix}001`
+        }
+
+        // Extract the numeric part and increment
+        const lastId = latestUser.employee_id
+        const numericPart = lastId.replace(prefix, '')
+        const nextNumber = parseInt(numericPart) + 1
+
+        // Pad with zeros to maintain 3-digit format
+        return `${prefix}${nextNumber.toString().padStart(3, '0')}`
+    }
+
+    /**
      * Update user by ID
      */
     async update({ params, request, response }: HttpContext) {
@@ -90,6 +183,14 @@ export default class UsersController {
             }
 
             const payload = await request.validateUsing(updateUserValidator)
+
+            // Handle password update if provided
+            if (payload.password) {
+                const hashedPassword = await hash.make(payload.password)
+                user.passwordHash = hashedPassword
+                // Remove password from payload to avoid merge issues
+                delete payload.password
+            }
 
             // Update user fields
             user.merge(payload)
