@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react'
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { db } from '@/lib/database'
 import { useNavigation } from '@/hooks/useNavigation'
 import { Button } from '@/components/ui/button'
@@ -42,6 +42,7 @@ function App() {
   const { user, isAuthenticated, logout, hasPermission } = useAuth()
   const { activeTab, setActiveTab } = useNavigation()
   const location = useLocation()
+  const navigate = useNavigate()
 
   // Initialize database on app start
   useEffect(() => {
@@ -246,7 +247,7 @@ function App() {
                       return (
                         <SidebarMenuItem key={item.id}>
                           <SidebarMenuButton
-                            onClick={() => setActiveTab(item.id)}
+                            onClick={() => navigate(item.path)}
                             isActive={location.pathname === item.path}
                           >
                             <Icon className="w-4 h-4" />
