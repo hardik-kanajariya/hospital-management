@@ -14,9 +14,18 @@ export default class RolesController {
                 .withCount('users')
                 .orderBy('accessLevel', 'desc')
 
+            // Transform the data to include userCount properly
+            const rolesWithCount = roles.map(role => {
+                const roleData = role.serialize()
+                return {
+                    ...roleData,
+                    userCount: role.$extras.users_count || 0
+                }
+            })
+
             return response.ok({
                 success: true,
-                data: roles
+                data: rolesWithCount
             })
         } catch (error) {
             return response.internalServerError({
