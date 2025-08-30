@@ -189,6 +189,36 @@ export function useMasterDataApi() {
         return masterData.filter(item => item.category === category && item.isActive);
     }, [masterData]);
 
+    // Seed default master data
+    const seedMasterData = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await httpService.post(API_ENDPOINTS.MASTER_DATA.SEED_DATA, {});
+
+            if (response.success) {
+                toast.success('Default master data seeded successfully');
+                // Refresh the data after seeding
+                await fetchMasterData({});
+                return { success: true };
+            } else {
+                const errorMessage = response.message || 'Failed to seed master data';
+                setError(errorMessage);
+                toast.error(errorMessage);
+                return { success: false, error: errorMessage };
+            }
+        } catch (error: any) {
+            const errorMessage = error?.message || 'Failed to seed master data';
+            setError(errorMessage);
+            toast.error(errorMessage);
+            console.error('Error seeding master data:', error);
+            return { success: false, error: errorMessage };
+        } finally {
+            setLoading(false);
+        }
+    }, [fetchMasterData]);
+
     return {
         masterData,
         loading,
@@ -200,6 +230,7 @@ export function useMasterDataApi() {
         toggleMasterDataStatus,
         getMasterDataByCategory,
         getActiveMasterData,
+        seedMasterData,
         refreshMasterData: fetchMasterData
     };
 }

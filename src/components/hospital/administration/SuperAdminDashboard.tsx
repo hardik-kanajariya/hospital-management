@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -7,7 +8,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import RoleManagement from './RoleManagement';
 import SuperAdminUserManagement from './SuperAdminUserManagement';
 import MastersManagement from './MastersManagement';
-import SystemSettings from './SystemSettings';
 import { useSuperAdminDashboard } from '@/hooks/useSuperAdminDashboard';
 import {
     UsersIcon,
@@ -22,6 +22,7 @@ import {
 } from '@phosphor-icons/react';
 
 export default function SuperAdminDashboard() {
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('overview');
     const [isCreatingBackup, setIsCreatingBackup] = useState(false);
     const {
@@ -243,15 +244,16 @@ export default function SuperAdminDashboard() {
                                         </p>
                                     </div>
 
-                                    <SystemSettings>
-                                        <div className="p-4 border rounded-lg cursor-pointer hover:bg-muted transition-colors">
-                                            <WrenchIcon className="h-8 w-8 text-orange-600 mb-2" />
-                                            <h3 className="font-medium">System Settings</h3>
-                                            <p className="text-sm text-muted-foreground">
-                                                Configure system
-                                            </p>
-                                        </div>
-                                    </SystemSettings>
+                                    <div
+                                        className="p-4 border rounded-lg cursor-pointer hover:bg-muted transition-colors"
+                                        onClick={() => navigate('/admin/settings')}
+                                    >
+                                        <WrenchIcon className="h-8 w-8 text-orange-600 mb-2" />
+                                        <h3 className="font-medium">System Settings</h3>
+                                        <p className="text-sm text-muted-foreground">
+                                            Configure system
+                                        </p>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>

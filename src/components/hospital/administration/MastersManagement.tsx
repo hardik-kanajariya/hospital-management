@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -6,9 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
     Table,
     TableBody,
@@ -21,7 +19,6 @@ import {
     GearIcon,
     PlusIcon,
     PencilSimpleIcon,
-    TrashIcon,
     DatabaseIcon,
     TagIcon,
     CheckCircleIcon,
@@ -29,10 +26,11 @@ import {
     DownloadIcon,
     UploadIcon,
     PlantIcon,
-    ListIcon
-} from '@phosphor-icons/react'
+    ListIcon,
+} from '@phosphor-icons/react';
 import { toast } from 'sonner'
 import { useMasterDataApi } from '@/hooks/useMasterDataApi'
+import { httpService } from '@/services/HttpService'
 
 interface MasterDataItem {
     id: string
@@ -129,13 +127,18 @@ export default function MastersManagement() {
         fetchMasterData,
         createMasterDataItem,
         updateMasterDataItem,
-        toggleMasterDataStatus
+        toggleMasterDataStatus,
+        seedMasterData
     } = useMasterDataApi()
 
     const [selectedCategory, setSelectedCategory] = useState<string>('departments')
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [editingItem, setEditingItem] = useState<MasterDataItem | null>(null)
     const [searchTerm, setSearchTerm] = useState('')
+    const [isSeeding, setIsSeeding] = useState(false)
+    const [isExporting, setIsExporting] = useState(false)
+    const [isImporting, setIsImporting] = useState(false)
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
     const [formData, setFormData] = useState<MasterDataFormData>({
         name: '',
@@ -270,6 +273,197 @@ export default function MastersManagement() {
         setIsDialogOpen(true)
     }
 
+    // Seed Data functionality
+    const handleSeedData = async () => {
+        if (!confirm('This will populate the system with default master data. Are you sure?')) {
+            return
+        }
+
+        setIsSeeding(true)
+        try {
+            const result = await seedMasterData()
+            if (result.success) {
+                // Refresh the current category data
+                await fetchMasterData({ category: selectedCategory })
+            }
+        } catch (error) {
+            console.error('Seed data error:', error)
+            toast.error('Failed to seed master data')
+        } finally {
+            setIsSeeding(false)
+        }
+    }
+
+    // Export functionality
+    const handleExport = async () => {
+        setIsExporting(true)
+        try {
+            // Build URL with query parameters
+            let url = '/master-data'
+            if (selectedCategory) {
+                url += `?category=${selectedCategory}`
+            }
+
+            const response = await httpService.get(url)
+
+            if (response.success) {
+                const dataToExport = response.data
+
+                // Convert to CSV format
+                const csvContent = convertToCSV(dataToExport)
+
+                // Create filename with category and date
+                const categoryName = selectedCategory ? `_${selectedCategory}` : '_all'
+                const filename = `master-data${categoryName}_${new Date().toISOString().split('T')[0]}.csv`
+
+                // Create and download file
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+                const link = document.createElement('a')
+                const url = URL.createObjectURL(blob)
+                link.setAttribute('href', url)
+                link.setAttribute('download', filename)
+                link.style.visibility = 'hidden'
+                document.body.appendChild(link)
+                link.click()
+                document.body.removeChild(link)
+                URL.revokeObjectURL(url)
+
+                toast.success(`Master data exported successfully (${dataToExport.length} items)`)
+            } else {
+                toast.error('Failed to export master data')
+            }
+        } catch (error) {
+            console.error('Export error:', error)
+            toast.error('Failed to export master data')
+        } finally {
+            setIsExporting(false)
+        }
+    }
+
+    // Import functionality
+    const handleImport = () => {
+        fileInputRef.current?.click()
+    }
+
+    const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0]
+
+        if (!file) return
+
+        setIsImporting(true)
+        try {
+            const text = await file.text()
+            let importData: any[]
+
+            if (file.name.endsWith('.csv')) {
+                importData = parseCSV(text)
+            } else if (file.name.endsWith('.json')) {
+                importData = JSON.parse(text)
+            } else {
+                toast.error('Only CSV and JSON files are supported')
+                return
+            }
+
+            // Validate and import data
+            await processImportData(importData)
+
+        } catch (error) {
+            console.error('Import error:', error)
+            toast.error('Failed to import master data')
+        } finally {
+            setIsImporting(false)
+            // Reset file input
+            if (fileInputRef.current) {
+                fileInputRef.current.value = ''
+            }
+        }
+    }
+
+    // Helper function to convert data to CSV
+    const convertToCSV = (data: MasterDataItem[]): string => {
+        const headers = ['name', 'code', 'description', 'category', 'isActive', 'isSystemGenerated', 'sortOrder']
+        const csvRows = [
+            headers.join(','),
+            ...data.map(item =>
+                headers.map(header => {
+                    const value = item[header as keyof MasterDataItem]
+                    return typeof value === 'string' ? `"${value.replace(/"/g, '""')}"` : value
+                }).join(',')
+            )
+        ]
+        return csvRows.join('\n')
+    }
+
+    // Helper function to parse CSV
+    const parseCSV = (text: string): any[] => {
+        const lines = text.split('\n')
+        const headers = lines[0].split(',').map(h => h.replace(/"/g, ''))
+
+        return lines.slice(1)
+            .filter(line => line.trim())
+            .map(line => {
+                const values = line.split(',').map(v => v.replace(/"/g, ''))
+                const obj: any = {}
+                headers.forEach((header, index) => {
+                    let value: any = values[index]
+
+                    // Convert boolean strings
+                    if (value === 'true') value = true
+                    else if (value === 'false') value = false
+                    // Convert numbers
+                    else if (header === 'sortOrder' && !isNaN(Number(value))) {
+                        value = Number(value)
+                    }
+
+                    obj[header] = value
+                })
+                return obj
+            })
+    }
+
+    // Process imported data
+    const processImportData = async (data: any[]) => {
+        let successCount = 0
+        let errorCount = 0
+
+        for (const item of data) {
+            try {
+                // Validate required fields
+                if (!item.name || !item.code || !item.category) {
+                    errorCount++
+                    continue
+                }
+
+                // Skip system generated items
+                if (item.isSystemGenerated) {
+                    continue
+                }
+
+                await createMasterDataItem({
+                    name: item.name,
+                    code: item.code.toUpperCase(),
+                    description: item.description || '',
+                    category: item.category,
+                    isActive: item.isActive !== false,
+                    sortOrder: item.sortOrder || 0
+                })
+                successCount++
+            } catch (error) {
+                errorCount++
+                console.error('Import item error:', error)
+            }
+        }
+
+        if (successCount > 0) {
+            toast.success(`Successfully imported ${successCount} items`)
+            await fetchMasterData({ category: selectedCategory })
+        }
+
+        if (errorCount > 0) {
+            toast.error(`Failed to import ${errorCount} items`)
+        }
+    }
+
     const filteredData = masterData.filter(item =>
         item.category === selectedCategory &&
         (item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -280,6 +474,15 @@ export default function MastersManagement() {
 
     return (
         <div className="space-y-6">
+            {/* Hidden file input for import */}
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,.json"
+                onChange={handleFileSelect}
+                style={{ display: 'none' }}
+            />
+
             {/* Header */}
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                 <div>
@@ -288,17 +491,32 @@ export default function MastersManagement() {
                 </div>
 
                 <div className="flex gap-2">
-                    <Button variant="outline" className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        className="flex items-center gap-2"
+                        onClick={handleExport}
+                        disabled={isExporting}
+                    >
                         <DownloadIcon className="h-4 w-4" />
-                        Export
+                        {isExporting ? 'Exporting...' : 'Export'}
                     </Button>
-                    <Button variant="outline" className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        className="flex items-center gap-2"
+                        onClick={handleImport}
+                        disabled={isImporting}
+                    >
                         <UploadIcon className="h-4 w-4" />
-                        Import
+                        {isImporting ? 'Importing...' : 'Import'}
                     </Button>
-                    <Button variant="outline" className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        className="flex items-center gap-2"
+                        onClick={handleSeedData}
+                        disabled={isSeeding}
+                    >
                         <PlantIcon className="h-4 w-4" />
-                        Seed Data
+                        {isSeeding ? 'Seeding...' : 'Seed Data'}
                     </Button>
                 </div>
             </div>

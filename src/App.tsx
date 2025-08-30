@@ -34,7 +34,9 @@ import {
   BellIcon,
   HouseIcon,
   WifiSlashIcon,
-  CloudArrowUpIcon
+  CloudArrowUpIcon,
+  StackIcon,
+  KeyIcon
 } from '@phosphor-icons/react'
 
 function App() {
@@ -69,15 +71,16 @@ function App() {
       { id: 'beds', label: 'Beds', icon: BedIcon, module: 'beds', path: '/beds' },
       { id: 'billing', label: 'Billing', icon: CreditCardIcon, module: 'billing', path: '/billing' },
       { id: 'inventory', label: 'Inventory', icon: PackageIcon, module: 'inventory', path: '/inventory' },
-      { id: 'notifications', label: 'Notifications', icon: BellIcon, module: 'notifications', path: '/notifications' },
-      { id: 'users', label: 'User Management', icon: UsersIcon, module: 'user_management', path: '/users', requiresRole: 'super_admin' }
+      { id: 'notifications', label: 'Notifications', icon: BellIcon, module: 'notifications', path: '/notifications' }
     ];
 
     // Add super admin specific tabs
     if (isSuperAdmin) {
       tabs.push(
-        { id: 'admin', label: 'Admin Dashboard', icon: ShieldIcon, module: 'admin', path: '/admin', requiresRole: 'super_admin' },
-        { id: 'admin-roles', label: 'Role Management', icon: ShieldIcon, module: 'roles', path: '/admin/roles', requiresRole: 'super_admin' }
+        { id: 'admin', label: 'Dashboard', icon: ShieldIcon, module: 'admin', path: '/admin', requiresRole: 'super_admin' },
+        { id: 'admin-roles', label: 'Roles', icon: KeyIcon, module: 'roles', path: '/admin/roles', requiresRole: 'super_admin' },
+        { id: 'users', label: 'Users', icon: UsersIcon, module: 'user_management', path: '/users', requiresRole: 'super_admin' },
+        { id: 'masters', label: 'Masters', icon: StackIcon, module: 'masters', path: '/masters', requiresRole: 'super_admin' }
       );
     }
 
@@ -141,6 +144,7 @@ function App() {
       case 'users': return 'User Management'
       case 'admin': return 'Super Admin Dashboard'
       case 'admin/roles': return 'Role Management'
+      case 'masters': return 'Masters Management'
       case 'landing': return 'Home'
       default: return 'Hospital Management'
     }
@@ -162,6 +166,7 @@ function App() {
       case 'users': return 'Manage hospital staff access and permissions'
       case 'admin': return 'System administration and configuration'
       case 'admin/roles': return 'Configure roles and permissions'
+      case 'masters': return ''
       case 'landing': return 'Welcome to MedCare Rural Hospital Management System'
       default: return 'Hospital management system'
     }

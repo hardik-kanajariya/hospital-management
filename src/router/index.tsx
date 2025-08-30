@@ -6,7 +6,6 @@ import LandingPage from '../components/landing/LandingPage';
 
 // Hospital Module Imports - Using new modular structure
 import Dashboard from '../components/hospital/dashboard/Dashboard';
-import PatientManagement from '../components/hospital/patients/PatientManagement';
 import PatientList from '../components/hospital/patients/PatientList';
 import CreatePatient from '../components/hospital/patients/CreatePatient';
 import PatientProfile from '../components/hospital/patients/PatientProfile';
@@ -23,6 +22,7 @@ import SuperAdminDashboard from '../components/hospital/administration/SuperAdmi
 import RoleManagement from '../components/hospital/administration/RoleManagement';
 import SuperAdminUserManagement from '../components/hospital/administration/SuperAdminUserManagement';
 import MastersManagement from '../components/hospital/administration/MastersManagement';
+import SystemSettingsPage from '../components/hospital/administration/SystemSettingsPage';
 import RoleBasedAccess from '../components/auth/RoleBasedAccess';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 
@@ -59,16 +59,6 @@ export const router = createBrowserRouter([
             },
             {
                 path: 'patients',
-                element: (
-                    <ProtectedRoute>
-                        <RoleBasedAccess requiredModule="patients">
-                            <PatientManagement />
-                        </RoleBasedAccess>
-                    </ProtectedRoute>
-                )
-            },
-            {
-                path: 'patients/list',
                 element: (
                     <ProtectedRoute>
                         <RoleBasedAccess requiredModule="patients">
@@ -274,6 +264,14 @@ export const router = createBrowserRouter([
                 element: (
                     <ProtectedRoute requiredRole="super_admin">
                         <MastersManagement />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'admin/settings',
+                element: (
+                    <ProtectedRoute requiredRole="super_admin">
+                        <SystemSettingsPage />
                     </ProtectedRoute>
                 )
             }
