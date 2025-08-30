@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ShieldIcon, LockIcon } from '@phosphor-icons/react';
+import { LockIcon } from '@phosphor-icons/react';
 
 interface RoleBasedAccessProps {
   children: ReactNode;
