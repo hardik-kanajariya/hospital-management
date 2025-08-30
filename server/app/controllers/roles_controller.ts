@@ -2,6 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import Role from '#models/role'
 import Permission from '#models/permission'
 import { createRoleValidator, updateRoleValidator } from '#validators/role'
+import crypto from 'node:crypto'
 
 export default class RolesController {
     /**
@@ -111,7 +112,7 @@ export default class RolesController {
     /**
      * Show form for editing a role
      */
-    async edit({ params }: HttpContext) { }
+    async edit({ }: HttpContext) { }
 
     /**
      * Handle role updates
