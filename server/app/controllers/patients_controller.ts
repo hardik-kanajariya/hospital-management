@@ -307,14 +307,14 @@ export default class PatientsController {
         try {
             // Get total patient count
             const totalPatients = await Patient.query().count('* as total')
-            const total = parseInt(totalPatients[0]?.total || '0')
+            const total = parseInt(totalPatients[0]?.$extras.total || '0')
 
             // Get new patients this month
             const startOfMonth = DateTime.now().startOf('month')
             const newThisMonth = await Patient.query()
                 .where('created_at', '>=', startOfMonth.toSQL())
                 .count('* as total')
-            const newPatients = parseInt(newThisMonth[0]?.total || '0')
+            const newPatients = parseInt(newThisMonth[0]?.$extras.total || '0')
 
             // Get patients by gender
             const genderStats = await Patient.query()
@@ -323,7 +323,7 @@ export default class PatientsController {
                 .groupBy('gender')
 
             const genderDistribution = genderStats.reduce((acc, stat) => {
-                acc[stat.gender || 'unknown'] = parseInt(stat.count)
+                acc[stat.gender || 'unknown'] = parseInt(stat.$extras.count)
                 return acc
             }, {} as Record<string, number>)
 
@@ -339,7 +339,7 @@ export default class PatientsController {
 
             patients.forEach(patient => {
                 if (patient.dateOfBirth) {
-                    const age = DateTime.now().diff(DateTime.fromJSDate(patient.dateOfBirth), 'years').years
+                    const age = DateTime.now().diff(patient.dateOfBirth, 'years').years
                     if (age <= 18) ageGroups['0-18']++
                     else if (age <= 30) ageGroups['19-30']++
                     else if (age <= 50) ageGroups['31-50']++
@@ -353,7 +353,7 @@ export default class PatientsController {
             const recentRegistrations = await Patient.query()
                 .where('created_at', '>=', weekAgo.toSQL())
                 .count('* as total')
-            const recentCount = parseInt(recentRegistrations[0]?.total || '0')
+            const recentCount = parseInt(recentRegistrations[0]?.$extras.total || '0')
 
             return response.status(200).json({
                 success: true,
