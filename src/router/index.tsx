@@ -22,6 +22,7 @@ import NotificationCenter from '../components/hospital/notifications/Notificatio
 import SuperAdminDashboard from '../components/hospital/administration/SuperAdminDashboard';
 import RoleManagement from '../components/hospital/administration/RoleManagement';
 import SuperAdminUserManagement from '../components/hospital/administration/SuperAdminUserManagement';
+import MastersManagement from '../components/hospital/administration/MastersManagement';
 import RoleBasedAccess from '../components/auth/RoleBasedAccess';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 
@@ -265,6 +266,14 @@ export const router = createBrowserRouter([
                 element: (
                     <ProtectedRoute requiredRole="super_admin">
                         <RoleManagement />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'admin/masters',
+                element: (
+                    <ProtectedRoute requiredRole="super_admin">
+                        <MastersManagement />
                     </ProtectedRoute>
                 )
             }

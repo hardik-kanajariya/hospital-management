@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,6 +53,7 @@ interface UserFormData {
 }
 
 export default function SuperAdminUserManagement() {
+    const [searchParams] = useSearchParams();
     const [users, setUsers] = useState<User[]>([]);
     const [roles, setRoles] = useState<Role[]>([]);
     const [loading, setLoading] = useState(true);
@@ -73,6 +75,19 @@ export default function SuperAdminUserManagement() {
         loadUsers();
         loadRoles();
     }, []);
+
+    // Handle role preselection from URL parameters
+    useEffect(() => {
+        const preSelectedRole = searchParams.get('role');
+        if (preSelectedRole && roles.length > 0) {
+            const doctorRole = roles.find(role => role.name === preSelectedRole);
+            if (doctorRole) {
+                setFormData(prev => ({ ...prev, roleId: doctorRole.id }));
+                // Auto-open the create user dialog when coming from doctor module
+                setDialogOpen(true);
+            }
+        }
+    }, [searchParams, roles]);
 
     const loadUsers = async () => {
         try {

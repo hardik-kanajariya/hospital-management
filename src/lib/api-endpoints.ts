@@ -204,6 +204,18 @@ export const API_ENDPOINTS = {
     MODULES: `${API_BASE_URL}/permissions/modules`
   },
 
+  // Master Data Management endpoints
+  MASTER_DATA: {
+    BASE: `${API_BASE_URL}/master-data`,
+    BY_ID: (id: string) => `${API_BASE_URL}/master-data/${id}`,
+    BY_CATEGORY: (category: string) => `${API_BASE_URL}/master-data/category/${category}`,
+    TOGGLE_STATUS: (id: string) => `${API_BASE_URL}/master-data/${id}/toggle-status`,
+    CATEGORIES: `${API_BASE_URL}/master-data/categories`,
+    SEED_DATA: `${API_BASE_URL}/master-data/seed`,
+    BULK_IMPORT: `${API_BASE_URL}/master-data/bulk-import`,
+    EXPORT: `${API_BASE_URL}/master-data/export`
+  },
+
   // System endpoints
   SYSTEM: {
     HEALTH: `${API_BASE_URL}/system/health`,

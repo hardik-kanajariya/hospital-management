@@ -226,6 +226,18 @@ router.group(() => {
       router.delete('/:id', '#controllers/permissions_controller.destroy')
     }).prefix('/permissions')
 
+    // Master data routes
+    router.group(() => {
+      router.get('/', '#controllers/master_data_controller.index')
+      router.get('/categories', '#controllers/master_data_controller.getCategories')
+      router.get('/category/:category', '#controllers/master_data_controller.getByCategory')
+      router.post('/', '#controllers/master_data_controller.store')
+      router.put('/:id', '#controllers/master_data_controller.update')
+      router.post('/:id/toggle-status', '#controllers/master_data_controller.toggleStatus')
+      router.delete('/:id', '#controllers/master_data_controller.destroy')
+      router.post('/seed', '#controllers/master_data_controller.seedData')
+    }).prefix('/master-data')
+
   }).use(middleware.auth()) // Apply auth middleware to all protected routes
 
 }).prefix('/api')

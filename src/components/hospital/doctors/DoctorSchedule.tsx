@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -71,6 +72,7 @@ const daysOfWeek = [
 ]
 
 export default function DoctorSchedule() {
+  const navigate = useNavigate()
   const { doctors, createDoctor, updateDoctor } = useDoctorApi()
   // For schedules and availability, we'll use local state for now since they're not in the API hooks
   const [schedules, setSchedules] = useState<Schedule[]>([])
@@ -218,122 +220,14 @@ export default function DoctorSchedule() {
         </div>
 
         <div className="flex gap-2">
-          <Dialog open={isDoctorDialogOpen} onOpenChange={setIsDoctorDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
-                <UserCircleIcon className="h-4 w-4" />
-                Add Doctor
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Add New Doctor</DialogTitle>
-                <DialogDescription>Enter doctor information and credentials</DialogDescription>
-              </DialogHeader>
-
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="doctorName">Full Name *</Label>
-                    <Input
-                      id="doctorName"
-                      value={doctorFormData.name || ''}
-                      onChange={(e) => setDoctorFormData({ ...doctorFormData, name: e.target.value })}
-                      placeholder="Dr. John Smith"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="specialization">Specialization *</Label>
-                    <Select value={doctorFormData.specialization} onValueChange={(value) => setDoctorFormData({ ...doctorFormData, specialization: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select specialization" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {specializations.map((spec) => (
-                          <SelectItem key={spec} value={spec}>{spec}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number *</Label>
-                    <Input
-                      id="phone"
-                      value={doctorFormData.phone || ''}
-                      onChange={(e) => setDoctorFormData({ ...doctorFormData, phone: e.target.value })}
-                      placeholder="Phone number"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={doctorFormData.email || ''}
-                      onChange={(e) => setDoctorFormData({ ...doctorFormData, email: e.target.value })}
-                      placeholder="Email address"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="license">License Number</Label>
-                    <Input
-                      id="license"
-                      value={doctorFormData.licenseNumber || ''}
-                      onChange={(e) => setDoctorFormData({ ...doctorFormData, licenseNumber: e.target.value })}
-                      placeholder="Medical license number"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="experience">Experience (years)</Label>
-                    <Input
-                      id="experience"
-                      type="number"
-                      value={doctorFormData.experience || ''}
-                      onChange={(e) => setDoctorFormData({ ...doctorFormData, experience: Number(e.target.value) })}
-                      placeholder="Years of experience"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="fee">Consultation Fee (₹)</Label>
-                    <Input
-                      id="fee"
-                      type="number"
-                      value={doctorFormData.consultationFee || ''}
-                      onChange={(e) => setDoctorFormData({ ...doctorFormData, consultationFee: Number(e.target.value) })}
-                      placeholder="Consultation fee"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="department">Department</Label>
-                    <Select value={doctorFormData.department} onValueChange={(value) => setDoctorFormData({ ...doctorFormData, department: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select department" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {departments.map((dept) => (
-                          <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3">
-                <Button variant="outline" onClick={() => setIsDoctorDialogOpen(false)}>Cancel</Button>
-                <Button onClick={handleAddDoctor}>Add Doctor</Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={() => navigate('/users?role=doctor')}
+          >
+            <UserCircleIcon className="h-4 w-4" />
+            Add Doctor
+          </Button>
 
           <Dialog open={isScheduleDialogOpen} onOpenChange={setIsScheduleDialogOpen}>
             <DialogTrigger asChild>
