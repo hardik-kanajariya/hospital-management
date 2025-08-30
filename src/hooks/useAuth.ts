@@ -130,6 +130,18 @@ export function useAuth() {
       // Force a small delay to ensure state is properly updated
       await new Promise(resolve => setTimeout(resolve, 50));
 
+      // After successful login, refresh the page to reload the application
+      setTimeout(() => {
+        // Check if there's a stored redirect path
+        const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+        if (redirectPath) {
+          sessionStorage.removeItem('redirectAfterLogin');
+          window.location.href = redirectPath;
+        } else {
+          window.location.href = '/dashboard';
+        }
+      }, 100);
+
       return user;
 
     } catch (err) {
@@ -174,6 +186,11 @@ export function useAuth() {
       });
 
       console.log('User logged out');
+
+      // After successful logout, refresh the page to reload the application
+      setTimeout(() => {
+        window.location.href = '/landing';
+      }, 100);
     }
   };
 

@@ -43,6 +43,11 @@ function App() {
   const location = useLocation()
   const navigate = useNavigate()
 
+  // Handle logout with page refresh
+  const handleLogout = async () => {
+    await logout(); // This will trigger page refresh automatically
+  };
+
   // Filter tabs based on user permissions (memoized for performance)
   // Always define this hook, even if user is not authenticated
   const availableTabs = useMemo(() => {
@@ -257,7 +262,7 @@ function App() {
                   </p>
                 </div>
               </div>
-              <Button variant="outline" size="sm" onClick={logout} className="w-full">
+              <Button variant="outline" size="sm" onClick={handleLogout} className="w-full">
                 <SignOutIcon className="w-4 h-4 mr-2" />
                 Sign Out
               </Button>

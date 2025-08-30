@@ -11,16 +11,23 @@ export default function LoginRedirect() {
     const { user, isAuthenticated, logout } = useAuth();
 
     useEffect(() => {
-        // If user is authenticated and tries to access login, log them out
+        // If user is authenticated and tries to access login, redirect to dashboard
         if (isAuthenticated && user) {
-            console.log('Authenticated user accessing login page - logging out');
-            logout();
+            console.log('Authenticated user accessing login page - redirecting to dashboard');
+            window.location.href = '/dashboard';
         }
-    }, [isAuthenticated, user, logout]);
+    }, [isAuthenticated, user]);
 
-    // If authenticated, redirect to dashboard
+    // If authenticated, the useEffect will handle the redirect
     if (isAuthenticated) {
-        return <Navigate to="/dashboard" replace />;
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p>Redirecting...</p>
+                </div>
+            </div>
+        );
     }
 
     // Otherwise show login form

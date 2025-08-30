@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigation } from '@/hooks/useNavigation';
 import { ROLE_CONFIGS } from '@/types/auth';
 import { HospitalIcon, SignInIcon, EyeSlashIcon } from '@phosphor-icons/react';
 import { toast } from 'sonner';
@@ -22,7 +21,6 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
-  const { navigateToDashboard } = useNavigation();
   const location = useLocation();
 
   // Get the intended destination from the location state or default to dashboard
@@ -44,15 +42,12 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
 
       if (result) {
         toast.success('Login successful!');
-        console.log('LoginForm: Login successful, navigating to dashboard');
+        console.log('LoginForm: Login successful, page will refresh automatically');
 
         // Call the onLogin callback if provided (for backward compatibility)
         onLogin?.();
 
-        // Small delay to ensure auth state is updated before navigation
-        setTimeout(() => {
-          navigate('/dashboard', { replace: true });
-        }, 100);
+        // The useAuth hook will handle the page refresh automatically
       } else {
         console.log('LoginForm: Login failed:', result);
         toast.error(result || 'Login failed');
