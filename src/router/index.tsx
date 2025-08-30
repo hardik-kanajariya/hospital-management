@@ -12,7 +12,6 @@ import InventoryManagement from '../components/hospital/InventoryManagement';
 import DoctorSchedule from '../components/hospital/DoctorSchedule';
 import LabManagement from '../components/hospital/LabManagement';
 import BedManagement from '../components/hospital/BedManagement';
-import UserManagement from '../components/auth/UserManagement';
 import NotificationCenter from '../components/hospital/NotificationCenter';
 import SuperAdminDashboard from '../components/hospital/SuperAdminDashboard';
 import RoleManagement from '../components/hospital/RoleManagement';
@@ -138,7 +137,7 @@ export const router = createBrowserRouter([
                 path: 'users',
                 element: (
                     <ProtectedRoute requiredRole="super_admin">
-                        <UserManagement />
+                        <SuperAdminUserManagement />
                     </ProtectedRoute>
                 )
             },
@@ -155,14 +154,6 @@ export const router = createBrowserRouter([
                 element: (
                     <ProtectedRoute requiredRole="super_admin">
                         <RoleManagement />
-                    </ProtectedRoute>
-                )
-            },
-            {
-                path: 'admin/users',
-                element: (
-                    <ProtectedRoute requiredRole="super_admin">
-                        <SuperAdminUserManagement />
                     </ProtectedRoute>
                 )
             }

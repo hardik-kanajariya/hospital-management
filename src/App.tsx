@@ -81,15 +81,14 @@ function App() {
       { id: 'billing', label: 'Billing', icon: CreditCardIcon, module: 'billing', path: '/billing' },
       { id: 'inventory', label: 'Inventory', icon: PackageIcon, module: 'inventory', path: '/inventory' },
       { id: 'notifications', label: 'Notifications', icon: BellIcon, module: 'notifications', path: '/notifications' },
-      { id: 'users', label: 'Users', icon: ShieldIcon, module: 'user_management', path: '/users', requiresRole: 'super_admin' }
+      { id: 'users', label: 'User Management', icon: UsersIcon, module: 'user_management', path: '/users', requiresRole: 'super_admin' }
     ];
 
     // Add super admin specific tabs
     if (isSuperAdmin) {
       tabs.push(
         { id: 'admin', label: 'Admin Dashboard', icon: ShieldIcon, module: 'admin', path: '/admin', requiresRole: 'super_admin' },
-        { id: 'admin-roles', label: 'Role Management', icon: ShieldIcon, module: 'roles', path: '/admin/roles', requiresRole: 'super_admin' },
-        { id: 'admin-users', label: 'User Management', icon: UsersIcon, module: 'users', path: '/admin/users', requiresRole: 'super_admin' }
+        { id: 'admin-roles', label: 'Role Management', icon: ShieldIcon, module: 'roles', path: '/admin/roles', requiresRole: 'super_admin' }
       );
     }
 
@@ -125,18 +124,13 @@ function App() {
       },
       {
         label: 'Administration',
-        items: availableTabs.filter(tab => ['billing', 'notifications', 'users'].includes(tab.id))
+        items: availableTabs.filter(tab => ['billing', 'notifications'].includes(tab.id))
+      },
+      {
+        label: 'Super Admin',
+        items: availableTabs.filter(tab => ['users', 'admin', 'admin-roles'].includes(tab.id))
       }
     ];
-
-    // Add Super Admin section if user has super admin tabs
-    const adminTabs = availableTabs.filter(tab => ['admin', 'admin-roles', 'admin-users'].includes(tab.id));
-    if (adminTabs.length > 0) {
-      groups.push({
-        label: 'Super Admin',
-        items: adminTabs
-      });
-    }
 
     return groups.filter(group => group.items.length > 0);
   }, [availableTabs]);
@@ -158,7 +152,6 @@ function App() {
       case 'users': return 'User Management'
       case 'admin': return 'Super Admin Dashboard'
       case 'admin/roles': return 'Role Management'
-      case 'admin/users': return 'User Administration'
       case 'landing': return 'Home'
       default: return 'Hospital Management'
     }
@@ -180,7 +173,6 @@ function App() {
       case 'users': return 'Manage hospital staff access and permissions'
       case 'admin': return 'System administration and configuration'
       case 'admin/roles': return 'Configure roles and permissions'
-      case 'admin/users': return 'Manage all system users and access'
       case 'landing': return 'Welcome to MedCare Rural Hospital Management System'
       default: return 'Hospital management system'
     }

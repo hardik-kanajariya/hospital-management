@@ -241,25 +241,20 @@ export default function SuperAdminUserManagement() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold">User Management</h1>
-                    <p className="text-muted-foreground">
-                        Manage all hospital staff and their access permissions
-                    </p>
-                </div>
-                <Button onClick={handleCreateUser}>
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    Create User
-                </Button>
-            </div>
-
             <Card>
                 <CardHeader>
-                    <CardTitle>Hospital Staff</CardTitle>
-                    <CardDescription>
-                        Manage user accounts and their roles
-                    </CardDescription>
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <CardTitle>Hospital Staff</CardTitle>
+                            <CardDescription>
+                                Manage user accounts and their roles
+                            </CardDescription>
+                        </div>
+                        <Button onClick={handleCreateUser}>
+                            <PlusIcon className="h-4 w-4 mr-2" />
+                            Create User
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <Table>
