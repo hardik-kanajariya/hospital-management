@@ -25,6 +25,12 @@ import SuperAdminUserManagement from '../components/hospital/administration/Supe
 import RoleBasedAccess from '../components/auth/RoleBasedAccess';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 
+// Medical Records Module Components
+import MedicalRecordsList from '../components/hospital/medical/records/MedicalRecordsList';
+import CreateMedicalRecord from '../components/hospital/medical/records/CreateMedicalRecord';
+import ViewMedicalRecord from '../components/hospital/medical/records/ViewMedicalRecord';
+import EditMedicalRecord from '../components/hospital/medical/records/EditMedicalRecord';
+
 export const router = createBrowserRouter([
     {
         path: '/',
@@ -105,7 +111,7 @@ export const router = createBrowserRouter([
                 element: (
                     <ProtectedRoute>
                         <RoleBasedAccess requiredModule="medical_records">
-                            <MedicalRecords />
+                            <MedicalRecordsList />
                         </RoleBasedAccess>
                     </ProtectedRoute>
                 )
@@ -115,7 +121,17 @@ export const router = createBrowserRouter([
                 element: (
                     <ProtectedRoute>
                         <RoleBasedAccess requiredModule="medical_records">
-                            <MedicalRecords />
+                            <CreateMedicalRecord />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'medical-records',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="medical_records">
+                            <MedicalRecordsList />
                         </RoleBasedAccess>
                     </ProtectedRoute>
                 )
@@ -125,7 +141,7 @@ export const router = createBrowserRouter([
                 element: (
                     <ProtectedRoute>
                         <RoleBasedAccess requiredModule="medical_records">
-                            <MedicalRecords />
+                            <CreateMedicalRecord />
                         </RoleBasedAccess>
                     </ProtectedRoute>
                 )
@@ -135,7 +151,17 @@ export const router = createBrowserRouter([
                 element: (
                     <ProtectedRoute>
                         <RoleBasedAccess requiredModule="medical_records">
-                            <MedicalRecords />
+                            <ViewMedicalRecord />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'medical-records/:id/edit',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="medical_records">
+                            <EditMedicalRecord />
                         </RoleBasedAccess>
                     </ProtectedRoute>
                 )
@@ -155,7 +181,7 @@ export const router = createBrowserRouter([
                 element: (
                     <ProtectedRoute>
                         <RoleBasedAccess requiredModule="medical_records">
-                            <MedicalRecords />
+                            <MedicalRecordsList />
                         </RoleBasedAccess>
                     </ProtectedRoute>
                 )

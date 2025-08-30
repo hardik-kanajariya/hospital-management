@@ -3,7 +3,7 @@
  * This file defines all the backend API endpoints that the application will use
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 export const API_ENDPOINTS = {
   // Authentication endpoints
@@ -66,6 +66,7 @@ export const API_ENDPOINTS = {
     BASE: `${API_BASE_URL}/medical-records`,
     BY_ID: (id: string) => `${API_BASE_URL}/medical-records/${id}`,
     BY_PATIENT: (patientId: string) => `${API_BASE_URL}/medical-records/patient/${patientId}`,
+    SEARCH: `${API_BASE_URL}/medical-records/search`,
     CONSULTATIONS: `${API_BASE_URL}/medical-records/consultations`,
     PRESCRIPTIONS: `${API_BASE_URL}/medical-records/prescriptions`,
     DIAGNOSES: `${API_BASE_URL}/medical-records/diagnoses`,
