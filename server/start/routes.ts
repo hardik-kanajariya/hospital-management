@@ -64,6 +64,7 @@ router.group(() => {
     // Patient management routes
     router.group(() => {
       router.get('/', '#controllers/patients_controller.index')
+      router.get('/stats', '#controllers/patients_controller.stats')
       router.get('/search', '#controllers/patients_controller.search')
       router.get('/:id', '#controllers/patients_controller.show')
       router.post('/', '#controllers/patients_controller.store')

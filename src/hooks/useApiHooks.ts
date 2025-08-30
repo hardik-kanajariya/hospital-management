@@ -2,6 +2,9 @@ import { useState, useCallback, useEffect } from 'react';
 import { httpService, ApiResponse } from '@/services/HttpService';
 import { toast } from 'sonner';
 
+// Re-export patient hooks
+export { usePatientApi, usePatient, usePatientSearch } from './usePatientApi';
+
 /**
  * Base hook for API operations
  * Provides loading states, error handling, and data management
@@ -119,48 +122,6 @@ export function useApiRequest<T = any>(endpoint: string) {
         updateRecord,
         deleteRecord,
         refresh
-    };
-}
-
-/**
- * Hook for patient management operations
- */
-export function usePatientApi() {
-    const {
-        data: patients,
-        loading,
-        error,
-        createRecord,
-        updateRecord,
-        deleteRecord,
-        refresh
-    } = useApiRequest('/patients');
-
-    const createPatient = useCallback(async (patientData: any) => {
-        const patient = {
-            ...patientData,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-        };
-        return createRecord(patient);
-    }, [createRecord]);
-
-    const updatePatient = useCallback(async (id: string, updates: any) => {
-        const updatedData = {
-            ...updates,
-            updated_at: new Date().toISOString()
-        };
-        return updateRecord(id, updatedData);
-    }, [updateRecord]);
-
-    return {
-        patients,
-        loading,
-        error,
-        createPatient,
-        updatePatient,
-        deletePatient: deleteRecord,
-        refreshPatients: refresh
     };
 }
 

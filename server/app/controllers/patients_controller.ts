@@ -299,4 +299,84 @@ export default class PatientsController {
             })
         }
     }
+
+    /**
+     * Get patient statistics
+     */
+    async stats({ response }: HttpContext) {
+        try {
+            // Get total patient count
+            const totalPatients = await Patient.query().count('* as total')
+            const total = parseInt(totalPatients[0]?.total || '0')
+
+            // Get new patients this month
+            const startOfMonth = DateTime.now().startOf('month')
+            const newThisMonth = await Patient.query()
+                .where('created_at', '>=', startOfMonth.toSQL())
+                .count('* as total')
+            const newPatients = parseInt(newThisMonth[0]?.total || '0')
+
+            // Get patients by gender
+            const genderStats = await Patient.query()
+                .select('gender')
+                .count('* as count')
+                .groupBy('gender')
+
+            const genderDistribution = genderStats.reduce((acc, stat) => {
+                acc[stat.gender || 'unknown'] = parseInt(stat.count)
+                return acc
+            }, {} as Record<string, number>)
+
+            // Get patients by age groups
+            const patients = await Patient.query().select('date_of_birth')
+            const ageGroups = {
+                '0-18': 0,
+                '19-30': 0,
+                '31-50': 0,
+                '51-70': 0,
+                '71+': 0
+            }
+
+            patients.forEach(patient => {
+                if (patient.dateOfBirth) {
+                    const age = DateTime.now().diff(DateTime.fromJSDate(patient.dateOfBirth), 'years').years
+                    if (age <= 18) ageGroups['0-18']++
+                    else if (age <= 30) ageGroups['19-30']++
+                    else if (age <= 50) ageGroups['31-50']++
+                    else if (age <= 70) ageGroups['51-70']++
+                    else ageGroups['71+']++
+                }
+            })
+
+            // Get recent registrations (last 7 days)
+            const weekAgo = DateTime.now().minus({ days: 7 })
+            const recentRegistrations = await Patient.query()
+                .where('created_at', '>=', weekAgo.toSQL())
+                .count('* as total')
+            const recentCount = parseInt(recentRegistrations[0]?.total || '0')
+
+            return response.status(200).json({
+                success: true,
+                data: {
+                    totalPatients: total,
+                    newPatientsThisMonth: newPatients,
+                    recentRegistrations: recentCount,
+                    genderDistribution,
+                    ageDistribution: ageGroups,
+                    growth: {
+                        monthly: newPatients,
+                        weekly: recentCount
+                    }
+                },
+                message: 'Patient statistics retrieved successfully'
+            })
+
+        } catch (error) {
+            console.error('Patient stats error:', error)
+            return response.status(500).json({
+                success: false,
+                message: 'Server error while retrieving patient statistics'
+            })
+        }
+    }
 }

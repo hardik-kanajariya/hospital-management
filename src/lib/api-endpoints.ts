@@ -19,13 +19,19 @@ export const API_ENDPOINTS = {
   PATIENTS: {
     BASE: `${API_BASE_URL}/patients`,
     BY_ID: (id: string) => `${API_BASE_URL}/patients/${id}`,
+    STATS: `${API_BASE_URL}/patients/stats`,
     SEARCH: `${API_BASE_URL}/patients/search`,
     BULK_IMPORT: `${API_BASE_URL}/patients/bulk-import`,
     EXPORT: `${API_BASE_URL}/patients/export`,
+    APPOINTMENTS: (id: string) => `${API_BASE_URL}/patients/${id}/appointments`,
+    MEDICAL_RECORDS: (id: string) => `${API_BASE_URL}/patients/${id}/medical-records`,
+    BILLS: (id: string) => `${API_BASE_URL}/patients/${id}/bills`,
     MEDICAL_HISTORY: (id: string) => `${API_BASE_URL}/patients/${id}/medical-history`,
     VACCINATIONS: (id: string) => `${API_BASE_URL}/patients/${id}/vaccinations`,
     ALLERGIES: (id: string) => `${API_BASE_URL}/patients/${id}/allergies`,
-    CHRONIC_CONDITIONS: (id: string) => `${API_BASE_URL}/patients/${id}/chronic-conditions`
+    CHRONIC_CONDITIONS: (id: string) => `${API_BASE_URL}/patients/${id}/chronic-conditions`,
+    INSURANCE: (id: string) => `${API_BASE_URL}/patients/${id}/insurance`,
+    EMERGENCY_CONTACT: (id: string) => `${API_BASE_URL}/patients/${id}/emergency-contact`
   },
 
   // Appointment management endpoints

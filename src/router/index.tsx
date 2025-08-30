@@ -5,6 +5,10 @@ import LoginRedirect from '../components/auth/LoginRedirect';
 import LandingPage from '../components/landing/LandingPage';
 import Dashboard from '../components/hospital/Dashboard';
 import PatientManagement from '../components/hospital/PatientManagement';
+import PatientList from '../components/hospital/PatientList';
+import PatientCreate from '../components/hospital/PatientCreate';
+import PatientProfile from '../components/hospital/PatientProfile';
+import PatientEdit from '../components/hospital/PatientEdit';
 import AppointmentScheduling from '../components/hospital/AppointmentScheduling';
 import MedicalRecords from '../components/hospital/MedicalRecords';
 import EnhancedBillingSystem from '../components/hospital/EnhancedBillingSystem';
@@ -50,6 +54,46 @@ export const router = createBrowserRouter([
                     <ProtectedRoute>
                         <RoleBasedAccess requiredModule="patients">
                             <PatientManagement />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'patients/list',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="patients">
+                            <PatientList />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'patients/create',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="patients">
+                            <PatientCreate />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'patients/:id',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="patients">
+                            <PatientProfile />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'patients/:id/edit',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="patients">
+                            <PatientEdit />
                         </RoleBasedAccess>
                     </ProtectedRoute>
                 )
