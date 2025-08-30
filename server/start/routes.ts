@@ -179,10 +179,30 @@ router.group(() => {
 
     // Dashboard routes
     router.group(() => {
+      router.get('/', '#controllers/dashboard_controller.index')
+      router.get('/user', '#controllers/dashboard_controller.userDashboard')
       router.get('/stats', '#controllers/dashboard_controller.stats')
-      router.get('/recent-activity', '#controllers/dashboard_controller.recentActivity')
+      router.get('/recent-activities', '#controllers/dashboard_controller.recentActivities')
       router.get('/alerts', '#controllers/dashboard_controller.alerts')
+      router.get('/super-admin', '#controllers/dashboard_controller.superAdminDashboard')
     }).prefix('/dashboard')
+
+    // System management routes
+    router.group(() => {
+      router.get('/health', '#controllers/system_controller.health')
+      router.get('/performance', '#controllers/system_controller.performance')
+      router.get('/uptime', '#controllers/system_controller.uptime')
+      router.get('/version', '#controllers/system_controller.version')
+      router.get('/logs', '#controllers/system_controller.logs')
+      router.get('/audit-trail', '#controllers/system_controller.auditTrail')
+      router.post('/backup', '#controllers/system_controller.createBackup')
+    }).prefix('/system')
+
+    // Hospital settings routes (temporary)
+    router.group(() => {
+      router.get('/settings', '#controllers/system_controller.hospitalSettings')
+      router.put('/settings', '#controllers/system_controller.updateHospitalSettings')
+    }).prefix('/hospital')
 
     // Role management routes (Super Admin only)
     router.group(() => {

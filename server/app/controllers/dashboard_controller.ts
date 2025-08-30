@@ -9,6 +9,9 @@ import LabTest from '#models/lab_test'
 import Bed from '#models/bed'
 import Prescription from '#models/prescription'
 import Notification from '#models/notification'
+import User from '#models/user'
+import Role from '#models/role'
+import Permission from '#models/permission'
 import { DateTime } from 'luxon'
 
 export default class DashboardController {
@@ -327,7 +330,7 @@ export default class DashboardController {
             const user = auth.user!
             let userStats: any = {}
 
-            if (user.role === 'doctor') {
+            if (user.role.name === 'doctor') {
                 // Doctor-specific stats
                 const doctor = await Doctor.query().where('user_id', user.id).first()
                 if (doctor) {
@@ -353,7 +356,7 @@ export default class DashboardController {
                         thisMonthPatients: thisMonthPatients[0].$extras.total
                     }
                 }
-            } else if (user.role === 'nurse' || user.role === 'receptionist') {
+            } else if (user.role.name === 'nurse' || user.role.name === 'receptionist') {
                 // Nurse/Receptionist stats
                 const todayAppointments = await Appointment.query()
                     .whereRaw('DATE(appointment_date) = CURDATE()')
@@ -404,6 +407,65 @@ export default class DashboardController {
             return response.status(500).json({
                 success: false,
                 message: 'Server error while retrieving user dashboard'
+            })
+        }
+    }
+
+    /**
+     * Get super admin dashboard statistics
+     */
+    async superAdminDashboard({ response }: HttpContext) {
+        try {
+            // User Statistics
+            const totalUsers = await User.query().count('* as total')
+            const activeUsers = await User.query()
+                .where('is_active', true)
+                .count('* as total')
+
+            // Role Statistics
+            const totalRoles = await Role.query().count('* as total')
+            const activeRoles = await Role.query()
+                .where('is_active', true)
+                .count('* as total')
+
+            // Permission Statistics
+            const totalPermissions = await Permission.query().count('* as total')
+
+            // System Statistics
+            const totalPatients = await Patient.query().count('* as total')
+            const totalDoctors = await Doctor.query().count('* as total')
+            const totalAppointments = await Appointment.query().count('* as total')
+
+            const dashboard = {
+                users: {
+                    total: totalUsers[0].$extras.total,
+                    active: activeUsers[0].$extras.total
+                },
+                roles: {
+                    total: totalRoles[0].$extras.total,
+                    active: activeRoles[0].$extras.total
+                },
+                permissions: {
+                    total: totalPermissions[0].$extras.total
+                },
+                system: {
+                    patients: totalPatients[0].$extras.total,
+                    doctors: totalDoctors[0].$extras.total,
+                    appointments: totalAppointments[0].$extras.total
+                }
+            }
+
+            return response.status(200).json({
+                success: true,
+                data: dashboard,
+                message: 'Super admin dashboard retrieved successfully'
+            })
+
+        } catch (error) {
+            console.error('Super admin dashboard error:', error)
+            return response.status(500).json({
+                success: false,
+                message: 'Server error while retrieving super admin dashboard'
             })
         }
     }

@@ -172,6 +172,31 @@ export const API_ENDPOINTS = {
     BRANCH_LOCATIONS: `${API_BASE_URL}/hospital/branches`
   },
 
+  // Dashboard endpoints
+  DASHBOARD: {
+    MAIN: `${API_BASE_URL}/dashboard`,
+    USER: `${API_BASE_URL}/dashboard/user`,
+    RECENT_ACTIVITIES: `${API_BASE_URL}/dashboard/recent-activities`,
+    STATS: `${API_BASE_URL}/dashboard/stats`,
+    SUPER_ADMIN: `${API_BASE_URL}/dashboard/super-admin`
+  },
+
+  // Roles and Permissions endpoints
+  ROLES: {
+    BASE: `${API_BASE_URL}/roles`,
+    BY_ID: (id: string) => `${API_BASE_URL}/roles/${id}`,
+    PERMISSIONS: `${API_BASE_URL}/roles/permissions`,
+    ASSIGN_PERMISSION: (roleId: string) => `${API_BASE_URL}/roles/${roleId}/permissions`,
+    REVOKE_PERMISSION: (roleId: string, permissionId: string) => `${API_BASE_URL}/roles/${roleId}/permissions/${permissionId}`
+  },
+
+  PERMISSIONS: {
+    BASE: `${API_BASE_URL}/permissions`,
+    BY_ID: (id: string) => `${API_BASE_URL}/permissions/${id}`,
+    BY_ROLE: (roleId: string) => `${API_BASE_URL}/permissions/role/${roleId}`,
+    MODULES: `${API_BASE_URL}/permissions/modules`
+  },
+
   // System endpoints
   SYSTEM: {
     HEALTH: `${API_BASE_URL}/system/health`,
@@ -180,7 +205,9 @@ export const API_ENDPOINTS = {
     RESTORE: `${API_BASE_URL}/system/restore`,
     SYNC_STATUS: `${API_BASE_URL}/system/sync-status`,
     LOGS: `${API_BASE_URL}/system/logs`,
-    AUDIT_TRAIL: `${API_BASE_URL}/system/audit-trail`
+    AUDIT_TRAIL: `${API_BASE_URL}/system/audit-trail`,
+    UPTIME: `${API_BASE_URL}/system/uptime`,
+    PERFORMANCE: `${API_BASE_URL}/system/performance`
   }
 };
 
