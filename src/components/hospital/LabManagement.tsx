@@ -92,7 +92,7 @@ export default function LabManagement() {
   const { patients } = usePatientApi()
   const { doctors } = useDoctorApi()
   const { labTests, createLabTest, updateLabTest } = useLabTestApi()
-  
+
   // For lab orders and results, we'll use local state for now
   const [labOrders, setLabOrders] = useState<LabOrder[]>([])
   const [labResults, setLabResults] = useState<LabResult[]>([])

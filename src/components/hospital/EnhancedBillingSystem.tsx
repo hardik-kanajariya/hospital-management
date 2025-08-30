@@ -226,7 +226,7 @@ export default function EnhancedBillingSystem() {
           status,
           paymentMethod: paymentMethod as any
         })
-        
+
         toast.success('Payment updated successfully')
       }
     } catch (error) {

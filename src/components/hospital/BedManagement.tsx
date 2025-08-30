@@ -94,7 +94,7 @@ export default function BedManagement() {
   const { patients } = usePatientApi()
   const { doctors } = useDoctorApi()
   const { beds, createBed, updateBed } = useBedApi()
-  
+
   // For rooms and admissions, we need to add these to the API hooks or use local state temporarily
   const [rooms, setRooms] = useState<Room[]>([])
   const [admissions, setAdmissions] = useState<Admission[]>([])
@@ -166,7 +166,7 @@ export default function BedManagement() {
         status: 'available' as const,
         lastCleaned: new Date().toISOString().split('T')[0]
       }
-      
+
       try {
         await createBed(bedData)
       } catch (error) {

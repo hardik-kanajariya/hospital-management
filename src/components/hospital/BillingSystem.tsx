@@ -261,7 +261,7 @@ export default function BillingSystem() {
 
     try {
       await createBill(bill)
-      
+
       // Reset form
       setNewBill({
         patientId: '',
