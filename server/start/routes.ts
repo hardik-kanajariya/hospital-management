@@ -105,11 +105,12 @@ router.group(() => {
     // Medical records routes
     router.group(() => {
       router.get('/', '#controllers/medical_records_controller.index')
+      router.get('/search', '#controllers/medical_records_controller.search')
       router.get('/:id', '#controllers/medical_records_controller.show')
       router.post('/', '#controllers/medical_records_controller.store')
       router.put('/:id', '#controllers/medical_records_controller.update')
       router.delete('/:id', '#controllers/medical_records_controller.destroy')
-      router.get('/patient/:patientId', '#controllers/medical_records_controller.byPatient')
+      router.get('/patient/:patientId', '#controllers/medical_records_controller.patientHistory')
     }).prefix('/medical-records')
 
     // Billing routes

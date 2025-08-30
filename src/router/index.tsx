@@ -101,6 +101,46 @@ export const router = createBrowserRouter([
                 )
             },
             {
+                path: 'patients/:id/medical-records',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="medical_records">
+                            <MedicalRecords />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'patients/:patientId/medical-records/create',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="medical_records">
+                            <MedicalRecords />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'medical-records/create',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="medical_records">
+                            <MedicalRecords />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'medical-records/:id',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="medical_records">
+                            <MedicalRecords />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
                 path: 'appointments',
                 element: (
                     <ProtectedRoute>

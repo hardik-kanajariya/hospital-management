@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
@@ -17,7 +18,9 @@ import {
     SyringeIcon,
     ShieldIcon,
     WarningIcon,
-    HeartIcon
+    HeartIcon,
+    FileTextIcon,
+    CalendarIcon
 } from '@phosphor-icons/react'
 import { usePatient } from '@/hooks/usePatientApi'
 import { PatientUpdateRequest, VaccinationRecord } from '@/types/patient'
@@ -46,11 +49,61 @@ export default function EditPatient() {
         allergies: [],
         chronic_conditions: [],
         vaccination_records: [],
-        insurance_info: undefined
+        insurance_info: {
+            provider: '',
+            policy_number: '',
+            coverage_amount: 0,
+            expiry_date: '',
+            copay_amount: 0
+        }
     })
 
     const [activeTab, setActiveTab] = useState('basic')
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [hasChanges, setHasChanges] = useState(false)
+
+    // Track form changes to prevent accidental navigation
+    useEffect(() => {
+        if (patient && formData.name) {
+            const hasFormChanges = (
+                formData.name !== patient.name ||
+                formData.phone !== patient.phone ||
+                formData.email !== (patient.email || '') ||
+                formData.date_of_birth !== patient.date_of_birth ||
+                formData.gender !== patient.gender ||
+                formData.address !== patient.address ||
+                formData.blood_group !== (patient.blood_group || '') ||
+                JSON.stringify(formData.allergies) !== JSON.stringify(patient.allergies || []) ||
+                JSON.stringify(formData.chronic_conditions) !== JSON.stringify(patient.chronic_conditions || []) ||
+                JSON.stringify(formData.vaccination_records) !== JSON.stringify(patient.vaccination_records || []) ||
+                JSON.stringify(formData.emergency_contact) !== JSON.stringify(patient.emergency_contact) ||
+                JSON.stringify(formData.insurance_info) !== JSON.stringify(patient.insurance_info)
+            )
+            setHasChanges(hasFormChanges)
+        }
+    }, [formData, patient])
+
+    // Validation helpers
+    const isBasicInfoValid = () => {
+        return !!(formData.name?.trim() &&
+            formData.phone?.trim() &&
+            formData.date_of_birth &&
+            formData.address?.trim())
+    }
+
+    const isMedicalInfoComplete = () => {
+        return !!(formData.allergies?.length || formData.chronic_conditions?.length)
+    }
+
+    const isVaccinationComplete = () => {
+        return !!(formData.vaccination_records?.length &&
+            formData.vaccination_records.some(vac => vac.vaccine_name.trim()))
+    }
+
+    const isInsuranceComplete = () => {
+        return !!(formData.insurance_info?.provider?.trim() ||
+            formData.insurance_info?.policy_number?.trim())
+    }
 
     // Load patient data into form when patient is fetched
     useEffect(() => {
@@ -63,12 +116,24 @@ export default function EditPatient() {
                 date_of_birth: patient.date_of_birth,
                 gender: patient.gender,
                 address: patient.address,
-                emergency_contact: patient.emergency_contact,
+                emergency_contact: patient.emergency_contact || {
+                    name: '',
+                    relationship: '',
+                    phone: '',
+                    email: '',
+                    address: ''
+                },
                 blood_group: patient.blood_group || '',
                 allergies: patient.allergies || [],
                 chronic_conditions: patient.chronic_conditions || [],
                 vaccination_records: patient.vaccination_records || [],
-                insurance_info: patient.insurance_info
+                insurance_info: patient.insurance_info || {
+                    provider: '',
+                    policy_number: '',
+                    coverage_amount: 0,
+                    expiry_date: '',
+                    copay_amount: 0
+                }
             })
         }
     }, [patient])
@@ -81,24 +146,44 @@ export default function EditPatient() {
             // Validate required fields
             if (!formData.name?.trim()) {
                 toast.error('Name is required')
+                setActiveTab('basic')
                 return
             }
             if (!formData.phone?.trim()) {
                 toast.error('Phone number is required')
+                setActiveTab('basic')
                 return
             }
             if (!formData.date_of_birth) {
                 toast.error('Date of birth is required')
+                setActiveTab('basic')
                 return
             }
             if (!formData.address?.trim()) {
                 toast.error('Address is required')
+                setActiveTab('basic')
                 return
             }
-            // Emergency contact is optional for Indian village hospitals
-            // No validation required for emergency contact fields
 
-            await updatePatient(formData)
+            // Clean up empty vaccination records
+            const cleanedVaccinationRecords = formData.vaccination_records?.filter(vac =>
+                vac.vaccine_name.trim() && vac.date_administered
+            ) || []
+
+            // Clean up empty allergies and chronic conditions
+            const cleanedAllergies = formData.allergies?.filter(allergy => allergy.trim()) || []
+            const cleanedChronicConditions = formData.chronic_conditions?.filter(condition => condition.trim()) || []
+
+            // Prepare final data
+            const updateData = {
+                ...formData,
+                allergies: cleanedAllergies,
+                chronic_conditions: cleanedChronicConditions,
+                vaccination_records: cleanedVaccinationRecords
+            }
+
+            await updatePatient(updateData)
+            toast.success('Patient updated successfully!')
             navigate(`/patients/${id}`)
         } catch (error) {
             console.error('Error updating patient:', error)
@@ -109,7 +194,11 @@ export default function EditPatient() {
     }
 
     const handleCancel = () => {
-        if (window.confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
+        if (hasChanges) {
+            if (window.confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
+                navigate(`/patients/${id}`)
+            }
+        } else {
             navigate(`/patients/${id}`)
         }
     }
@@ -212,17 +301,43 @@ export default function EditPatient() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-center gap-4">
-                <Button variant="outline" onClick={() => navigate(`/patients/${id}`)}>
-                    <ArrowLeftIcon className="w-4 h-4 mr-2" />
-                    Back to Patient
-                </Button>
-                <div className="flex items-center gap-2">
-                    <PencilSimpleIcon className="w-6 h-6 text-primary" />
-                    <div>
-                        <h1 className="text-2xl font-bold">Edit Patient</h1>
-                        <p className="text-muted-foreground">{patient.name} - {patient.patient_id}</p>
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <Button variant="outline" onClick={() => navigate(`/patients/${id}`)}>
+                        <ArrowLeftIcon className="w-4 h-4 mr-2" />
+                        Back to Patient
+                    </Button>
+                    <div className="flex items-center gap-2">
+                        <PencilSimpleIcon className="w-6 h-6 text-primary" />
+                        <div>
+                            <h1 className="text-2xl font-bold flex items-center gap-2">
+                                Edit Patient
+                                {hasChanges && (
+                                    <Badge variant="secondary" className="text-xs">
+                                        Unsaved Changes
+                                    </Badge>
+                                )}
+                            </h1>
+                            <p className="text-muted-foreground">{patient.name} - {patient.patient_id}</p>
+                        </div>
                     </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        onClick={() => navigate(`/patients/${id}/medical-records`)}
+                    >
+                        <FileTextIcon className="w-4 h-4 mr-2" />
+                        Medical Records
+                    </Button>
+                    <Button
+                        variant="outline"
+                        onClick={() => navigate(`/appointments?patientId=${id}`)}
+                    >
+                        <CalendarIcon className="w-4 h-4 mr-2" />
+                        Appointments
+                    </Button>
                 </div>
             </div>
 
@@ -234,10 +349,30 @@ export default function EditPatient() {
                     <CardContent>
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                             <TabsList className="grid w-full grid-cols-4">
-                                <TabsTrigger value="basic">Basic Info</TabsTrigger>
-                                <TabsTrigger value="medical">Medical Info</TabsTrigger>
-                                <TabsTrigger value="vaccination">Vaccinations</TabsTrigger>
-                                <TabsTrigger value="insurance">Insurance</TabsTrigger>
+                                <TabsTrigger value="basic" className="relative">
+                                    Basic Info
+                                    {isBasicInfoValid() && (
+                                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></div>
+                                    )}
+                                </TabsTrigger>
+                                <TabsTrigger value="medical" className="relative">
+                                    Medical Info
+                                    {isMedicalInfoComplete() && (
+                                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></div>
+                                    )}
+                                </TabsTrigger>
+                                <TabsTrigger value="vaccination" className="relative">
+                                    Vaccinations
+                                    {isVaccinationComplete() && (
+                                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></div>
+                                    )}
+                                </TabsTrigger>
+                                <TabsTrigger value="insurance" className="relative">
+                                    Insurance
+                                    {isInsuranceComplete() && (
+                                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></div>
+                                    )}
+                                </TabsTrigger>
                             </TabsList>
 
                             <TabsContent value="basic" className="space-y-6 mt-6">
@@ -362,8 +497,11 @@ export default function EditPatient() {
                                                 onChange={(e) => setFormData(prev => ({
                                                     ...prev,
                                                     emergency_contact: {
-                                                        ...prev.emergency_contact!,
-                                                        name: e.target.value
+                                                        name: e.target.value,
+                                                        relationship: prev.emergency_contact?.relationship || '',
+                                                        phone: prev.emergency_contact?.phone || '',
+                                                        email: prev.emergency_contact?.email || '',
+                                                        address: prev.emergency_contact?.address || ''
                                                     }
                                                 }))}
                                                 placeholder="Emergency contact name (optional)"
@@ -379,8 +517,11 @@ export default function EditPatient() {
                                                     onChange={(e) => setFormData(prev => ({
                                                         ...prev,
                                                         emergency_contact: {
-                                                            ...prev.emergency_contact!,
-                                                            relationship: e.target.value
+                                                            name: prev.emergency_contact?.name || '',
+                                                            relationship: e.target.value,
+                                                            phone: prev.emergency_contact?.phone || '',
+                                                            email: prev.emergency_contact?.email || '',
+                                                            address: prev.emergency_contact?.address || ''
                                                         }
                                                     }))}
                                                     placeholder="e.g., Spouse, Parent (optional)"
@@ -395,8 +536,11 @@ export default function EditPatient() {
                                                     onChange={(e) => setFormData(prev => ({
                                                         ...prev,
                                                         emergency_contact: {
-                                                            ...prev.emergency_contact!,
-                                                            phone: e.target.value
+                                                            name: prev.emergency_contact?.name || '',
+                                                            relationship: prev.emergency_contact?.relationship || '',
+                                                            phone: e.target.value,
+                                                            email: prev.emergency_contact?.email || '',
+                                                            address: prev.emergency_contact?.address || ''
                                                         }
                                                     }))}
                                                     placeholder="Emergency contact phone (optional)"
@@ -413,8 +557,11 @@ export default function EditPatient() {
                                                 onChange={(e) => setFormData(prev => ({
                                                     ...prev,
                                                     emergency_contact: {
-                                                        ...prev.emergency_contact!,
-                                                        email: e.target.value
+                                                        name: prev.emergency_contact?.name || '',
+                                                        relationship: prev.emergency_contact?.relationship || '',
+                                                        phone: prev.emergency_contact?.phone || '',
+                                                        email: e.target.value,
+                                                        address: prev.emergency_contact?.address || ''
                                                     }
                                                 }))}
                                                 placeholder="Emergency contact email"
@@ -429,7 +576,10 @@ export default function EditPatient() {
                                                 onChange={(e) => setFormData(prev => ({
                                                     ...prev,
                                                     emergency_contact: {
-                                                        ...prev.emergency_contact!,
+                                                        name: prev.emergency_contact?.name || '',
+                                                        relationship: prev.emergency_contact?.relationship || '',
+                                                        phone: prev.emergency_contact?.phone || '',
+                                                        email: prev.emergency_contact?.email || '',
                                                         address: e.target.value
                                                     }
                                                 }))}
@@ -622,11 +772,11 @@ export default function EditPatient() {
                                             onChange={(e) => setFormData(prev => ({
                                                 ...prev,
                                                 insurance_info: {
-                                                    ...prev.insurance_info,
                                                     provider: e.target.value,
                                                     policy_number: prev.insurance_info?.policy_number || '',
                                                     coverage_amount: prev.insurance_info?.coverage_amount || 0,
-                                                    expiry_date: prev.insurance_info?.expiry_date || ''
+                                                    expiry_date: prev.insurance_info?.expiry_date || '',
+                                                    copay_amount: prev.insurance_info?.copay_amount || 0
                                                 }
                                             }))}
                                             placeholder="e.g., Star Health, HDFC ERGO"
@@ -640,11 +790,11 @@ export default function EditPatient() {
                                             onChange={(e) => setFormData(prev => ({
                                                 ...prev,
                                                 insurance_info: {
-                                                    ...prev.insurance_info,
                                                     provider: prev.insurance_info?.provider || '',
                                                     policy_number: e.target.value,
                                                     coverage_amount: prev.insurance_info?.coverage_amount || 0,
-                                                    expiry_date: prev.insurance_info?.expiry_date || ''
+                                                    expiry_date: prev.insurance_info?.expiry_date || '',
+                                                    copay_amount: prev.insurance_info?.copay_amount || 0
                                                 }
                                             }))}
                                             placeholder="Policy number"
@@ -659,11 +809,11 @@ export default function EditPatient() {
                                             onChange={(e) => setFormData(prev => ({
                                                 ...prev,
                                                 insurance_info: {
-                                                    ...prev.insurance_info,
                                                     provider: prev.insurance_info?.provider || '',
                                                     policy_number: prev.insurance_info?.policy_number || '',
                                                     coverage_amount: parseFloat(e.target.value) || 0,
-                                                    expiry_date: prev.insurance_info?.expiry_date || ''
+                                                    expiry_date: prev.insurance_info?.expiry_date || '',
+                                                    copay_amount: prev.insurance_info?.copay_amount || 0
                                                 }
                                             }))}
                                             placeholder="Coverage amount"
@@ -678,11 +828,11 @@ export default function EditPatient() {
                                             onChange={(e) => setFormData(prev => ({
                                                 ...prev,
                                                 insurance_info: {
-                                                    ...prev.insurance_info,
                                                     provider: prev.insurance_info?.provider || '',
                                                     policy_number: prev.insurance_info?.policy_number || '',
                                                     coverage_amount: prev.insurance_info?.coverage_amount || 0,
-                                                    expiry_date: e.target.value
+                                                    expiry_date: e.target.value,
+                                                    copay_amount: prev.insurance_info?.copay_amount || 0
                                                 }
                                             }))}
                                         />
@@ -696,7 +846,6 @@ export default function EditPatient() {
                                             onChange={(e) => setFormData(prev => ({
                                                 ...prev,
                                                 insurance_info: {
-                                                    ...prev.insurance_info,
                                                     provider: prev.insurance_info?.provider || '',
                                                     policy_number: prev.insurance_info?.policy_number || '',
                                                     coverage_amount: prev.insurance_info?.coverage_amount || 0,
@@ -712,23 +861,43 @@ export default function EditPatient() {
                         </Tabs>
 
                         {/* Action Buttons */}
-                        <div className="flex justify-end gap-3 pt-6 border-t mt-6">
-                            <Button type="button" variant="outline" onClick={handleCancel}>
-                                Cancel
-                            </Button>
-                            <Button type="submit" disabled={isSubmitting}>
-                                {isSubmitting ? (
-                                    <>
-                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                        Updating...
-                                    </>
-                                ) : (
-                                    <>
-                                        <FloppyDiskIcon className="w-4 h-4 mr-2" />
-                                        Update Patient
-                                    </>
-                                )}
-                            </Button>
+                        <div className="flex justify-between items-center pt-6 border-t mt-6">
+                            <div className="flex gap-2">
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    onClick={() => navigate(`/patients/${id}/medical-records/create`)}
+                                >
+                                    <PlusIcon className="w-4 h-4 mr-2" />
+                                    Add Medical Record
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    onClick={() => navigate(`/appointments?patientId=${id}&action=create`)}
+                                >
+                                    <CalendarIcon className="w-4 h-4 mr-2" />
+                                    Schedule Appointment
+                                </Button>
+                            </div>
+                            <div className="flex gap-3">
+                                <Button type="button" variant="outline" onClick={handleCancel}>
+                                    Cancel
+                                </Button>
+                                <Button type="submit" disabled={isSubmitting}>
+                                    {isSubmitting ? (
+                                        <>
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                            Updating...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <FloppyDiskIcon className="w-4 h-4 mr-2" />
+                                            Update Patient
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
