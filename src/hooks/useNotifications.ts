@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { Notification } from '@/types/hospital';
 import { toast } from 'sonner';
-import { useNotificationsData } from './useDatabase';
+import { useNotificationApi } from './useApiHooks';
 
 export function useNotifications() {
   const {
     notifications,
     loading: isLoading,
     createNotification
-  } = useNotificationsData();
+  } = useNotificationApi();
 
   const addNotification = (notification: { message: string; type: 'success' | 'error' | 'info' | 'warning' }) => {
     toast[notification.type](notification.message);

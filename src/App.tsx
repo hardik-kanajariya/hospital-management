@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { db } from '@/lib/database'
 import { useNavigation } from '@/hooks/useNavigation'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
@@ -43,21 +42,6 @@ function App() {
   const { activeTab, setActiveTab } = useNavigation()
   const location = useLocation()
   const navigate = useNavigate()
-
-  // Initialize database on app start
-  useEffect(() => {
-    const initializeApp = async () => {
-      try {
-        // Initialize the main database instance
-        await db.initialize()
-        console.log('Database initialized successfully')
-      } catch (error) {
-        console.error('Failed to initialize database:', error)
-      }
-    }
-
-    initializeApp()
-  }, [])
 
   // Filter tabs based on user permissions (memoized for performance)
   // Always define this hook, even if user is not authenticated
