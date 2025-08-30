@@ -306,8 +306,8 @@ export default function RoleManagement() {
             </Card>
 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
+                <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col">
+                    <DialogHeader className="flex-shrink-0">
                         <DialogTitle>
                             {editingRole ? 'Edit Role' : 'Create New Role'}
                         </DialogTitle>
@@ -316,131 +316,136 @@ export default function RoleManagement() {
                         </DialogDescription>
                     </DialogHeader>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <Label htmlFor="name">Role Name</Label>
-                                <Input
-                                    id="name"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                                    placeholder="e.g., custom_doctor"
-                                    required
-                                    disabled={editingRole?.isSystemRole}
-                                />
+                    <div className="flex-1 overflow-y-auto pr-2">
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="name">Role Name</Label>
+                                    <Input
+                                        id="name"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                                        placeholder="e.g., custom_doctor"
+                                        required
+                                        disabled={editingRole?.isSystemRole}
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="displayName">Display Name</Label>
+                                    <Input
+                                        id="displayName"
+                                        value={formData.displayName}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, displayName: e.target.value }))}
+                                        placeholder="e.g., Custom Doctor"
+                                        required
+                                    />
+                                </div>
                             </div>
-                            <div>
-                                <Label htmlFor="displayName">Display Name</Label>
-                                <Input
-                                    id="displayName"
-                                    value={formData.displayName}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, displayName: e.target.value }))}
-                                    placeholder="e.g., Custom Doctor"
-                                    required
-                                />
-                            </div>
-                        </div>
 
-                        <div>
-                            <Label htmlFor="description">Description</Label>
-                            <Textarea
-                                id="description"
-                                value={formData.description}
-                                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                                placeholder="Brief description of this role's purpose"
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <Label htmlFor="accessLevel">Access Level (1-10)</Label>
-                                <Input
-                                    id="accessLevel"
-                                    type="number"
-                                    min="1"
-                                    max="10"
-                                    value={formData.accessLevel}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, accessLevel: parseInt(e.target.value) }))}
-                                    required
+                                <Label htmlFor="description">Description</Label>
+                                <Textarea
+                                    id="description"
+                                    value={formData.description}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                                    placeholder="Brief description of this role's purpose"
                                 />
                             </div>
-                            <div className="flex items-center space-x-2">
-                                <Switch
-                                    id="isActive"
-                                    checked={formData.isActive}
-                                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
-                                />
-                                <Label htmlFor="isActive">Active</Label>
-                            </div>
-                        </div>
 
-                        <div>
-                            <Label className="text-base font-medium">Permissions</Label>
-                            <div className="mt-4 space-y-4">
-                                {Object.entries(groupedPermissions).map(([module, modulePermissions]) => (
-                                    <Card key={module}>
-                                        <CardHeader className="pb-3">
-                                            <CardTitle className="text-lg capitalize">
-                                                {module.replace('_', ' ')}
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="grid gap-4">
-                                                {modulePermissions.map((permission) => (
-                                                    <div key={permission.id} className="flex items-center justify-between">
-                                                        <div>
-                                                            <div className="font-medium">{permission.displayName}</div>
-                                                            {permission.description && (
-                                                                <div className="text-sm text-muted-foreground">
-                                                                    {permission.description}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="accessLevel">Access Level (1-10)</Label>
+                                    <Input
+                                        id="accessLevel"
+                                        type="number"
+                                        min="1"
+                                        max="10"
+                                        value={formData.accessLevel}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, accessLevel: parseInt(e.target.value) }))}
+                                        required
+                                    />
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <Switch
+                                        id="isActive"
+                                        checked={formData.isActive}
+                                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
+                                    />
+                                    <Label htmlFor="isActive">Active</Label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <Label className="text-base font-medium mb-4 block">Permissions</Label>
+                                <div className="border rounded-lg p-4 bg-muted/20 max-h-96 overflow-y-auto">
+                                    <div className="space-y-6">
+                                        {Object.entries(groupedPermissions).map(([module, modulePermissions]) => (
+                                            <div key={module} className="bg-background rounded-lg border p-4">
+                                                <div className="flex items-center mb-4">
+                                                    <ShieldIcon className="h-5 w-5 mr-2 text-primary" />
+                                                    <h3 className="text-lg font-semibold capitalize">
+                                                        {module.replace('_', ' ')}
+                                                    </h3>
+                                                </div>
+                                                <div className="space-y-4">
+                                                    {modulePermissions.map((permission) => (
+                                                        <div key={permission.id} className="border rounded p-3 bg-card">
+                                                            <div className="flex items-start justify-between mb-3">
+                                                                <div className="flex-1">
+                                                                    <div className="font-medium text-sm">{permission.displayName}</div>
+                                                                    {permission.description && (
+                                                                        <div className="text-xs text-muted-foreground mt-1">
+                                                                            {permission.description}
+                                                                        </div>
+                                                                    )}
                                                                 </div>
-                                                            )}
+                                                            </div>
+                                                            <div className="grid grid-cols-4 gap-3">
+                                                                {availableActions.map((action) => (
+                                                                    <div key={action} className="flex items-center space-x-2 p-2 rounded bg-muted/50">
+                                                                        <Checkbox
+                                                                            id={`${permission.id}-${action}`}
+                                                                            checked={getPermissionActions(permission.id).includes(action)}
+                                                                            onCheckedChange={(checked) => {
+                                                                                const currentActions = getPermissionActions(permission.id);
+                                                                                const newActions = checked
+                                                                                    ? [...currentActions, action]
+                                                                                    : currentActions.filter(a => a !== action);
+                                                                                handlePermissionChange(permission.id, newActions);
+                                                                            }}
+                                                                        />
+                                                                        <Label
+                                                                            htmlFor={`${permission.id}-${action}`}
+                                                                            className="text-sm capitalize font-medium cursor-pointer"
+                                                                        >
+                                                                            {action}
+                                                                        </Label>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
                                                         </div>
-                                                        <div className="flex space-x-2">
-                                                            {availableActions.map((action) => (
-                                                                <div key={action} className="flex items-center space-x-1">
-                                                                    <Checkbox
-                                                                        id={`${permission.id}-${action}`}
-                                                                        checked={getPermissionActions(permission.id).includes(action)}
-                                                                        onCheckedChange={(checked) => {
-                                                                            const currentActions = getPermissionActions(permission.id);
-                                                                            const newActions = checked
-                                                                                ? [...currentActions, action]
-                                                                                : currentActions.filter(a => a !== action);
-                                                                            handlePermissionChange(permission.id, newActions);
-                                                                        }}
-                                                                    />
-                                                                    <Label
-                                                                        htmlFor={`${permission.id}-${action}`}
-                                                                        className="text-sm capitalize"
-                                                                    >
-                                                                        {action}
-                                                                    </Label>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                                    ))}
+                                                </div>
                                             </div>
-                                        </CardContent>
-                                    </Card>
-                                ))}
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="flex justify-end space-x-2">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => setDialogOpen(false)}
-                            >
-                                Cancel
-                            </Button>
-                            <Button type="submit">
-                                {editingRole ? 'Update Role' : 'Create Role'}
-                            </Button>
-                        </div>
-                    </form>
+                            <div className="flex justify-end space-x-2 pt-4 border-t">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setDialogOpen(false)}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button type="submit">
+                                    {editingRole ? 'Update Role' : 'Create Role'}
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>

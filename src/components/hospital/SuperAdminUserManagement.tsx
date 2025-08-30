@@ -122,7 +122,25 @@ export default function SuperAdminUserManagement() {
         setDialogOpen(true);
     };
 
+    // Helper function to check if user has super admin role
+    const isSuperAdmin = (user: User): boolean => {
+        if (typeof user.role === 'object' && user.role?.name) {
+            return user.role.name === 'super_admin';
+        }
+        if (user.roleId) {
+            const role = roles.find(r => r.id === user.roleId);
+            return role?.name === 'super_admin';
+        }
+        return typeof user.role === 'string' && user.role === 'super_admin';
+    };
+
     const handleEditUser = (user: User) => {
+        // Prevent editing super admin users
+        if (isSuperAdmin(user)) {
+            toast.error('Super Administrator users cannot be modified');
+            return;
+        }
+
         setEditingUser(user);
         setFormData({
             name: user.name,
@@ -142,6 +160,12 @@ export default function SuperAdminUserManagement() {
     };
 
     const handleDeleteUser = async (user: User) => {
+        // Prevent deleting super admin users
+        if (isSuperAdmin(user)) {
+            toast.error('Super Administrator users cannot be deleted');
+            return;
+        }
+
         if (confirm(`Are you sure you want to delete user "${user.name}"?`)) {
             try {
                 const response = await httpService.delete(`/users/${user.id}`);
@@ -157,6 +181,12 @@ export default function SuperAdminUserManagement() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Extra protection: prevent submitting changes for super admin users
+        if (editingUser && isSuperAdmin(editingUser)) {
+            toast.error('Super Administrator users cannot be modified');
+            return;
+        }
 
         try {
             const payload = {
@@ -260,9 +290,16 @@ export default function SuperAdminUserManagement() {
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant="secondary">
-                                                {getRoleName(user)}
-                                            </Badge>
+                                            <div className="flex items-center space-x-2">
+                                                <Badge variant={isSuperAdmin(user) ? "destructive" : "secondary"}>
+                                                    {getRoleName(user)}
+                                                </Badge>
+                                                {isSuperAdmin(user) && (
+                                                    <div title="Protected User">
+                                                        <ShieldCheckIcon className="h-4 w-4 text-red-500" />
+                                                    </div>
+                                                )}
+                                            </div>
                                         </TableCell>
                                         <TableCell>{user.department || '-'}</TableCell>
                                         <TableCell>{user.employeeId || '-'}</TableCell>
@@ -290,6 +327,8 @@ export default function SuperAdminUserManagement() {
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() => handleEditUser(user)}
+                                                    disabled={isSuperAdmin(user)}
+                                                    title={isSuperAdmin(user) ? 'Super Admin users cannot be modified' : 'Edit user'}
                                                 >
                                                     <PencilIcon className="h-4 w-4" />
                                                 </Button>
@@ -297,6 +336,8 @@ export default function SuperAdminUserManagement() {
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() => handleDeleteUser(user)}
+                                                    disabled={isSuperAdmin(user)}
+                                                    title={isSuperAdmin(user) ? 'Super Admin users cannot be deleted' : 'Delete user'}
                                                 >
                                                     <TrashIcon className="h-4 w-4" />
                                                 </Button>
@@ -318,8 +359,8 @@ export default function SuperAdminUserManagement() {
 
             {/* Create/Edit User Dialog */}
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogContent className="max-w-2xl">
-                    <DialogHeader>
+                <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+                    <DialogHeader className="flex-shrink-0">
                         <DialogTitle>
                             {editingUser ? 'Edit User' : 'Create New User'}
                         </DialogTitle>
@@ -328,198 +369,212 @@ export default function SuperAdminUserManagement() {
                         </DialogDescription>
                     </DialogHeader>
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                    <div className="flex-1 overflow-y-auto pr-2">
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="name">Full Name</Label>
+                                    <Input
+                                        id="name"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="email">Email</Label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                                        required
+                                    />
+                                </div>
+                            </div>
+
                             <div>
-                                <Label htmlFor="name">Full Name</Label>
+                                <Label htmlFor="password">
+                                    Password {editingUser && '(leave empty to keep current)'}
+                                </Label>
                                 <Input
-                                    id="name"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                                    required
+                                    id="password"
+                                    type="password"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                                    required={!editingUser}
                                 />
                             </div>
+
                             <div>
-                                <Label htmlFor="email">Email</Label>
+                                <Label htmlFor="role">Role</Label>
+                                <Select
+                                    value={formData.roleId}
+                                    onValueChange={(value) => setFormData(prev => ({ ...prev, roleId: value }))}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a role" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {roles.map((role) => (
+                                            <SelectItem key={role.id} value={role.id}>
+                                                {role.displayName}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="phone">Phone</Label>
+                                    <Input
+                                        id="phone"
+                                        value={formData.phone}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="employeeId">Employee ID</Label>
+                                    <Input
+                                        id="employeeId"
+                                        value={formData.employeeId}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, employeeId: e.target.value }))}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <Label htmlFor="department">Department</Label>
                                 <Input
-                                    id="email"
-                                    type="email"
-                                    value={formData.email}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                                    required
+                                    id="department"
+                                    value={formData.department}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
                                 />
                             </div>
-                        </div>
 
-                        <div>
-                            <Label htmlFor="password">
-                                Password {editingUser && '(leave empty to keep current)'}
-                            </Label>
-                            <Input
-                                id="password"
-                                type="password"
-                                value={formData.password}
-                                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                                required={!editingUser}
-                            />
-                        </div>
-
-                        <div>
-                            <Label htmlFor="role">Role</Label>
-                            <Select
-                                value={formData.roleId}
-                                onValueChange={(value) => setFormData(prev => ({ ...prev, roleId: value }))}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select a role" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {roles.map((role) => (
-                                        <SelectItem key={role.id} value={role.id}>
-                                            {role.displayName}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <Label htmlFor="phone">Phone</Label>
-                                <Input
-                                    id="phone"
-                                    value={formData.phone}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                            <div className="flex items-center space-x-2">
+                                <Switch
+                                    id="isActive"
+                                    checked={formData.isActive}
+                                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
                                 />
+                                <Label htmlFor="isActive">Active</Label>
                             </div>
-                            <div>
-                                <Label htmlFor="employeeId">Employee ID</Label>
-                                <Input
-                                    id="employeeId"
-                                    value={formData.employeeId}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, employeeId: e.target.value }))}
-                                />
+
+                            <div className="flex justify-end space-x-2 pt-4 border-t">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setDialogOpen(false)}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button type="submit">
+                                    {editingUser ? 'Update User' : 'Create User'}
+                                </Button>
                             </div>
-                        </div>
-
-                        <div>
-                            <Label htmlFor="department">Department</Label>
-                            <Input
-                                id="department"
-                                value={formData.department}
-                                onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
-                            />
-                        </div>
-
-                        <div className="flex items-center space-x-2">
-                            <Switch
-                                id="isActive"
-                                checked={formData.isActive}
-                                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
-                            />
-                            <Label htmlFor="isActive">Active</Label>
-                        </div>
-
-                        <div className="flex justify-end space-x-2">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => setDialogOpen(false)}
-                            >
-                                Cancel
-                            </Button>
-                            <Button type="submit">
-                                {editingUser ? 'Update User' : 'Create User'}
-                            </Button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </DialogContent>
             </Dialog>
 
             {/* View User Dialog */}
             <Dialog open={!!viewingUser} onOpenChange={() => setViewingUser(null)}>
-                <DialogContent className="max-w-2xl">
-                    <DialogHeader>
+                <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+                    <DialogHeader className="flex-shrink-0">
                         <DialogTitle>User Details</DialogTitle>
                         <DialogDescription>
                             View user information and permissions
                         </DialogDescription>
                     </DialogHeader>
 
-                    {viewingUser && (
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label>Name</Label>
-                                    <div className="font-medium">{viewingUser.name}</div>
-                                </div>
-                                <div>
-                                    <Label>Email</Label>
-                                    <div className="font-medium">{viewingUser.email}</div>
-                                </div>
-                            </div>
+                    <div className="flex-1 overflow-y-auto pr-2">
+                        {viewingUser && (
+                            <div className="space-y-4">
+                                {isSuperAdmin(viewingUser) && (
+                                    <Alert>
+                                        <ShieldCheckIcon className="h-4 w-4" />
+                                        <AlertDescription>
+                                            This is a Super Administrator account with protected status.
+                                            This user cannot be modified or deleted.
+                                        </AlertDescription>
+                                    </Alert>
+                                )}
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label>Role</Label>
-                                    <div className="font-medium">{getRoleName(viewingUser)}</div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <Label>Name</Label>
+                                        <div className="font-medium">{viewingUser.name}</div>
+                                    </div>
+                                    <div>
+                                        <Label>Email</Label>
+                                        <div className="font-medium">{viewingUser.email}</div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <Label>Status</Label>
-                                    <Badge variant={viewingUser.isActive ? "default" : "secondary"}>
-                                        {viewingUser.isActive ? "Active" : "Inactive"}
-                                    </Badge>
-                                </div>
-                            </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label>Department</Label>
-                                    <div className="font-medium">{viewingUser.department || '-'}</div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <Label>Role</Label>
+                                        <div className="font-medium">{getRoleName(viewingUser)}</div>
+                                    </div>
+                                    <div>
+                                        <Label>Status</Label>
+                                        <Badge variant={viewingUser.isActive ? "default" : "secondary"}>
+                                            {viewingUser.isActive ? "Active" : "Inactive"}
+                                        </Badge>
+                                    </div>
                                 </div>
-                                <div>
-                                    <Label>Employee ID</Label>
-                                    <div className="font-medium">{viewingUser.employeeId || '-'}</div>
-                                </div>
-                            </div>
 
-                            <div>
-                                <Label>Permissions</Label>
-                                <div className="mt-2 space-y-2">
-                                    {viewingUser.permissions.map((permission, index) => (
-                                        <div key={index} className="flex justify-between items-center p-2 bg-muted rounded">
-                                            <span className="capitalize">{permission.module.replace('_', ' ')}</span>
-                                            <div className="flex space-x-1">
-                                                {permission.actions?.map((action) => (
-                                                    <Badge key={action} variant="outline" className="text-xs">
-                                                        {action}
-                                                    </Badge>
-                                                ))}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <Label>Department</Label>
+                                        <div className="font-medium">{viewingUser.department || '-'}</div>
+                                    </div>
+                                    <div>
+                                        <Label>Employee ID</Label>
+                                        <div className="font-medium">{viewingUser.employeeId || '-'}</div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <Label>Permissions</Label>
+                                    <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border rounded p-2">
+                                        {viewingUser.role?.permissions?.map((permission, index) => (
+                                            <div key={index} className="flex justify-between items-center p-2 bg-muted rounded">
+                                                <span className="capitalize">{permission.module.replace('_', ' ')}</span>
+                                                <div className="flex space-x-1">
+                                                    {permission.actions?.map((action) => (
+                                                        <Badge key={action} variant="outline" className="text-xs">
+                                                            {action}
+                                                        </Badge>
+                                                    ))}
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label>Created</Label>
-                                    <div className="text-sm text-muted-foreground">
-                                        {new Date(viewingUser.createdAt).toLocaleString()}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <Label>Created</Label>
+                                        <div className="text-sm text-muted-foreground">
+                                            {new Date(viewingUser.createdAt).toLocaleString()}
+                                        </div>
                                     </div>
-                                </div>
-                                <div>
-                                    <Label>Last Login</Label>
-                                    <div className="text-sm text-muted-foreground">
-                                        {viewingUser.lastLogin
-                                            ? new Date(viewingUser.lastLogin).toLocaleString()
-                                            : 'Never'
-                                        }
+                                    <div>
+                                        <Label>Last Login</Label>
+                                        <div className="text-sm text-muted-foreground">
+                                            {viewingUser.lastLogin
+                                                ? new Date(viewingUser.lastLogin).toLocaleString()
+                                                : 'Never'
+                                            }
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>
