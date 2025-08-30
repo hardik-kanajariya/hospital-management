@@ -214,25 +214,20 @@ export default function RoleManagement() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold">Role Management</h1>
-                    <p className="text-muted-foreground">
-                        Manage user roles and permissions in your hospital system
-                    </p>
-                </div>
-                <Button onClick={handleCreateRole}>
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    Create Role
-                </Button>
-            </div>
-
             <Card>
                 <CardHeader>
-                    <CardTitle>System Roles</CardTitle>
-                    <CardDescription>
-                        Manage roles and their associated permissions
-                    </CardDescription>
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <CardTitle>System Roles</CardTitle>
+                            <CardDescription>
+                                Manage roles and their associated permissions
+                            </CardDescription>
+                        </div>
+                        <Button onClick={handleCreateRole}>
+                            <PlusIcon className="h-4 w-4 mr-2" />
+                            Create Role
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <Table>
