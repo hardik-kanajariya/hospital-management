@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -17,16 +17,11 @@ import {
     ShieldIcon,
     SyringeIcon,
     WarningIcon,
-    ClockIcon,
     CurrencyDollarIcon,
     FileTextIcon,
     PlusIcon,
-    ListBulletsIcon,
-    ChartBarIcon,
-    ClipboardTextIcon
-} from '@phosphor-icons/react'
+} from '@phosphor-icons/react';
 import { usePatient } from '@/hooks/usePatientApi'
-import { Patient, Appointment, MedicalRecord, Bill } from '@/types/patient'
 
 export default function PatientProfile() {
     const navigate = useNavigate()
@@ -35,26 +30,39 @@ export default function PatientProfile() {
 
     const [activeTab, setActiveTab] = useState('overview')
 
-    // Calculate age from date of birth
-    const calculateAge = (dateOfBirth: string) => {
-        return Math.floor((Date.now() - new Date(dateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 365))
+    // Calculate age from date of birth with fallback for invalid values
+    const calculateAge = (dateOfBirth: string | null | undefined) => {
+        if (!dateOfBirth) return 'Not available'
+        const birthDate = new Date(dateOfBirth)
+        if (isNaN(birthDate.getTime())) return 'Invalid date'
+        const age = Math.floor((Date.now() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 365))
+        return age >= 0 ? `${age}` : 'Invalid date'
     }
 
-    // Format date
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-IN', {
+    // Format date with fallback for invalid values
+    const formatDate = (dateString: string | null | undefined) => {
+        if (!dateString) return 'Not provided'
+        const date = new Date(dateString)
+        if (isNaN(date.getTime())) return 'Invalid Date'
+        return date.toLocaleDateString('en-IN', {
             year: 'numeric',
             month: 'short',
             day: 'numeric'
         })
     }
 
-    // Format currency
-    const formatCurrency = (amount: number) => {
+    // Format currency with fallback for invalid values
+    const formatCurrency = (amount: number | null | undefined) => {
+        if (amount === null || amount === undefined || isNaN(amount)) return 'Not provided'
         return new Intl.NumberFormat('en-IN', {
             style: 'currency',
             currency: 'INR'
         }).format(amount)
+    }
+
+    // Format string with fallback for empty values
+    const formatString = (value: string | null | undefined) => {
+        return value && value.trim() !== '' ? value : 'Not provided'
     }
 
     if (loading) {
@@ -112,7 +120,12 @@ export default function PatientProfile() {
                             <UserIcon className="w-8 h-8 text-blue-500" />
                             <div>
                                 <p className="text-sm text-muted-foreground">Age</p>
-                                <p className="text-lg font-semibold">{calculateAge(patient.date_of_birth)} years</p>
+                                <p className="text-lg font-semibold">
+                                    {calculateAge(patient.date_of_birth) === 'Not available' || calculateAge(patient.date_of_birth) === 'Invalid date'
+                                        ? calculateAge(patient.date_of_birth)
+                                        : `${calculateAge(patient.date_of_birth)} years`
+                                    }
+                                </p>
                             </div>
                         </div>
                     </CardContent>
@@ -198,7 +211,12 @@ export default function PatientProfile() {
                                                 </div>
                                                 <div>
                                                     <p className="text-sm font-medium text-muted-foreground">Age</p>
-                                                    <p className="text-sm">{calculateAge(patient.date_of_birth)} years</p>
+                                                    <p className="text-sm">
+                                                        {calculateAge(patient.date_of_birth) === 'Not available' || calculateAge(patient.date_of_birth) === 'Invalid date'
+                                                            ? calculateAge(patient.date_of_birth)
+                                                            : `${calculateAge(patient.date_of_birth)} years`
+                                                        }
+                                                    </p>
                                                 </div>
                                             </div>
 
@@ -243,22 +261,33 @@ export default function PatientProfile() {
                                             </CardTitle>
                                         </CardHeader>
                                         <CardContent className="space-y-3">
-                                            <div>
-                                                <p className="text-sm font-medium text-muted-foreground">Name</p>
-                                                <p className="text-sm">{patient.emergency_contact.name}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-medium text-muted-foreground">Relationship</p>
-                                                <p className="text-sm">{patient.emergency_contact.relationship}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-medium text-muted-foreground">Phone</p>
-                                                <p className="text-sm">{patient.emergency_contact.phone}</p>
-                                            </div>
-                                            {patient.emergency_contact.email && (
+                                            {patient.emergency_contact?.name ? (
+                                                <div>
+                                                    <p className="text-sm font-medium text-muted-foreground">Name</p>
+                                                    <p className="text-sm">{patient.emergency_contact.name}</p>
+                                                </div>
+                                            ) : null}
+                                            {patient.emergency_contact?.relationship ? (
+                                                <div>
+                                                    <p className="text-sm font-medium text-muted-foreground">Relationship</p>
+                                                    <p className="text-sm">{patient.emergency_contact.relationship}</p>
+                                                </div>
+                                            ) : null}
+                                            {patient.emergency_contact?.phone ? (
+                                                <div>
+                                                    <p className="text-sm font-medium text-muted-foreground">Phone</p>
+                                                    <p className="text-sm">{patient.emergency_contact.phone}</p>
+                                                </div>
+                                            ) : null}
+                                            {patient.emergency_contact?.email && (
                                                 <div>
                                                     <p className="text-sm font-medium text-muted-foreground">Email</p>
                                                     <p className="text-sm">{patient.emergency_contact.email}</p>
+                                                </div>
+                                            )}
+                                            {(!patient.emergency_contact?.name && !patient.emergency_contact?.phone) && (
+                                                <div className="text-center py-4 text-muted-foreground">
+                                                    <p className="text-sm">No emergency contact information available</p>
                                                 </div>
                                             )}
                                         </CardContent>
@@ -308,36 +337,34 @@ export default function PatientProfile() {
                                     </Card>
 
                                     {/* Insurance Information */}
-                                    {patient.insurance_info && (
-                                        <Card>
-                                            <CardHeader>
-                                                <CardTitle className="flex items-center gap-2">
-                                                    <ShieldIcon className="w-5 h-5" />
-                                                    Insurance Information
-                                                </CardTitle>
-                                            </CardHeader>
-                                            <CardContent className="space-y-3">
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div>
-                                                        <p className="text-sm font-medium text-muted-foreground">Provider</p>
-                                                        <p className="text-sm">{patient.insurance_info.provider}</p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-medium text-muted-foreground">Policy Number</p>
-                                                        <p className="text-sm">{patient.insurance_info.policy_number}</p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-medium text-muted-foreground">Coverage Amount</p>
-                                                        <p className="text-sm">{formatCurrency(patient.insurance_info.coverage_amount)}</p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-medium text-muted-foreground">Expiry Date</p>
-                                                        <p className="text-sm">{formatDate(patient.insurance_info.expiry_date)}</p>
-                                                    </div>
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <ShieldIcon className="w-5 h-5" />
+                                                Insurance Information
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="space-y-3">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <p className="text-sm font-medium text-muted-foreground">Provider</p>
+                                                    <p className="text-sm">{formatString(patient.insurance_info?.provider)}</p>
                                                 </div>
-                                            </CardContent>
-                                        </Card>
-                                    )}
+                                                <div>
+                                                    <p className="text-sm font-medium text-muted-foreground">Policy Number</p>
+                                                    <p className="text-sm">{formatString(patient.insurance_info?.policy_number)}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-medium text-muted-foreground">Coverage Amount</p>
+                                                    <p className="text-sm">{formatCurrency(patient.insurance_info?.coverage_amount)}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-medium text-muted-foreground">Expiry Date</p>
+                                                    <p className="text-sm">{formatDate(patient.insurance_info?.expiry_date)}</p>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
                                 </div>
 
                                 {/* Vaccination Records */}
@@ -355,7 +382,7 @@ export default function PatientProfile() {
                                                     <div key={index} className="border rounded-lg p-4">
                                                         <div className="space-y-2">
                                                             <div>
-                                                                <p className="text-sm font-medium">{vaccination.vaccine_name}</p>
+                                                                <p className="text-sm font-medium">{formatString(vaccination.vaccine_name)}</p>
                                                                 <p className="text-xs text-muted-foreground">
                                                                     Administered: {formatDate(vaccination.date_administered)}
                                                                 </p>
@@ -366,7 +393,7 @@ export default function PatientProfile() {
                                                                 </p>
                                                             )}
                                                             <p className="text-xs text-muted-foreground">
-                                                                By: {vaccination.administered_by}
+                                                                By: {formatString(vaccination.administered_by)}
                                                             </p>
                                                         </div>
                                                     </div>

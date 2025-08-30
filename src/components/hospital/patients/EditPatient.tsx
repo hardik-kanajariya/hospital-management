@@ -95,14 +95,8 @@ export default function EditPatient() {
                 toast.error('Address is required')
                 return
             }
-            if (!formData.emergency_contact?.name?.trim()) {
-                toast.error('Emergency contact name is required')
-                return
-            }
-            if (!formData.emergency_contact?.phone?.trim()) {
-                toast.error('Emergency contact phone is required')
-                return
-            }
+            // Emergency contact is optional for Indian village hospitals
+            // No validation required for emergency contact fields
 
             await updatePatient(formData)
             navigate(`/patients/${id}`)
@@ -321,14 +315,17 @@ export default function EditPatient() {
                                         <div>
                                             <Label htmlFor="blood_group">Blood Group</Label>
                                             <Select
-                                                value={formData.blood_group || ''}
-                                                onValueChange={(value) => setFormData(prev => ({ ...prev, blood_group: value }))}
+                                                value={formData.blood_group || 'not_specified'}
+                                                onValueChange={(value) => setFormData(prev => ({
+                                                    ...prev,
+                                                    blood_group: value === 'not_specified' ? '' : value
+                                                }))}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Select blood group" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="">Not specified</SelectItem>
+                                                    <SelectItem value="not_specified">Not specified</SelectItem>
                                                     <SelectItem value="A+">A+</SelectItem>
                                                     <SelectItem value="A-">A-</SelectItem>
                                                     <SelectItem value="B+">B+</SelectItem>
@@ -354,10 +351,11 @@ export default function EditPatient() {
                                     </div>
 
                                     <div className="space-y-4">
-                                        <h3 className="text-lg font-semibold">Emergency Contact</h3>
+                                        <h3 className="text-lg font-semibold">Emergency Contact (Optional)</h3>
+                                        <p className="text-sm text-muted-foreground">Emergency contact information is optional but recommended</p>
 
                                         <div>
-                                            <Label htmlFor="emergency_name">Name *</Label>
+                                            <Label htmlFor="emergency_name">Name</Label>
                                             <Input
                                                 id="emergency_name"
                                                 value={formData.emergency_contact?.name || ''}
@@ -368,14 +366,13 @@ export default function EditPatient() {
                                                         name: e.target.value
                                                     }
                                                 }))}
-                                                placeholder="Emergency contact name"
-                                                required
+                                                placeholder="Emergency contact name (optional)"
                                             />
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <Label htmlFor="emergency_relationship">Relationship *</Label>
+                                                <Label htmlFor="emergency_relationship">Relationship</Label>
                                                 <Input
                                                     id="emergency_relationship"
                                                     value={formData.emergency_contact?.relationship || ''}
@@ -386,13 +383,12 @@ export default function EditPatient() {
                                                             relationship: e.target.value
                                                         }
                                                     }))}
-                                                    placeholder="e.g., Spouse, Parent"
-                                                    required
+                                                    placeholder="e.g., Spouse, Parent (optional)"
                                                 />
                                             </div>
 
                                             <div>
-                                                <Label htmlFor="emergency_phone">Phone *</Label>
+                                                <Label htmlFor="emergency_phone">Phone</Label>
                                                 <Input
                                                     id="emergency_phone"
                                                     value={formData.emergency_contact?.phone || ''}
@@ -403,8 +399,7 @@ export default function EditPatient() {
                                                             phone: e.target.value
                                                         }
                                                     }))}
-                                                    placeholder="Emergency contact phone"
-                                                    required
+                                                    placeholder="Emergency contact phone (optional)"
                                                 />
                                             </div>
                                         </div>

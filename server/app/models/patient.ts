@@ -9,7 +9,7 @@ export default class Patient extends BaseModel {
     @column({ isPrimary: true })
     declare id: string
 
-    @column({ columnName: 'patient_id' })
+    @column({ columnName: 'patient_id', serializeAs: 'patient_id' })
     declare patientId: string
 
     @column()
@@ -21,7 +21,13 @@ export default class Patient extends BaseModel {
     @column()
     declare email: string | null
 
-    @column.date({ columnName: 'date_of_birth' })
+    @column.date({
+        columnName: 'date_of_birth',
+        serializeAs: 'date_of_birth',
+        serialize: (value: DateTime | null) => {
+            return value ? value.toFormat('yyyy-MM-dd') : null
+        }
+    })
     declare dateOfBirth: DateTime
 
     @column()
@@ -32,21 +38,37 @@ export default class Patient extends BaseModel {
 
     @column({
         columnName: 'emergency_contact',
-        prepare: (value: any) => JSON.stringify(value),
+        serializeAs: 'emergency_contact',
+        prepare: (value: any) => JSON.stringify(value || {}),
         consume: (value: string) => {
             try {
-                return JSON.parse(value)
+                const parsed = JSON.parse(value || '{}')
+                // Ensure emergency contact always has proper structure
+                return {
+                    name: parsed.name || '',
+                    relationship: parsed.relationship || '',
+                    phone: parsed.phone || '',
+                    email: parsed.email || '',
+                    address: parsed.address || ''
+                }
             } catch {
-                return {}
+                return {
+                    name: '',
+                    relationship: '',
+                    phone: '',
+                    email: '',
+                    address: ''
+                }
             }
         }
     })
     declare emergencyContact: Record<string, any>
 
-    @column({ columnName: 'blood_group' })
+    @column({ columnName: 'blood_group', serializeAs: 'blood_group' })
     declare bloodGroup: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-' | null
 
     @column({
+        serializeAs: 'allergies',
         prepare: (value: any) => JSON.stringify(value || []),
         consume: (value: string) => {
             try {
@@ -60,6 +82,7 @@ export default class Patient extends BaseModel {
 
     @column({
         columnName: 'chronic_conditions',
+        serializeAs: 'chronic_conditions',
         prepare: (value: any) => JSON.stringify(value || []),
         consume: (value: string) => {
             try {
@@ -73,6 +96,7 @@ export default class Patient extends BaseModel {
 
     @column({
         columnName: 'vaccination_records',
+        serializeAs: 'vaccination_records',
         prepare: (value: any) => JSON.stringify(value || []),
         consume: (value: string) => {
             try {
@@ -86,6 +110,7 @@ export default class Patient extends BaseModel {
 
     @column({
         columnName: 'insurance_info',
+        serializeAs: 'insurance_info',
         prepare: (value: any) => JSON.stringify(value || {}),
         consume: (value: string) => {
             try {
@@ -97,10 +122,25 @@ export default class Patient extends BaseModel {
     })
     declare insuranceInfo: Record<string, any>
 
-    @column.dateTime({ autoCreate: true, columnName: 'created_at' })
+    @column.dateTime({
+        autoCreate: true,
+        columnName: 'created_at',
+        serializeAs: 'created_at',
+        serialize: (value: DateTime | null) => {
+            return value ? value.toISO() : null
+        }
+    })
     declare createdAt: DateTime
 
-    @column.dateTime({ autoCreate: true, autoUpdate: true, columnName: 'updated_at' })
+    @column.dateTime({
+        autoCreate: true,
+        autoUpdate: true,
+        columnName: 'updated_at',
+        serializeAs: 'updated_at',
+        serialize: (value: DateTime | null) => {
+            return value ? value.toISO() : null
+        }
+    })
     declare updatedAt: DateTime
 
     // Relationships

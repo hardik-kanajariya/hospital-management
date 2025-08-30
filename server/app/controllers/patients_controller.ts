@@ -83,21 +83,45 @@ export default class PatientsController {
             const patientCount = await Patient.query().count('* as total')
             const patientId = `PAT${String(Number(patientCount[0].$extras.total) + 1).padStart(6, '0')}`
 
+            // Handle snake_case field names consistently
+            if (!payload.date_of_birth) {
+                return response.status(400).json({
+                    success: false,
+                    message: 'Date of birth is required'
+                })
+            }
+
+            const emergencyContact = payload.emergency_contact || {}
+            const bloodGroupValue = payload.blood_group || null
+            const chronicConditions = payload.chronic_conditions || []
+            const vaccinationRecords = payload.vaccination_records || []
+            const insuranceInfo = payload.insurance_info || {}
+
+            // Validate blood group if provided
+            let bloodGroup: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-' | null = null
+            if (bloodGroupValue && bloodGroupValue.trim() !== '') {
+                const validBloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+                if (validBloodGroups.includes(bloodGroupValue.trim())) {
+                    bloodGroup = bloodGroupValue.trim() as 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-'
+                }
+            }
+
             const patient = new Patient()
             patient.id = uuid()
             patient.patientId = patientId
             patient.name = payload.name
             patient.phone = payload.phone
             patient.email = payload.email || null
-            patient.dateOfBirth = DateTime.fromJSDate(payload.dateOfBirth)
+            patient.dateOfBirth = DateTime.fromJSDate(payload.date_of_birth)
             patient.gender = payload.gender
             patient.address = payload.address
-            patient.emergencyContact = payload.emergencyContact || {}
-            patient.bloodGroup = payload.bloodGroup || null
+            // Emergency contact is optional - set empty object if not provided
+            patient.emergencyContact = emergencyContact
+            patient.bloodGroup = bloodGroup
             patient.allergies = payload.allergies || []
-            patient.chronicConditions = payload.chronicConditions || []
-            patient.vaccinationRecords = payload.vaccinationRecords || []
-            patient.insuranceInfo = payload.insuranceInfo || {}
+            patient.chronicConditions = chronicConditions
+            patient.vaccinationRecords = vaccinationRecords
+            patient.insuranceInfo = insuranceInfo
 
             await patient.save()
 
@@ -111,7 +135,8 @@ export default class PatientsController {
             console.error('Patient store error:', error)
             return response.status(500).json({
                 success: false,
-                message: 'Server error while creating patient'
+                message: 'Server error while creating patient',
+                error: error.message
             })
         }
     }
@@ -132,18 +157,36 @@ export default class PatientsController {
 
             const payload = await request.validateUsing(updatePatientValidator)
 
+            // Handle snake_case field names consistently
             if (payload.name !== undefined) patient.name = payload.name
             if (payload.email !== undefined) patient.email = payload.email || null
             if (payload.phone !== undefined) patient.phone = payload.phone
-            if (payload.dateOfBirth !== undefined) patient.dateOfBirth = DateTime.fromJSDate(payload.dateOfBirth)
+
+            if (payload.date_of_birth !== undefined) patient.dateOfBirth = DateTime.fromJSDate(payload.date_of_birth)
+
             if (payload.gender !== undefined) patient.gender = payload.gender
             if (payload.address !== undefined) patient.address = payload.address
-            if (payload.emergencyContact !== undefined) patient.emergencyContact = payload.emergencyContact
-            if (payload.bloodGroup !== undefined) patient.bloodGroup = payload.bloodGroup || null
+
+            if (payload.emergency_contact !== undefined) patient.emergencyContact = payload.emergency_contact
+
+            // Handle blood group
+            if (payload.blood_group !== undefined) {
+                if (payload.blood_group && payload.blood_group.trim() !== '') {
+                    const validBloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+                    if (validBloodGroups.includes(payload.blood_group.trim())) {
+                        patient.bloodGroup = payload.blood_group.trim() as 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-'
+                    } else {
+                        patient.bloodGroup = null
+                    }
+                } else {
+                    patient.bloodGroup = null
+                }
+            }
+
             if (payload.allergies !== undefined) patient.allergies = payload.allergies
-            if (payload.chronicConditions !== undefined) patient.chronicConditions = payload.chronicConditions
-            if (payload.vaccinationRecords !== undefined) patient.vaccinationRecords = payload.vaccinationRecords
-            if (payload.insuranceInfo !== undefined) patient.insuranceInfo = payload.insuranceInfo
+            if (payload.chronic_conditions !== undefined) patient.chronicConditions = payload.chronic_conditions
+            if (payload.vaccination_records !== undefined) patient.vaccinationRecords = payload.vaccination_records
+            if (payload.insurance_info !== undefined) patient.insuranceInfo = payload.insurance_info
 
             await patient.save()
 
@@ -152,7 +195,6 @@ export default class PatientsController {
                 data: patient,
                 message: 'Patient updated successfully'
             })
-
         } catch (error) {
             console.error('Patient update error:', error)
             return response.status(500).json({

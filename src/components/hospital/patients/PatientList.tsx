@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 import {
     UsersIcon,
@@ -23,8 +22,7 @@ import {
     HeartIcon,
     ShieldIcon,
     CloudArrowUpIcon,
-    ChartBarIcon
-} from '@phosphor-icons/react'
+} from '@phosphor-icons/react';
 import { usePatientApi } from '@/hooks/usePatientApi'
 import { Patient, PatientSearchParams } from '@/types/patient'
 
@@ -138,7 +136,7 @@ export default function PatientList() {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm text-muted-foreground">Total Patients</p>
-                                    <p className="text-2xl font-bold">{stats.total_patients}</p>
+                                    <p className="text-2xl font-bold">{stats.totalPatients || 0}</p>
                                 </div>
                                 <UsersIcon className="w-8 h-8 text-blue-500" />
                             </div>
@@ -149,8 +147,8 @@ export default function PatientList() {
                         <CardContent className="p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm text-muted-foreground">New Today</p>
-                                    <p className="text-2xl font-bold">{stats.new_patients_today}</p>
+                                    <p className="text-sm text-muted-foreground">New This Month</p>
+                                    <p className="text-2xl font-bold">{stats.newPatientsThisMonth || 0}</p>
                                 </div>
                                 <CalendarIcon className="w-8 h-8 text-green-500" />
                             </div>
@@ -161,10 +159,10 @@ export default function PatientList() {
                         <CardContent className="p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm text-muted-foreground">With Allergies</p>
-                                    <p className="text-2xl font-bold">{stats.patients_with_allergies}</p>
+                                    <p className="text-sm text-muted-foreground">Recent Registrations</p>
+                                    <p className="text-2xl font-bold">{stats.recentRegistrations || 0}</p>
                                 </div>
-                                <WarningIcon className="w-8 h-8 text-orange-500" />
+                                <UsersIcon className="w-8 h-8 text-orange-500" />
                             </div>
                         </CardContent>
                     </Card>
@@ -173,10 +171,10 @@ export default function PatientList() {
                         <CardContent className="p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm text-muted-foreground">Chronic Conditions</p>
-                                    <p className="text-2xl font-bold">{stats.patients_with_chronic_conditions}</p>
+                                    <p className="text-sm text-muted-foreground">Monthly Growth</p>
+                                    <p className="text-2xl font-bold">{stats.growth?.monthly || 0}%</p>
                                 </div>
-                                <HeartIcon className="w-8 h-8 text-red-500" />
+                                <ArrowUpIcon className="w-8 h-8 text-green-600" />
                             </div>
                         </CardContent>
                     </Card>
@@ -324,9 +322,9 @@ export default function PatientList() {
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center justify-between">
-                        <span>Patients ({pagination.total})</span>
+                        <span>Patients ({pagination.total || 0})</span>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            Page {pagination.current_page} of {pagination.last_page}
+                            Page {pagination.current_page || 1} of {pagination.last_page || 1}
                         </div>
                     </CardTitle>
                 </CardHeader>
