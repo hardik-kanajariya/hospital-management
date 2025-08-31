@@ -3,8 +3,12 @@ import { promisify } from 'util'
 import * as os from 'os'
 import * as fs from 'fs'
 import * as path from 'path'
+import { SystemSettingsService } from '#services/system_settings_service'
+import { AuditService } from '#services/audit_service'
+import Database from '@adonisjs/lucid/services/db'
 
 export default class SystemController {
+    private systemSettingsService = new SystemSettingsService()
     /**
      * Get system health status
      */
@@ -83,9 +87,18 @@ export default class SystemController {
     /**
      * Create system backup
      */
-    async createBackup({ response }: HttpContext) {
+    async createBackup(ctx: HttpContext) {
+        const { response } = ctx
         try {
             const backupResult = await this.performBackup()
+
+            // Log the backup activity
+            await AuditService.logBackup(
+                ctx,
+                backupResult.success,
+                backupResult.filename,
+                backupResult.error
+            )
 
             if (backupResult.success) {
                 return response.status(200).json({
@@ -141,19 +154,15 @@ export default class SystemController {
         try {
             const limit = request.input('limit', 10)
             const type = request.input('type', 'all')
+            const userId = request.input('userId')
+            const action = request.input('action')
 
-            // This would typically come from an audit log table
-            // For now, return mock data
-            const activities = [
-                {
-                    id: '1',
-                    action: 'System Started',
-                    description: 'Hospital Management System initialized',
-                    type: 'system',
-                    createdAt: new Date().toISOString(),
-                    user: { name: 'System' }
-                }
-            ]
+            const activities = await AuditService.getAuditLogs(
+                parseInt(limit),
+                type,
+                userId ? parseInt(userId) : undefined,
+                action
+            )
 
             return response.status(200).json({
                 success: true,
@@ -220,48 +229,11 @@ export default class SystemController {
     }
 
     /**
-     * Get hospital settings (temporary endpoint)
+     * Get hospital settings
      */
     async hospitalSettings({ response }: HttpContext) {
         try {
-            // This would typically come from a settings table
-            const settings = {
-                // General Settings
-                hospitalName: 'City General Hospital',
-                hospitalAddress: '123 Medical Center Dr, Healthcare City',
-                hospitalPhone: '+1 (555) 123-4567',
-                hospitalEmail: 'admin@citygeneralhospital.com',
-
-                // System Settings
-                sessionTimeout: 30,
-                maxLoginAttempts: 5,
-                backupFrequency: 'daily',
-                enableAuditLog: true,
-                enableNotifications: true,
-                enableEmailAlerts: true,
-                autoBackupTime: '02:00',
-                maintenanceMode: false,
-
-                // Security Settings
-                passwordMinLength: 8,
-                requireSpecialChars: true,
-                requireNumbers: true,
-                requireUppercase: true,
-                enableTwoFactor: false,
-                lockoutDuration: 15,
-                sessionIdleTimeout: 30,
-                maxFileUploadSize: 10,
-
-                // Performance Settings
-                cacheEnabled: true,
-                databaseOptimization: true,
-                enableCompression: true,
-                maxConcurrentUsers: 100,
-                apiTimeout: 30,
-                enableApiRateLimiting: true,
-                maxRequestsPerMinute: 100,
-                enableCDN: false,
-            }
+            const settings = await this.systemSettingsService.getAllSettings()
 
             return response.status(200).json({
                 success: true,
@@ -279,18 +251,16 @@ export default class SystemController {
     }
 
     /**
-     * Update hospital settings (temporary endpoint)
+     * Update hospital settings
      */
-    async updateHospitalSettings({ request, response }: HttpContext) {
+    async updateHospitalSettings(ctx: HttpContext) {
+        const { request, response } = ctx
         try {
             const settingsData = request.only([
-                // General Settings
                 'hospitalName',
                 'hospitalAddress',
                 'hospitalPhone',
                 'hospitalEmail',
-
-                // System Settings
                 'sessionTimeout',
                 'maxLoginAttempts',
                 'backupFrequency',
@@ -299,8 +269,6 @@ export default class SystemController {
                 'enableEmailAlerts',
                 'autoBackupTime',
                 'maintenanceMode',
-
-                // Security Settings
                 'passwordMinLength',
                 'requireSpecialChars',
                 'requireNumbers',
@@ -309,8 +277,6 @@ export default class SystemController {
                 'lockoutDuration',
                 'sessionIdleTimeout',
                 'maxFileUploadSize',
-
-                // Performance Settings
                 'cacheEnabled',
                 'databaseOptimization',
                 'enableCompression',
@@ -321,40 +287,30 @@ export default class SystemController {
                 'enableCDN'
             ])
 
-            // Validate required fields
-            const validationErrors: string[] = []
-
-            if (!settingsData.hospitalName?.trim()) {
-                validationErrors.push('Hospital name is required')
-            }
-            if (!settingsData.hospitalEmail?.trim()) {
-                validationErrors.push('Hospital email is required')
-            }
-            if (!settingsData.hospitalPhone?.trim()) {
-                validationErrors.push('Hospital phone is required')
-            }
-
-            // Validate numeric ranges
-            if (settingsData.sessionTimeout && (settingsData.sessionTimeout < 5 || settingsData.sessionTimeout > 480)) {
-                validationErrors.push('Session timeout must be between 5 and 480 minutes')
-            }
-            if (settingsData.maxLoginAttempts && (settingsData.maxLoginAttempts < 1 || settingsData.maxLoginAttempts > 10)) {
-                validationErrors.push('Max login attempts must be between 1 and 10')
-            }
-            if (settingsData.passwordMinLength && (settingsData.passwordMinLength < 6 || settingsData.passwordMinLength > 32)) {
-                validationErrors.push('Password minimum length must be between 6 and 32 characters')
-            }
+            // Validate settings
+            const validationErrors = this.systemSettingsService.validateSettings(settingsData)
 
             if (validationErrors.length > 0) {
-                return response.status(400).json({
+                return response.status(422).json({
                     success: false,
                     message: 'Validation failed',
                     errors: validationErrors
                 })
             }
 
-            // This would typically update a settings table
-            console.log('Updating hospital settings:', settingsData)
+            // Get current settings for audit logging
+            const currentSettings = await this.systemSettingsService.getAllSettings()
+
+            // Update settings
+            await this.systemSettingsService.updateSettings(settingsData)
+
+            // Log settings changes
+            for (const [key, newValue] of Object.entries(settingsData)) {
+                const oldValue = (currentSettings as any)[key]
+                if (oldValue !== newValue) {
+                    await AuditService.logSettingChange(ctx, key, oldValue, newValue)
+                }
+            }
 
             return response.status(200).json({
                 success: true,
@@ -376,12 +332,13 @@ export default class SystemController {
     private async checkDatabaseConnection(): Promise<{ healthy: boolean; latency?: number }> {
         try {
             const start = Date.now()
-            // You would check your actual database connection here
-            // For now, we'll assume it's healthy
+            // Check actual database connection using a simple query
+            await Database.rawQuery('SELECT 1')
             const latency = Date.now() - start
 
             return { healthy: true, latency }
         } catch (error) {
+            console.error('Database connection check failed:', error)
             return { healthy: false }
         }
     }
@@ -423,9 +380,8 @@ export default class SystemController {
 
     private async getLastBackupInfo(): Promise<string | null> {
         try {
-            // This would check your backup directory or database
-            // For now, return null (no backup found)
-            return null
+            const lastBackup = await this.systemSettingsService.getSetting('system', 'last_backup')
+            return lastBackup || null
         } catch {
             return null
         }
@@ -433,18 +389,45 @@ export default class SystemController {
 
     private async performBackup(): Promise<{ success: boolean; error?: string; filename?: string }> {
         try {
-            // This would perform an actual backup
-            // For now, we'll simulate a successful backup
-            const filename = `backup_${Date.now()}.sql`
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+            const filename = `backup_${timestamp}.sql`
+            const backupPath = path.join(process.cwd(), 'storage', 'backups')
 
-            // Simulate backup process
-            await new Promise(resolve => setTimeout(resolve, 1000))
+            // Ensure backup directory exists
+            if (!fs.existsSync(backupPath)) {
+                fs.mkdirSync(backupPath, { recursive: true })
+            }
+
+            const fullPath = path.join(backupPath, filename)
+
+            // Get database connection info from environment
+            const dbConfig = {
+                host: process.env.DB_HOST || 'localhost',
+                port: process.env.DB_PORT || '3306',
+                database: process.env.DB_DATABASE || 'hospital_management',
+                username: process.env.DB_USERNAME || 'root',
+                password: process.env.DB_PASSWORD || ''
+            }
+
+            // Create mysqldump command
+            const dumpCommand = `mysqldump -h ${dbConfig.host} -P ${dbConfig.port} -u ${dbConfig.username} ${dbConfig.password ? `-p${dbConfig.password}` : ''} ${dbConfig.database} > "${fullPath}"`
+
+            // Execute backup command
+            const { exec } = require('child_process')
+            const { promisify } = require('util')
+            const execAsync = promisify(exec)
+
+            await execAsync(dumpCommand)
+
+            // Update backup setting
+            await this.systemSettingsService.setSetting('system', 'last_backup', new Date().toISOString())
 
             return {
                 success: true,
                 filename
             }
         } catch (error) {
+            console.error('Backup error:', error)
             return {
                 success: false,
                 error: error.message
@@ -454,8 +437,35 @@ export default class SystemController {
 
     private async getSystemLogs(limit: number, level: string): Promise<any[]> {
         try {
-            // This would read from actual log files
-            // For now, return mock logs
+            // Read from log files if they exist
+            const logPath = path.join(process.cwd(), 'storage', 'logs')
+            const logFile = path.join(logPath, 'app.log')
+
+            if (fs.existsSync(logFile)) {
+                const logContent = fs.readFileSync(logFile, 'utf8')
+                const logLines = logContent.split('\n').filter(line => line.trim())
+
+                // Filter by level if specified
+                let filteredLogs = logLines
+                if (level !== 'all') {
+                    filteredLogs = logLines.filter(line =>
+                        line.toLowerCase().includes(level.toLowerCase())
+                    )
+                }
+
+                // Limit results
+                const limitedLogs = filteredLogs.slice(-limit)
+
+                // Parse log lines into objects
+                return limitedLogs.map((line, index) => ({
+                    id: index + 1,
+                    level: this.extractLogLevel(line),
+                    message: this.extractLogMessage(line),
+                    timestamp: this.extractLogTimestamp(line) || new Date().toISOString()
+                }))
+            }
+
+            // Return mock logs if no log file exists
             return [
                 {
                     id: 1,
@@ -467,6 +477,23 @@ export default class SystemController {
         } catch {
             return []
         }
+    }
+
+    private extractLogLevel(logLine: string): string {
+        const levelMatch = logLine.match(/\[(error|warn|info|debug)\]/i)
+        return levelMatch ? levelMatch[1].toLowerCase() : 'info'
+    }
+
+    private extractLogMessage(logLine: string): string {
+        // Extract message after timestamp and level
+        const messageMatch = logLine.match(/\[[^\]]+\]\s*(.+)/)
+        return messageMatch ? messageMatch[1] : logLine
+    }
+
+    private extractLogTimestamp(logLine: string): string | null {
+        // Try to extract ISO timestamp
+        const timestampMatch = logLine.match(/(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z)/)
+        return timestampMatch ? timestampMatch[1] : null
     }
 
     private formatUptime(seconds: number): string {

@@ -222,7 +222,7 @@ export default function PatientList() {
                                             <SelectValue placeholder="All" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="">All</SelectItem>
+                                            <SelectItem value="all">All</SelectItem>
                                             <SelectItem value="male">Male</SelectItem>
                                             <SelectItem value="female">Female</SelectItem>
                                             <SelectItem value="other">Other</SelectItem>
@@ -240,7 +240,7 @@ export default function PatientList() {
                                             <SelectValue placeholder="All" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="">All</SelectItem>
+                                            <SelectItem value="all">All</SelectItem>
                                             <SelectItem value="A+">A+</SelectItem>
                                             <SelectItem value="A-">A-</SelectItem>
                                             <SelectItem value="B+">B+</SelectItem>
@@ -286,7 +286,7 @@ export default function PatientList() {
                                             <SelectValue placeholder="All" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="">All</SelectItem>
+                                            <SelectItem value="all">All</SelectItem>
                                             <SelectItem value="true">Yes</SelectItem>
                                             <SelectItem value="false">No</SelectItem>
                                         </SelectContent>
@@ -306,7 +306,7 @@ export default function PatientList() {
                                             <SelectValue placeholder="All" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="">All</SelectItem>
+                                            <SelectItem value="all">All</SelectItem>
                                             <SelectItem value="true">Yes</SelectItem>
                                             <SelectItem value="false">No</SelectItem>
                                         </SelectContent>

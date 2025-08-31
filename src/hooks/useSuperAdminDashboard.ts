@@ -50,7 +50,7 @@ export const useSuperAdminDashboard = () => {
             const [statsResponse, systemResponse, activitiesResponse] = await Promise.all([
                 httpService.get(API_ENDPOINTS.DASHBOARD.SUPER_ADMIN),
                 httpService.get(API_ENDPOINTS.SYSTEM.HEALTH),
-                httpService.get(API_ENDPOINTS.SYSTEM.AUDIT_TRAIL + '?limit=10&type=admin')
+                httpService.get(API_ENDPOINTS.SYSTEM.AUDIT_TRAIL + '?limit=10&type=all')
             ]);
 
             if (statsResponse.success && systemResponse.success && activitiesResponse.success) {

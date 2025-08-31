@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import RoleManagement from './RoleManagement';
 import SuperAdminUserManagement from './SuperAdminUserManagement';
 import MastersManagement from './MastersManagement';
+import SystemPerformanceDashboard from './SystemPerformanceDashboard';
 import { useSuperAdminDashboard } from '@/hooks/useSuperAdminDashboard';
 import {
     UsersIcon,
@@ -138,11 +139,12 @@ export default function SuperAdminDashboard() {
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                <TabsList className="grid grid-cols-4 w-full max-w-lg">
+                <TabsList className="grid grid-cols-5 w-full max-w-2xl">
                     <TabsTrigger value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="users">Users</TabsTrigger>
                     <TabsTrigger value="roles">Roles</TabsTrigger>
                     <TabsTrigger value="masters">Masters</TabsTrigger>
+                    <TabsTrigger value="performance">Performance</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-6">
@@ -316,6 +318,10 @@ export default function SuperAdminDashboard() {
 
                 <TabsContent value="masters">
                     <MastersManagement />
+                </TabsContent>
+
+                <TabsContent value="performance">
+                    <SystemPerformanceDashboard />
                 </TabsContent>
             </Tabs>
         </div>
