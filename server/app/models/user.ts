@@ -77,38 +77,47 @@ export default class User extends compose(BaseModel, AuthFinder) {
   }
 
   // Method to get user permissions through role
-    public async getUserPermissions(): Promise<Array<{ module: string; actions: string[] }>> {
-      if (!this.role) {
-        const user = await User.query()
-          .where('id', this.id)
-          .preload('role', (roleQuery) => {
-            roleQuery.preload('permissions')
-          })
-          .first()
-  
-        if (user?.role) {
-          this.role = user.role
+  public async getUserPermissions(): Promise<Array<{ module: string; actions: string[] }>> {
+    if (!this.role) {
+      const user = await User.query()
+        .where('id', this.id)
+        .preload('role', (roleQuery) => {
+          roleQuery.preload('permissions')
+        })
+        .first()
+
+      if (user?.role) {
+        this.role = user.role
+      }
+    }
+
+    if (!this.role) return []
+
+    return this.role.permissions.map((permission) => {
+      // Access pivot data correctly - cast to any to access $pivot
+      const pivotData = (permission as any).$pivot
+      let actions: string[] = []
+      
+      if (pivotData?.actions) {
+        // If actions is already an array
+        if (Array.isArray(pivotData.actions)) {
+          actions = pivotData.actions
+        } else if (typeof pivotData.actions === 'string') {
+          // If actions is a JSON string, parse it
+          try {
+            actions = JSON.parse(pivotData.actions)
+          } catch {
+            actions = []
+          }
         }
       }
-  
-      if (!this.role) return []
-  
-      return (this.role as any).permissions.map((permission: any) => {
-        // Derive actions array safely
-        let actions: string[] = []
-        if (Array.isArray(permission.actions)) {
-          actions = permission.actions
-        } else {
-          // Fallback: infer boolean action flags (e.g., create/read/update/delete/manage)
-          const possible = ['create', 'read', 'update', 'delete', 'manage']
-          actions = possible.filter(a => permission[a] === true)
-        }
-        return {
-          module: permission.module,
-          actions
-        }
-      })
-    }
+      
+      return {
+        module: permission.module,
+        actions
+      }
+    })
+  }
 
   // Method to check if user has specific permission
   public async hasPermission(module: string, action: string = 'read'): Promise<boolean> {

@@ -465,7 +465,7 @@ For licensed users who want to contribute:
 
 ---
 
-**© 2024 MedCare Rural. All rights reserved.**
+**© 2025 MedCare Rural. All rights reserved.**
 
 For technical support: support@medcare-rural.com  
 For sales inquiries: sales@medcare-rural.com  

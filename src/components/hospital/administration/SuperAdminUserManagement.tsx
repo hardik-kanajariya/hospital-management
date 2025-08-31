@@ -1,16 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle
-} from '@/components/ui/dialog';
 import {
     Table,
     TableBody,
@@ -20,7 +13,6 @@ import {
     TableRow
 } from '@/components/ui/table';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { EnhancedUserForm } from './EnhancedUserForm';
 import { httpService } from '@/services/HttpService';
 import { User, Role } from '@/types/auth';
 import {
@@ -45,30 +37,16 @@ interface UserFormData {
 }
 
 export default function SuperAdminUserManagement() {
+    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [users, setUsers] = useState<User[]>([]);
     const [roles, setRoles] = useState<Role[]>([]);
     const [loading, setLoading] = useState(true);
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [editingUser, setEditingUser] = useState<User | null>(null);
-    const [viewingUser, setViewingUser] = useState<User | null>(null);
 
     useEffect(() => {
         loadUsers();
         loadRoles();
     }, []);
-
-    // Handle role preselection from URL parameters
-    useEffect(() => {
-        const preSelectedRole = searchParams.get('role');
-        if (preSelectedRole && roles.length > 0) {
-            const doctorRole = roles.find(role => role.name === preSelectedRole);
-            if (doctorRole) {
-                // Auto-open the create user dialog when coming from doctor module
-                setDialogOpen(true);
-            }
-        }
-    }, [searchParams, roles]);
 
     const loadUsers = async () => {
         try {
@@ -104,16 +82,12 @@ export default function SuperAdminUserManagement() {
     };
 
     const handleCreateUser = () => {
-        setEditingUser(null);
-        setDialogOpen(true);
-    };
-
-
-
-    const handleUserSaved = () => {
-        loadUsers(); // Refresh the user list
-        setDialogOpen(false);
-        setEditingUser(null);
+        const preSelectedRole = searchParams.get('role');
+        if (preSelectedRole) {
+            navigate(`/users/create?role=${preSelectedRole}`);
+        } else {
+            navigate('/users/create');
+        }
     };
 
     // Helper function to check if user has super admin role
@@ -135,12 +109,11 @@ export default function SuperAdminUserManagement() {
             return;
         }
 
-        setEditingUser(user);
-        setDialogOpen(true);
+        navigate(`/users/${user.id}/edit`);
     };
 
     const handleViewUser = (user: User) => {
-        setViewingUser(user);
+        navigate(`/users/${user.id}/view`);
     };
 
     const handleDeleteUser = async (user: User) => {
@@ -298,114 +271,6 @@ export default function SuperAdminUserManagement() {
                     </Table>
                 </CardContent>
             </Card>
-
-            {/* Create/Edit User Dialog */}
-            <EnhancedUserForm
-                open={dialogOpen}
-                onOpenChange={setDialogOpen}
-                user={editingUser}
-                roles={roles}
-                onSave={handleUserSaved}
-            />
-
-            {/* View User Dialog */}
-            <Dialog open={!!viewingUser} onOpenChange={() => setViewingUser(null)}>
-                <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
-                    <DialogHeader className="flex-shrink-0">
-                        <DialogTitle>User Details</DialogTitle>
-                        <DialogDescription>
-                            View user information and permissions
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <div className="flex-1 overflow-y-auto pr-2">
-                        {viewingUser && (
-                            <div className="space-y-4">
-                                {isSuperAdmin(viewingUser) && (
-                                    <Alert>
-                                        <ShieldCheckIcon className="h-4 w-4" />
-                                        <AlertDescription>
-                                            This is a Super Administrator account with protected status.
-                                            This user cannot be modified or deleted.
-                                        </AlertDescription>
-                                    </Alert>
-                                )}
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <Label>Name</Label>
-                                        <div className="font-medium">{viewingUser.name}</div>
-                                    </div>
-                                    <div>
-                                        <Label>Email</Label>
-                                        <div className="font-medium">{viewingUser.email}</div>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <Label>Role</Label>
-                                        <div className="font-medium">{getRoleName(viewingUser)}</div>
-                                    </div>
-                                    <div>
-                                        <Label>Status</Label>
-                                        <Badge variant={viewingUser.isActive ? "default" : "secondary"}>
-                                            {viewingUser.isActive ? "Active" : "Inactive"}
-                                        </Badge>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <Label>Department</Label>
-                                        <div className="font-medium">{viewingUser.department || '-'}</div>
-                                    </div>
-                                    <div>
-                                        <Label>Employee ID</Label>
-                                        <div className="font-medium">{viewingUser.employeeId || '-'}</div>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <Label>Permissions</Label>
-                                    <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border rounded p-2">
-                                        {viewingUser.role?.permissions?.map((permission, index) => (
-                                            <div key={index} className="flex justify-between items-center p-2 bg-muted rounded">
-                                                <span className="capitalize">{permission.module.replace('_', ' ')}</span>
-                                                <div className="flex space-x-1">
-                                                    {permission.actions?.map((action) => (
-                                                        <Badge key={action} variant="outline" className="text-xs">
-                                                            {action}
-                                                        </Badge>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <Label>Created</Label>
-                                        <div className="text-sm text-muted-foreground">
-                                            {new Date(viewingUser.createdAt).toLocaleString()}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <Label>Last Login</Label>
-                                        <div className="text-sm text-muted-foreground">
-                                            {viewingUser.lastLogin
-                                                ? new Date(viewingUser.lastLogin).toLocaleString()
-                                                : 'Never'
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </DialogContent>
-            </Dialog>
         </div>
     );
 }

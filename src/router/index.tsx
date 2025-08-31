@@ -21,6 +21,9 @@ import SuperAdminDashboard from '../components/hospital/administration/SuperAdmi
 import RoleManagement from '../components/hospital/administration/RoleManagement';
 import RoleFieldsPage from '../components/hospital/administration/RoleFieldsPage';
 import SuperAdminUserManagement from '../components/hospital/administration/SuperAdminUserManagement';
+import CreateUser from '../components/hospital/administration/CreateUser';
+import EditUser from '../components/hospital/administration/EditUser';
+import ViewUser from '../components/hospital/administration/ViewUser';
 import MastersManagement from '../components/hospital/administration/MastersManagement';
 import SystemSettingsPage from '../components/hospital/administration/SystemSettingsPage';
 import RoleBasedAccess from '../components/auth/RoleBasedAccess';
@@ -240,6 +243,30 @@ export const router = createBrowserRouter([
                 element: (
                     <ProtectedRoute requiredRole="super_admin">
                         <SuperAdminUserManagement />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'users/create',
+                element: (
+                    <ProtectedRoute requiredRole="super_admin">
+                        <CreateUser />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'users/:userId/edit',
+                element: (
+                    <ProtectedRoute requiredRole="super_admin">
+                        <EditUser />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'users/:userId/view',
+                element: (
+                    <ProtectedRoute requiredRole="super_admin">
+                        <ViewUser />
                     </ProtectedRoute>
                 )
             },

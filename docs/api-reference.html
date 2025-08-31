@@ -1,95 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Reference - MedCare Rural</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/docs.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Reference - MedCare Rural</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/docs.css">
 </head>
+
 <body>
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <div class="logo-icon">M</div>
-                    <span>MedCare Rural</span>
-                </div>
-                <div class="version">v1.0.0</div>
-            </div>
-        </div>
-    </header>
-
-    <nav class="nav">
-        <div class="container">
-            <ul class="nav-links">
-                <li><a href="index.html">Overview</a></li>
-                <li><a href="installation.html">Installation</a></li>
-                <li><a href="api-reference.html" class="active">API Reference</a></li>
-                <li><a href="user-guide.html">User Guide</a></li>
-                <li><a href="customization.html">Customization</a></li>
-            </ul>
-        </div>
-    </nav>
-
+  <header class="header">
     <div class="container">
-        <div class="main-content">
-            <aside class="sidebar">
-                <h3>API Reference</h3>
-                <ul>
-                    <li><a href="#overview">Overview</a></li>
-                    <li><a href="#authentication">Authentication</a></li>
-                    <li><a href="#patients">Patients API</a></li>
-                    <li><a href="#appointments">Appointments API</a></li>
-                    <li><a href="#medical-records">Medical Records API</a></li>
-                    <li><a href="#billing">Billing API</a></li>
-                    <li><a href="#inventory">Inventory API</a></li>
-                    <li><a href="#lab-tests">Lab Tests API</a></li>
-                    <li><a href="#doctors">Doctors API</a></li>
-                    <li><a href="#users">Users API</a></li>
-                    <li><a href="#notifications">Notifications API</a></li>
-                    <li><a href="#reports">Reports API</a></li>
-                    <li><a href="#errors">Error Handling</a></li>
-                    <li><a href="#rate-limits">Rate Limits</a></li>
-                </ul>
-            </aside>
+      <div class="header-content">
+        <div class="logo">
+          <div class="logo-icon">M</div>
+          <span>MedCare Rural</span>
+        </div>
+        <div class="version">v1.0.0</div>
+      </div>
+    </div>
+  </header>
 
-            <main class="content">
-                <h1>API Reference</h1>
-                <p>Complete API documentation for MedCare Rural Hospital Management System integration.</p>
+  <nav class="nav">
+    <div class="container">
+      <ul class="nav-links">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="installation.html">Installation</a></li>
+        <li><a href="api-reference.html" class="active">API Reference</a></li>
+        <li><a href="user-guide.html">User Guide</a></li>
+        <li><a href="customization.html">Customization</a></li>
+      </ul>
+    </div>
+  </nav>
 
-                <section id="overview">
-                    <h2>API Overview</h2>
-                    
-                    <div class="alert alert-info">
-                        <strong>Base URL:</strong> All API requests should be made to <code>https://your-domain.com/api/v1</code>
-                    </div>
+  <div class="container">
+    <div class="main-content">
+      <aside class="sidebar">
+        <h3>API Reference</h3>
+        <ul>
+          <li><a href="#overview">Overview</a></li>
+          <li><a href="#authentication">Authentication</a></li>
+          <li><a href="#patients">Patients API</a></li>
+          <li><a href="#appointments">Appointments API</a></li>
+          <li><a href="#medical-records">Medical Records API</a></li>
+          <li><a href="#billing">Billing API</a></li>
+          <li><a href="#inventory">Inventory API</a></li>
+          <li><a href="#lab-tests">Lab Tests API</a></li>
+          <li><a href="#doctors">Doctors API</a></li>
+          <li><a href="#users">Users API</a></li>
+          <li><a href="#notifications">Notifications API</a></li>
+          <li><a href="#reports">Reports API</a></li>
+          <li><a href="#errors">Error Handling</a></li>
+          <li><a href="#rate-limits">Rate Limits</a></li>
+        </ul>
+      </aside>
 
-                    <h3>Core Features</h3>
-                    <ul>
-                        <li><strong>RESTful Design:</strong> Standard HTTP methods (GET, POST, PUT, DELETE)</li>
-                        <li><strong>JSON Format:</strong> All requests and responses use JSON</li>
-                        <li><strong>Authentication:</strong> JWT-based authentication system</li>
-                        <li><strong>Rate Limiting:</strong> Built-in rate limiting for API security</li>
-                        <li><strong>Versioning:</strong> API versioning for backward compatibility</li>
-                        <li><strong>Error Handling:</strong> Standardized error responses</li>
-                    </ul>
+      <main class="content">
+        <h1>API Reference</h1>
+        <p>Complete API documentation for MedCare Rural Hospital Management System integration.</p>
 
-                    <h3>Request Headers</h3>
-                    <div class="code-block">
-                        <code>
+        <section id="overview">
+          <h2>API Overview</h2>
+
+          <div class="alert alert-info">
+            <strong>Base URL:</strong> All API requests should be made to <code>https://your-domain.com/api/v1</code>
+          </div>
+
+          <h3>Core Features</h3>
+          <ul>
+            <li><strong>RESTful Design:</strong> Standard HTTP methods (GET, POST, PUT, DELETE)</li>
+            <li><strong>JSON Format:</strong> All requests and responses use JSON</li>
+            <li><strong>Authentication:</strong> JWT-based authentication system</li>
+            <li><strong>Rate Limiting:</strong> Built-in rate limiting for API security</li>
+            <li><strong>Versioning:</strong> API versioning for backward compatibility</li>
+            <li><strong>Error Handling:</strong> Standardized error responses</li>
+          </ul>
+
+          <h3>Request Headers</h3>
+          <div class="code-block">
+            <code>
 Content-Type: application/json
 Authorization: Bearer {jwt_token}
 Accept: application/json
 X-Requested-With: XMLHttpRequest
                         </code>
-                    </div>
+          </div>
 
-                    <h3>Response Format</h3>
-                    <p>All API responses follow this standard format:</p>
-                    <div class="code-block">
-                        <code>
+          <h3>Response Format</h3>
+          <p>All API responses follow this standard format:</p>
+          <div class="code-block">
+            <code>
 {
   "success": true,
   "message": "Operation completed successfully",
@@ -106,17 +108,17 @@ X-Requested-With: XMLHttpRequest
   }
 }
                         </code>
-                    </div>
-                </section>
+          </div>
+        </section>
 
-                <section id="authentication">
-                    <h2>Authentication</h2>
-                    
-                    <h3>Login</h3>
-                    <p>Authenticate user and get access token.</p>
-                    
-                    <div class="code-block">
-                        <code>
+        <section id="authentication">
+          <h2>Authentication</h2>
+
+          <h3>Login</h3>
+          <p>Authenticate user and get access token.</p>
+
+          <div class="code-block">
+            <code>
 POST /api/v1/auth/login
 
 Request Body:
@@ -146,11 +148,11 @@ Response:
   }
 }
                         </code>
-                    </div>
+          </div>
 
-                    <h3>Refresh Token</h3>
-                    <div class="code-block">
-                        <code>
+          <h3>Refresh Token</h3>
+          <div class="code-block">
+            <code>
 POST /api/v1/auth/refresh
 
 Headers:
@@ -165,11 +167,11 @@ Response:
   }
 }
                         </code>
-                    </div>
+          </div>
 
-                    <h3>Logout</h3>
-                    <div class="code-block">
-                        <code>
+          <h3>Logout</h3>
+          <div class="code-block">
+            <code>
 POST /api/v1/auth/logout
 
 Headers:
@@ -181,15 +183,15 @@ Response:
   "message": "Successfully logged out"
 }
                         </code>
-                    </div>
-                </section>
+          </div>
+        </section>
 
-                <section id="patients">
-                    <h2>Patients API</h2>
-                    
-                    <h3>Get All Patients</h3>
-                    <div class="code-block">
-                        <code>
+        <section id="patients">
+          <h2>Patients API</h2>
+
+          <h3>Get All Patients</h3>
+          <div class="code-block">
+            <code>
 GET /api/v1/patients
 
 Query Parameters:
@@ -242,10 +244,10 @@ Response:
       "insurance": {
         "provider": "Health Insurance Co.",
         "policy_number": "POL123456",
-        "valid_until": "2024-12-31"
+        "valid_until": "2025-12-31"
       },
-      "created_at": "2024-01-01T10:00:00Z",
-      "updated_at": "2024-01-01T10:00:00Z"
+      "created_at": "2025-01-01T10:00:00Z",
+      "updated_at": "2025-01-01T10:00:00Z"
     }
   ],
   "meta": {
@@ -258,11 +260,11 @@ Response:
   }
 }
                         </code>
-                    </div>
+          </div>
 
-                    <h3>Get Single Patient</h3>
-                    <div class="code-block">
-                        <code>
+          <h3>Get Single Patient</h3>
+          <div class="code-block">
+            <code>
 GET /api/v1/patients/{id}
 
 Response:
@@ -285,11 +287,11 @@ Response:
   }
 }
                         </code>
-                    </div>
+          </div>
 
-                    <h3>Create Patient</h3>
-                    <div class="code-block">
-                        <code>
+          <h3>Create Patient</h3>
+          <div class="code-block">
+            <code>
 POST /api/v1/patients
 
 Request Body:
@@ -317,7 +319,7 @@ Request Body:
   "insurance": {
     "provider": "Health Insurance Co.",
     "policy_number": "POL123456",
-    "valid_until": "2024-12-31"
+    "valid_until": "2025-12-31"
   }
 }
 
@@ -332,11 +334,11 @@ Response:
   }
 }
                         </code>
-                    </div>
+          </div>
 
-                    <h3>Update Patient</h3>
-                    <div class="code-block">
-                        <code>
+          <h3>Update Patient</h3>
+          <div class="code-block">
+            <code>
 PUT /api/v1/patients/{id}
 
 Request Body:
@@ -356,11 +358,11 @@ Response:
   }
 }
                         </code>
-                    </div>
+          </div>
 
-                    <h3>Delete Patient</h3>
-                    <div class="code-block">
-                        <code>
+          <h3>Delete Patient</h3>
+          <div class="code-block">
+            <code>
 DELETE /api/v1/patients/{id}
 
 Response:
@@ -369,15 +371,15 @@ Response:
   "message": "Patient deleted successfully"
 }
                         </code>
-                    </div>
-                </section>
+          </div>
+        </section>
 
-                <section id="appointments">
-                    <h2>Appointments API</h2>
-                    
-                    <h3>Get Appointments</h3>
-                    <div class="code-block">
-                        <code>
+        <section id="appointments">
+          <h2>Appointments API</h2>
+
+          <h3>Get Appointments</h3>
+          <div class="code-block">
+            <code>
 GET /api/v1/appointments
 
 Query Parameters:
@@ -390,7 +392,7 @@ Query Parameters:
 - department: Filter by department
 
 Example:
-GET /api/v1/appointments?date=2024-01-15&doctor_id=2
+GET /api/v1/appointments?date=2025-01-15&doctor_id=2
 
 Response:
 {
@@ -411,31 +413,31 @@ Response:
         "specialization": "Cardiology",
         "department": "Cardiology"
       },
-      "appointment_date": "2024-01-15",
+      "appointment_date": "2025-01-15",
       "appointment_time": "10:30:00",
       "duration": 30,
       "status": "scheduled",
       "type": "consultation",
       "notes": "Regular checkup",
       "symptoms": ["chest pain", "shortness of breath"],
-      "created_at": "2024-01-10T14:30:00Z",
-      "updated_at": "2024-01-10T14:30:00Z"
+      "created_at": "2025-01-10T14:30:00Z",
+      "updated_at": "2025-01-10T14:30:00Z"
     }
   ]
 }
                         </code>
-                    </div>
+          </div>
 
-                    <h3>Create Appointment</h3>
-                    <div class="code-block">
-                        <code>
+          <h3>Create Appointment</h3>
+          <div class="code-block">
+            <code>
 POST /api/v1/appointments
 
 Request Body:
 {
   "patient_id": 1,
   "doctor_id": 2,
-  "appointment_date": "2024-01-20",
+  "appointment_date": "2025-01-20",
   "appointment_time": "14:30:00",
   "duration": 30,
   "type": "consultation",
@@ -454,16 +456,16 @@ Response:
   }
 }
                         </code>
-                    </div>
+          </div>
 
-                    <h3>Update Appointment</h3>
-                    <div class="code-block">
-                        <code>
+          <h3>Update Appointment</h3>
+          <div class="code-block">
+            <code>
 PUT /api/v1/appointments/{id}
 
 Request Body:
 {
-  "appointment_date": "2024-01-22",
+  "appointment_date": "2025-01-22",
   "appointment_time": "15:00:00",
   "status": "rescheduled",
   "notes": "Patient requested reschedule"
@@ -478,11 +480,11 @@ Response:
   }
 }
                         </code>
-                    </div>
+          </div>
 
-                    <h3>Cancel Appointment</h3>
-                    <div class="code-block">
-                        <code>
+          <h3>Cancel Appointment</h3>
+          <div class="code-block">
+            <code>
 PATCH /api/v1/appointments/{id}/cancel
 
 Request Body:
@@ -497,15 +499,15 @@ Response:
   "message": "Appointment cancelled successfully"
 }
                         </code>
-                    </div>
-                </section>
+          </div>
+        </section>
 
-                <section id="medical-records">
-                    <h2>Medical Records API</h2>
-                    
-                    <h3>Get Patient Medical Records</h3>
-                    <div class="code-block">
-                        <code>
+        <section id="medical-records">
+          <h2>Medical Records API</h2>
+
+          <h3>Get Patient Medical Records</h3>
+          <div class="code-block">
+            <code>
 GET /api/v1/patients/{patient_id}/medical-records
 
 Response:
@@ -516,7 +518,7 @@ Response:
       "id": 1,
       "patient_id": 1,
       "doctor_id": 2,
-      "visit_date": "2024-01-15",
+      "visit_date": "2025-01-15",
       "visit_type": "consultation",
       "chief_complaint": "Chest pain and shortness of breath",
       "symptoms": ["chest pain", "shortness of breath", "fatigue"],
@@ -555,19 +557,19 @@ Response:
         }
       ],
       "follow_up": {
-        "date": "2024-04-15",
+        "date": "2025-04-15",
         "notes": "Schedule routine follow-up"
       },
-      "created_at": "2024-01-15T10:30:00Z"
+      "created_at": "2025-01-15T10:30:00Z"
     }
   ]
 }
                         </code>
-                    </div>
+          </div>
 
-                    <h3>Create Medical Record</h3>
-                    <div class="code-block">
-                        <code>
+          <h3>Create Medical Record</h3>
+          <div class="code-block">
+            <code>
 POST /api/v1/medical-records
 
 Request Body:
@@ -611,15 +613,15 @@ Response:
   }
 }
                         </code>
-                    </div>
-                </section>
+          </div>
+        </section>
 
-                <section id="billing">
-                    <h2>Billing API</h2>
-                    
-                    <h3>Get Bills</h3>
-                    <div class="code-block">
-                        <code>
+        <section id="billing">
+          <h2>Billing API</h2>
+
+          <h3>Get Bills</h3>
+          <div class="code-block">
+            <code>
 GET /api/v1/bills
 
 Query Parameters:
@@ -634,14 +636,14 @@ Response:
   "data": [
     {
       "id": 1,
-      "bill_number": "INV-2024-001",
+      "bill_number": "INV-2025-001",
       "patient": {
         "id": 1,
         "name": "John Smith",
         "patient_id": "PAT001"
       },
-      "bill_date": "2024-01-15",
-      "due_date": "2024-02-14",
+      "bill_date": "2025-01-15",
+      "due_date": "2025-02-14",
       "items": [
         {
           "description": "Consultation Fee",
@@ -670,16 +672,16 @@ Response:
         "amount_claimed": 120.00,
         "status": "approved"
       },
-      "created_at": "2024-01-15T11:00:00Z"
+      "created_at": "2025-01-15T11:00:00Z"
     }
   ]
 }
                         </code>
-                    </div>
+          </div>
 
-                    <h3>Create Bill</h3>
-                    <div class="code-block">
-                        <code>
+          <h3>Create Bill</h3>
+          <div class="code-block">
+            <code>
 POST /api/v1/bills
 
 Request Body:
@@ -710,16 +712,16 @@ Response:
   "message": "Bill created successfully",
   "data": {
     "id": 25,
-    "bill_number": "INV-2024-025",
+    "bill_number": "INV-2025-025",
     // ... bill details
   }
 }
                         </code>
-                    </div>
+          </div>
 
-                    <h3>Process Payment</h3>
-                    <div class="code-block">
-                        <code>
+          <h3>Process Payment</h3>
+          <div class="code-block">
+            <code>
 POST /api/v1/bills/{id}/payments
 
 Request Body:
@@ -741,15 +743,15 @@ Response:
   }
 }
                         </code>
-                    </div>
-                </section>
+          </div>
+        </section>
 
-                <section id="inventory">
-                    <h2>Inventory API</h2>
-                    
-                    <h3>Get Inventory Items</h3>
-                    <div class="code-block">
-                        <code>
+        <section id="inventory">
+          <h2>Inventory API</h2>
+
+          <h3>Get Inventory Items</h3>
+          <div class="code-block">
+            <code>
 GET /api/v1/inventory
 
 Query Parameters:
@@ -781,16 +783,16 @@ Response:
       },
       "location": "Pharmacy - Shelf A1",
       "status": "active",
-      "last_updated": "2024-01-15T09:00:00Z"
+      "last_updated": "2025-01-15T09:00:00Z"
     }
   ]
 }
                         </code>
-                    </div>
+          </div>
 
-                    <h3>Update Stock</h3>
-                    <div class="code-block">
-                        <code>
+          <h3>Update Stock</h3>
+          <div class="code-block">
+            <code>
 PATCH /api/v1/inventory/{id}/stock
 
 Request Body:
@@ -798,7 +800,7 @@ Request Body:
   "quantity": 50,
   "type": "add", // or "remove"
   "reason": "New stock received",
-  "reference": "PO-2024-001",
+  "reference": "PO-2025-001",
   "batch_number": "BATCH002",
   "expiry_date": "2025-08-30"
 }
@@ -814,15 +816,15 @@ Response:
   }
 }
                         </code>
-                    </div>
-                </section>
+          </div>
+        </section>
 
-                <section id="errors">
-                    <h2>Error Handling</h2>
-                    
-                    <h3>Error Response Format</h3>
-                    <div class="code-block">
-                        <code>
+        <section id="errors">
+          <h2>Error Handling</h2>
+
+          <h3>Error Response Format</h3>
+          <div class="code-block">
+            <code>
 {
   "success": false,
   "message": "Validation error",
@@ -831,126 +833,127 @@ Response:
     "phone": ["The phone number format is invalid"]
   },
   "error_code": "VALIDATION_ERROR",
-  "timestamp": "2024-01-15T10:30:00Z"
+  "timestamp": "2025-01-15T10:30:00Z"
 }
                         </code>
-                    </div>
+          </div>
 
-                    <h3>HTTP Status Codes</h3>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Code</th>
-                                <th>Meaning</th>
-                                <th>Description</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>200</td>
-                                <td>OK</td>
-                                <td>Request successful</td>
-                            </tr>
-                            <tr>
-                                <td>201</td>
-                                <td>Created</td>
-                                <td>Resource created successfully</td>
-                            </tr>
-                            <tr>
-                                <td>400</td>
-                                <td>Bad Request</td>
-                                <td>Invalid request data</td>
-                            </tr>
-                            <tr>
-                                <td>401</td>
-                                <td>Unauthorized</td>
-                                <td>Authentication required</td>
-                            </tr>
-                            <tr>
-                                <td>403</td>
-                                <td>Forbidden</td>
-                                <td>Insufficient permissions</td>
-                            </tr>
-                            <tr>
-                                <td>404</td>
-                                <td>Not Found</td>
-                                <td>Resource not found</td>
-                            </tr>
-                            <tr>
-                                <td>422</td>
-                                <td>Unprocessable Entity</td>
-                                <td>Validation errors</td>
-                            </tr>
-                            <tr>
-                                <td>429</td>
-                                <td>Too Many Requests</td>
-                                <td>Rate limit exceeded</td>
-                            </tr>
-                            <tr>
-                                <td>500</td>
-                                <td>Internal Server Error</td>
-                                <td>Server error</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </section>
+          <h3>HTTP Status Codes</h3>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Meaning</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>200</td>
+                <td>OK</td>
+                <td>Request successful</td>
+              </tr>
+              <tr>
+                <td>201</td>
+                <td>Created</td>
+                <td>Resource created successfully</td>
+              </tr>
+              <tr>
+                <td>400</td>
+                <td>Bad Request</td>
+                <td>Invalid request data</td>
+              </tr>
+              <tr>
+                <td>401</td>
+                <td>Unauthorized</td>
+                <td>Authentication required</td>
+              </tr>
+              <tr>
+                <td>403</td>
+                <td>Forbidden</td>
+                <td>Insufficient permissions</td>
+              </tr>
+              <tr>
+                <td>404</td>
+                <td>Not Found</td>
+                <td>Resource not found</td>
+              </tr>
+              <tr>
+                <td>422</td>
+                <td>Unprocessable Entity</td>
+                <td>Validation errors</td>
+              </tr>
+              <tr>
+                <td>429</td>
+                <td>Too Many Requests</td>
+                <td>Rate limit exceeded</td>
+              </tr>
+              <tr>
+                <td>500</td>
+                <td>Internal Server Error</td>
+                <td>Server error</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
 
-                <section id="rate-limits">
-                    <h2>Rate Limits</h2>
-                    
-                    <p>API endpoints are protected with rate limiting to ensure fair usage:</p>
+        <section id="rate-limits">
+          <h2>Rate Limits</h2>
 
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Endpoint Type</th>
-                                <th>Rate Limit</th>
-                                <th>Window</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Authentication</td>
-                                <td>5 requests</td>
-                                <td>1 minute</td>
-                            </tr>
-                            <tr>
-                                <td>General API</td>
-                                <td>100 requests</td>
-                                <td>1 minute</td>
-                            </tr>
-                            <tr>
-                                <td>File Uploads</td>
-                                <td>10 requests</td>
-                                <td>1 minute</td>
-                            </tr>
-                            <tr>
-                                <td>Reports Generation</td>
-                                <td>5 requests</td>
-                                <td>1 minute</td>
-                            </tr>
-                        </tbody>
-                    </table>
+          <p>API endpoints are protected with rate limiting to ensure fair usage:</p>
 
-                    <h3>Rate Limit Headers</h3>
-                    <div class="code-block">
-                        <code>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Endpoint Type</th>
+                <th>Rate Limit</th>
+                <th>Window</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Authentication</td>
+                <td>5 requests</td>
+                <td>1 minute</td>
+              </tr>
+              <tr>
+                <td>General API</td>
+                <td>100 requests</td>
+                <td>1 minute</td>
+              </tr>
+              <tr>
+                <td>File Uploads</td>
+                <td>10 requests</td>
+                <td>1 minute</td>
+              </tr>
+              <tr>
+                <td>Reports Generation</td>
+                <td>5 requests</td>
+                <td>1 minute</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Rate Limit Headers</h3>
+          <div class="code-block">
+            <code>
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 95
 X-RateLimit-Reset: 1642678800
                         </code>
-                    </div>
-                </section>
-            </main>
-        </div>
+          </div>
+        </section>
+      </main>
     </div>
+  </div>
 
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2024 MedCare Rural. All rights reserved.</p>
-        </div>
-    </footer>
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2025 MedCare Rural. All rights reserved.</p>
+    </div>
+  </footer>
 
-    <script src="assets/js/docs.js"></script>
+  <script src="assets/js/docs.js"></script>
 </body>
+
 </html>

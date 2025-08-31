@@ -97,7 +97,7 @@ export default function ViewMedicalRecord() {
                 record_id: 'MR000001',
                 patient_id: 'patient_1',
                 doctor_id: 'doctor_1',
-                visit_date: '2024-08-30',
+                visit_date: '2025-08-30',
                 diagnosis: 'Hypertension Stage 1, Type 2 Diabetes Mellitus',
                 treatment: 'Medication adjustment with Lisinopril and Metformin. Lifestyle modifications including diet and exercise counseling.',
                 medications: [
@@ -143,7 +143,7 @@ export default function ViewMedicalRecord() {
                     'Exercise 30 minutes daily',
                     'Return for follow-up in 3 months'
                 ],
-                next_visit_date: '2024-11-30',
+                next_visit_date: '2025-11-30',
                 vital_signs: {
                     temperature: '98.6°F',
                     blood_pressure: '140/85',
@@ -155,8 +155,8 @@ export default function ViewMedicalRecord() {
                 },
                 notes: 'Patient is compliant with medications. Reports improved energy levels. Needs to work on diet compliance.',
                 attachments: [],
-                created_at: '2024-08-30T10:00:00Z',
-                updated_at: '2024-08-30T10:00:00Z',
+                created_at: '2025-08-30T10:00:00Z',
+                updated_at: '2025-08-30T10:00:00Z',
                 patient: {
                     id: 'patient_1',
                     name: 'John Doe',

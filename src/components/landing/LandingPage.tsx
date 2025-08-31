@@ -436,7 +436,7 @@ export default function LandingPage() {
           </div>
 
           <div className="border-t border-gray-800 pt-8 mt-8 text-center text-gray-400">
-            <p>&copy; 2024 MedCare Rural. All rights reserved. This is premium commercial software.</p>
+            <p>&copy; 2025 MedCare Rural. All rights reserved. This is premium commercial software.</p>
           </div>
         </div>
       </footer>
