@@ -38,6 +38,7 @@ export default function RoleManagement() {
     const [loading, setLoading] = useState(true);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingRole, setEditingRole] = useState<Role | null>(null);
+    const [selectedRoleForFields, setSelectedRoleForFields] = useState<Role | null>(null);
     const [formData, setFormData] = useState<RoleFormData>({
         name: '',
         displayName: '',
@@ -197,8 +198,6 @@ export default function RoleManagement() {
             </Card>
         );
     }
-
-    const [selectedRoleForFields, setSelectedRoleForFields] = useState<Role | null>(null)
 
     return (
         <div className="space-y-6">
