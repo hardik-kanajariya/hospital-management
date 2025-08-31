@@ -3,15 +3,52 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: UserRole;
+  role?: Role; // Now optional and object-based
+  roleId?: string;
   department?: string;
+  phone?: string;
+  employeeId?: string;
   isActive: boolean;
   createdAt: string;
   lastLogin?: string;
   permissions: Permission[];
 }
 
-export type UserRole = 
+export interface Role {
+  id: string;
+  name: string;
+  displayName: string;
+  description?: string;
+  accessLevel: number;
+  isActive: boolean;
+  isSystemRole: boolean;
+  permissions?: Permission[];
+  users?: User[];
+  userCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Permission {
+  id: string;
+  name: string;
+  displayName: string;
+  module: string;
+  description?: string;
+  isActive: boolean;
+  actions?: ('create' | 'read' | 'update' | 'delete')[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RolePermission {
+  roleId: string;
+  permissionId: string;
+  actions: ('create' | 'read' | 'update' | 'delete')[];
+}
+
+// Legacy types for backward compatibility
+export type UserRole =
   | 'super_admin'
   | 'doctor'
   | 'billing_manager'
@@ -21,7 +58,7 @@ export type UserRole =
   | 'receptionist'
   | 'medical_store_manager';
 
-export interface Permission {
+export interface LegacyPermission {
   module: string;
   actions: ('create' | 'read' | 'update' | 'delete')[];
 }
@@ -29,7 +66,7 @@ export interface Permission {
 export interface RoleConfig {
   role: UserRole;
   displayName: string;
-  permissions: Permission[];
+  permissions: LegacyPermission[];
   accessLevel: number;
 }
 

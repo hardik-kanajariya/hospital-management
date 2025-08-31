@@ -1,349 +1,315 @@
-import React, { useState, useEffect } from 'react'
-import { db } from '@/lib/database'
-import { initializeOfflineDB } from '@/hooks/useDatabase'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import React, { useEffect, useMemo } from 'react'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { useNavigation } from '@/hooks/useNavigation'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
 import { useAuth } from '@/hooks/useAuth'
-import LoginForm from '@/components/auth/LoginForm'
-import RoleBasedAccess from '@/components/auth/RoleBasedAccess'
-import LandingPage from '@/components/landing/LandingPage'
-import { 
-  Users, 
-  Calendar, 
-  FileText, 
-  CreditCard, 
-  Package, 
-  Activity,
-  Heart,
-  UserCircle,
-  TestTube,
-  Bed,
-  SignOut,
-  Shield,
-  Settings,
-  Bell,
-  Home,
-  WifiSlash,
-  CloudArrowUp
+import { Icon } from '@phosphor-icons/react'
+
+interface TabItem {
+  id: string
+  label: string
+  icon: Icon
+  module: string
+  path: string
+  requiresRole?: string
+}
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar'
+import {
+  UsersIcon,
+  CalendarIcon,
+  FileTextIcon,
+  CreditCardIcon,
+  PackageIcon,
+  PulseIcon,
+  HeartIcon,
+  UserCircleIcon,
+  TestTubeIcon,
+  BedIcon,
+  SignOutIcon,
+  ShieldIcon,
+  BellIcon,
+  HouseIcon,
+  WifiSlashIcon,
+  CloudArrowUpIcon,
+  StackIcon,
+  KeyIcon
 } from '@phosphor-icons/react'
 
-// Hospital components
-import Dashboard from '@/components/hospital/Dashboard'
-import PatientManagement from '@/components/hospital/PatientManagement'
-import AppointmentScheduling from '@/components/hospital/AppointmentScheduling'
-import MedicalRecords from '@/components/hospital/MedicalRecords'
-import EnhancedBillingSystem from '@/components/hospital/EnhancedBillingSystem'
-import InventoryManagement from '@/components/hospital/InventoryManagement'
-import DoctorSchedule from '@/components/hospital/DoctorSchedule'
-import LabManagement from '@/components/hospital/LabManagement'
-import BedManagement from '@/components/hospital/BedManagement'
-import UserManagement from '@/components/auth/UserManagement'
-import NotificationCenter from '@/components/hospital/NotificationCenter'
-
 function App() {
-  const [activeTab, setActiveTab] = useState('landing')
-  const [isOnline, setIsOnline] = useState(navigator.onLine)
   const { user, isAuthenticated, logout, hasPermission } = useAuth()
+  const { activeTab, setActiveTab } = useNavigation()
+  const location = useLocation()
+  const navigate = useNavigate()
 
-  // Initialize database on app start
-  useEffect(() => {
-    const initializeApp = async () => {
-      try {
-        await db.initialize()
-        await initializeOfflineDB()
-        console.log('Database initialized successfully')
-      } catch (error) {
-        console.error('Failed to initialize database:', error)
+  // Handle logout with page refresh
+  const handleLogout = async () => {
+    await logout(); // This will trigger page refresh automatically
+  };
+
+  // Filter tabs based on user permissions (memoized for performance)
+  // Always define this hook, even if user is not authenticated
+  const availableTabs = useMemo(() => {
+    if (!isAuthenticated || !user) return [];
+
+    // Check if user is super admin
+    const isSuperAdmin = typeof user.role === 'object'
+      ? user.role?.name === 'super_admin'
+      : user.role === 'super_admin';
+
+    const tabs: TabItem[] = [
+      { id: 'landing', label: 'Home', icon: HouseIcon, module: 'dashboard', path: '/landing' },
+      { id: 'dashboard', label: 'Dashboard', icon: PulseIcon, module: 'dashboard', path: '/dashboard' },
+      { id: 'patients', label: 'Patients', icon: UsersIcon, module: 'patients', path: '/patients' },
+      { id: 'appointments', label: 'Appointments', icon: CalendarIcon, module: 'appointments', path: '/appointments' },
+      { id: 'doctors', label: 'Doctors', icon: UserCircleIcon, module: 'doctors', path: '/doctors' },
+      { id: 'records', label: 'Records', icon: FileTextIcon, module: 'medical_records', path: '/records' },
+      { id: 'lab', label: 'Lab', icon: TestTubeIcon, module: 'lab_tests', path: '/lab' },
+      { id: 'beds', label: 'Beds', icon: BedIcon, module: 'beds', path: '/beds' },
+      { id: 'billing', label: 'Billing', icon: CreditCardIcon, module: 'billing', path: '/billing' },
+      { id: 'inventory', label: 'Inventory', icon: PackageIcon, module: 'inventory', path: '/inventory' },
+      { id: 'notifications', label: 'Notifications', icon: BellIcon, module: 'notifications', path: '/notifications' }
+    ];
+
+    // Add super admin specific tabs
+    if (isSuperAdmin) {
+      tabs.push(
+        { id: 'admin', label: 'Dashboard', icon: ShieldIcon, module: 'admin', path: '/admin', requiresRole: 'super_admin' },
+        { id: 'admin-roles', label: 'Roles', icon: KeyIcon, module: 'roles', path: '/admin/roles', requiresRole: 'super_admin' },
+        { id: 'users', label: 'Users', icon: UsersIcon, module: 'user_management', path: '/users', requiresRole: 'super_admin' },
+        { id: 'masters', label: 'Masters', icon: StackIcon, module: 'masters', path: '/masters', requiresRole: 'super_admin' }
+      );
+    }
+
+    return tabs.filter(tab => {
+      // Always show landing and dashboard
+      if (['landing', 'dashboard'].includes(tab.id)) return true;
+
+      // Check module permission
+      if (!hasPermission(tab.module)) return false;
+
+      // Check role requirement if specified
+      if (tab.requiresRole && !isSuperAdmin) return false;
+
+      return true;
+    });
+  }, [isAuthenticated, user, hasPermission]);
+
+  // Group navigation items by category (memoized)
+  // Always define this hook, even if availableTabs is empty
+  const navigationGroups = useMemo(() => {
+    const groups = [
+      {
+        label: 'Overview',
+        items: availableTabs.filter(tab => ['landing', 'dashboard'].includes(tab.id))
+      },
+      {
+        label: 'Patient Care',
+        items: availableTabs.filter(tab => ['patients', 'appointments', 'records', 'lab'].includes(tab.id))
+      },
+      {
+        label: 'Operations',
+        items: availableTabs.filter(tab => ['doctors', 'beds', 'inventory'].includes(tab.id))
+      },
+      {
+        label: 'Administration',
+        items: availableTabs.filter(tab => ['billing', 'notifications'].includes(tab.id))
+      },
+      {
+        label: 'Super Admin',
+        items: availableTabs.filter(tab => ['users', 'admin', 'admin-roles'].includes(tab.id))
       }
-    }
+    ];
 
-    initializeApp()
+    return groups.filter(group => group.items.length > 0);
+  }, [availableTabs]);
 
-    // Monitor online/offline status
-    const handleOnline = () => setIsOnline(true)
-    const handleOffline = () => setIsOnline(false)
-    
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
-    
-    return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
+  // Helper functions (also moved before conditional returns)
+  const getPageTitle = () => {
+    const currentPath = location.pathname.slice(1)
+    switch (currentPath) {
+      case 'dashboard': return 'Dashboard'
+      case 'patients': return 'Patient Management'
+      case 'appointments': return 'Appointment Scheduling'
+      case 'records': return 'Medical Records'
+      case 'doctors': return 'Doctor Schedule Management'
+      case 'lab': return 'Laboratory Management'
+      case 'beds': return 'Bed Management'
+      case 'billing': return 'Billing & Invoicing'
+      case 'inventory': return 'Inventory Management'
+      case 'notifications': return 'Notification Center'
+      case 'users': return 'User Management'
+      case 'admin': return 'Super Admin Dashboard'
+      case 'admin/roles': return 'Role Management'
+      case 'masters': return 'Masters Management'
+      case 'landing': return 'Home'
+      default: return 'Hospital Management'
     }
-  }, [])
-
-  // Show landing page if not authenticated
-  if (!isAuthenticated) {
-    if (activeTab === 'landing') {
-      return (
-        <div>
-          <LandingPage />
-          <div className="fixed bottom-4 right-4 z-50">
-            <Button onClick={() => setActiveTab('login')} size="lg">
-              <Heart className="w-4 h-4 mr-2" />
-              Access Hospital System
-            </Button>
-          </div>
-        </div>
-      )
-    }
-    return <LoginForm onLogin={() => setActiveTab('dashboard')} />
   }
 
-  // Filter tabs based on user permissions
-  const availableTabs = [
-    { id: 'landing', label: 'Home', icon: Home, module: 'dashboard' },
-    { id: 'dashboard', label: 'Dashboard', icon: Activity, module: 'dashboard' },
-    { id: 'patients', label: 'Patients', icon: Users, module: 'patients' },
-    { id: 'appointments', label: 'Appointments', icon: Calendar, module: 'appointments' },
-    { id: 'doctors', label: 'Doctors', icon: UserCircle, module: 'doctors' },
-    { id: 'records', label: 'Records', icon: FileText, module: 'medical_records' },
-    { id: 'lab', label: 'Lab', icon: TestTube, module: 'lab_tests' },
-    { id: 'beds', label: 'Beds', icon: Bed, module: 'beds' },
-    { id: 'billing', label: 'Billing', icon: CreditCard, module: 'billing' },
-    { id: 'inventory', label: 'Inventory', icon: Package, module: 'inventory' },
-    { id: 'notifications', label: 'Notifications', icon: Bell, module: 'notifications' },
-    { id: 'users', label: 'Users', icon: Shield, module: 'user_management', requiresRole: 'super_admin' }
-  ].filter(tab => {
-    // Always show landing page
-    if (tab.id === 'landing') return true;
-    
-    // Check module permission
-    if (!hasPermission(tab.module, 'read')) return false;
-    
-    // Check role requirement if specified
-    if (tab.requiresRole && user?.role !== tab.requiresRole) return false;
-    
-    return true;
-  })
+  const getPageDescription = () => {
+    const currentPath = location.pathname.slice(1)
+    switch (currentPath) {
+      case 'dashboard': return 'Overview of hospital operations'
+      case 'patients': return 'Manage patient records and information'
+      case 'appointments': return 'Schedule and manage patient appointments'
+      case 'records': return 'Electronic medical records and consultation notes'
+      case 'doctors': return 'Manage doctor schedules, availability and shifts'
+      case 'lab': return 'Order tests, track results and generate reports'
+      case 'beds': return 'Track bed occupancy and room assignments'
+      case 'billing': return 'Manage billing, payments and financial records'
+      case 'inventory': return 'Track medical supplies and medications'
+      case 'notifications': return 'Send and track SMS and email notifications'
+      case 'users': return 'Manage hospital staff access and permissions'
+      case 'admin': return 'System administration and configuration'
+      case 'admin/roles': return 'Configure roles and permissions'
+      case 'masters': return ''
+      case 'landing': return 'Welcome to MedCare Rural Hospital Management System'
+      default: return 'Hospital management system'
+    }
+  }
+
+  // NOW we can do conditional returns after all hooks are defined
+
+  // Show minimal layout for login page
+  if (location.pathname === '/login') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+        <Outlet />
+        <Toaster />
+      </div>
+    )
+  }
+
+  // Show minimal layout for landing page
+  if (location.pathname === '/landing') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+        <Outlet />
+        <Toaster />
+      </div>
+    )
+  }
+
+  // If user is not authenticated and tries to access protected routes, 
+  // let ProtectedRoute handle the redirect
+  if (!isAuthenticated && !['/login', '/landing', '/'].includes(location.pathname)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+        <Outlet />
+        <Toaster />
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 bg-primary text-primary-foreground rounded-lg">
-                <Heart className="w-6 h-6" weight="fill" />
+    <SidebarProvider key={isAuthenticated ? user?.id || 'authenticated' : 'unauthenticated'}>
+      <div className="min-h-screen flex w-full bg-background">
+        {/* Sidebar */}
+        <Sidebar variant="inset">
+          <SidebarHeader className="border-b">
+            <div className="flex items-center gap-3 px-3 py-3">
+              <div className="flex items-center justify-center w-8 h-8 bg-primary text-primary-foreground rounded-lg">
+                <HeartIcon className="w-5 h-5" weight="fill" />
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-foreground">MedCare Rural</h1>
-                <p className="text-sm text-muted-foreground">Hospital Management System</p>
+              <div className="min-w-0">
+                <h1 className="text-lg font-bold text-foreground truncate">MedCare Rural</h1>
+                <p className="text-xs text-muted-foreground truncate">Hospital Management</p>
               </div>
             </div>
-            
-            {/* Connection Status Indicator */}
-            <div className="flex items-center gap-4">
-              <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${
-                isOnline 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-orange-100 text-orange-800'
-              }`}>
-                {isOnline ? (
-                  <>
-                    <CloudArrowUp className="w-3 h-3" />
-                    Online
-                  </>
-                ) : (
-                  <>
-                    <WifiSlash className="w-3 h-3" />
-                    Offline
-                  </>
-                )}
+          </SidebarHeader>
+
+          <SidebarContent>
+            {navigationGroups.map((group) => (
+              <SidebarGroup key={group.label}>
+                <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {group.items.map((item) => {
+                      const Icon = item.icon
+                      return (
+                        <SidebarMenuItem key={item.id}>
+                          <SidebarMenuButton
+                            onClick={() => navigate(item.path)}
+                            isActive={location.pathname === item.path}
+                          >
+                            <Icon className="w-4 h-4" />
+                            <span>{item.label}</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      )
+                    })}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            ))}
+          </SidebarContent>
+
+          <SidebarFooter className="border-t">
+            <div className="px-3 py-2 space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
+                  {user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U'}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">{user?.name || 'User'}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {user ? (
+                      typeof user.role === 'object'
+                        ? user.role?.displayName || 'USER'
+                        : typeof user.role === 'string'
+                          ? (user.role as string).replace('_', ' ').toUpperCase()
+                          : 'USER'
+                    ) : 'USER'}
+                  </p>
+                </div>
               </div>
-              
-              <div className="text-right">
-                <p className="text-sm font-medium">{user?.name || 'User'}</p>
-                <p className="text-xs text-muted-foreground">
-                  {user?.role ? user.role.replace('_', ' ').toUpperCase() : 'USER'}
-                </p>
-              </div>
-              <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
-                {user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U'}
-              </div>
-              <Button variant="outline" size="sm" onClick={logout}>
-                <SignOut className="w-4 h-4" />
+              <Button variant="outline" size="sm" onClick={handleLogout} className="w-full">
+                <SignOutIcon className="w-4 h-4 mr-2" />
+                Sign Out
               </Button>
             </div>
-          </div>
-        </div>
-      </header>
+          </SidebarFooter>
+        </Sidebar>
 
-      {/* Quick Stats Bar */}
-      <div className="bg-muted/30 border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center gap-6 text-sm">
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-primary" />
-              <span className="font-medium">-</span>
-              <span className="text-muted-foreground">Total Patients</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-accent" />
-              <span className="font-medium">-</span>
-              <span className="text-muted-foreground">Today's Appointments</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4 text-destructive" />
-              <span className="font-medium">-</span>
-              <span className="text-muted-foreground">Active Consultations</span>
-            </div>
-            {!isOnline && (
-              <div className="flex items-center gap-2 text-orange-600">
-                <WifiSlash className="w-4 h-4" />
-                <span className="text-muted-foreground">Working Offline - Changes will sync when online</span>
+        {/* Main Content */}
+        <div className="flex flex-col flex-1 min-w-0">
+          {/* Header */}
+          <header className="border-b bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50">
+            <div className="flex items-center justify-between h-16 px-6">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger className="lg:hidden" />
+                <div>
+                  <h1 className="text-xl font-semibold text-foreground">{getPageTitle()}</h1>
+                  <p className="text-sm text-muted-foreground">{getPageDescription()}</p>
+                </div>
               </div>
-            )}
-          </div>
+            </div>
+          </header>
+
+          {/* Page Content */}
+          <main className="flex-1 p-6 space-y-6 overflow-auto">
+            <Outlet />
+          </main>
         </div>
       </div>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-12 lg:w-fit">
-            {availableTabs.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
-                  <Icon className="w-4 h-4" />
-                  <span className="hidden sm:inline">{tab.label}</span>
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
-
-          <TabsContent value="landing" className="space-y-6">
-            <LandingPage />
-          </TabsContent>
-
-          <TabsContent value="dashboard" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
-                <p className="text-muted-foreground">Overview of hospital operations</p>
-              </div>
-            </div>
-            <Dashboard />
-          </TabsContent>
-
-          <TabsContent value="patients" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">Patient Management</h2>
-                <p className="text-muted-foreground">Manage patient records and information</p>
-              </div>
-            </div>
-            <RoleBasedAccess requiredModule="patients">
-              <PatientManagement />
-            </RoleBasedAccess>
-          </TabsContent>
-
-          <TabsContent value="appointments" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">Appointment Scheduling</h2>
-                <p className="text-muted-foreground">Schedule and manage patient appointments</p>
-              </div>
-            </div>
-            <RoleBasedAccess requiredModule="appointments">
-              <AppointmentScheduling />
-            </RoleBasedAccess>
-          </TabsContent>
-
-          <TabsContent value="records" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">Medical Records</h2>
-                <p className="text-muted-foreground">Electronic medical records and consultation notes</p>
-              </div>
-            </div>
-            <RoleBasedAccess requiredModule="medical_records">
-              <MedicalRecords />
-            </RoleBasedAccess>
-          </TabsContent>
-
-          <TabsContent value="doctors" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">Doctor Schedule Management</h2>
-                <p className="text-muted-foreground">Manage doctor schedules, availability and shifts</p>
-              </div>
-            </div>
-            <RoleBasedAccess requiredModule="doctors">
-              <DoctorSchedule />
-            </RoleBasedAccess>
-          </TabsContent>
-
-          <TabsContent value="lab" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">Laboratory Management</h2>
-                <p className="text-muted-foreground">Order tests, track results and generate reports</p>
-              </div>
-            </div>
-            <RoleBasedAccess requiredModule="lab_tests">
-              <LabManagement />
-            </RoleBasedAccess>
-          </TabsContent>
-
-          <TabsContent value="beds" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">Bed Management</h2>
-                <p className="text-muted-foreground">Track bed occupancy and room assignments</p>
-              </div>
-            </div>
-            <RoleBasedAccess requiredModule="beds">
-              <BedManagement />
-            </RoleBasedAccess>
-          </TabsContent>
-
-          <TabsContent value="billing" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">Billing & Invoicing</h2>
-                <p className="text-muted-foreground">Manage billing, payments and financial records</p>
-              </div>
-            </div>
-            <RoleBasedAccess requiredModule="billing">
-              <EnhancedBillingSystem />
-            </RoleBasedAccess>
-          </TabsContent>
-
-          <TabsContent value="inventory" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">Inventory Management</h2>
-                <p className="text-muted-foreground">Track medical supplies and medications</p>
-              </div>
-            </div>
-            <RoleBasedAccess requiredModule="inventory">
-              <InventoryManagement />
-            </RoleBasedAccess>
-          </TabsContent>
-
-          <TabsContent value="notifications" className="space-y-6">
-            <NotificationCenter />
-          </TabsContent>
-
-          <TabsContent value="users" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">User Management</h2>
-                <p className="text-muted-foreground">Manage hospital staff access and permissions</p>
-              </div>
-            </div>
-            <UserManagement />
-          </TabsContent>
-        </Tabs>
-      </main>
-      
       {/* Toast notifications */}
       <Toaster />
-    </div>
+    </SidebarProvider>
   )
 }
 

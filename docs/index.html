@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -57,7 +58,7 @@
         .nav {
             background: white;
             padding: 20px 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -94,7 +95,7 @@
             margin: 30px 0;
             padding: 40px;
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
 
         .section h2 {
@@ -261,19 +262,21 @@
             .header h1 {
                 font-size: 2rem;
             }
-            
+
             .nav ul {
                 flex-direction: column;
                 gap: 15px;
             }
-            
+
             .section {
                 margin: 20px 0;
                 padding: 20px;
             }
         }
     </style>
+    <script src="http://localhost:8097"></script>
 </head>
+
 <body>
     <header class="header">
         <div class="container">
@@ -306,33 +309,40 @@
     <main class="content">
         <div class="container">
             <div class="license-notice">
-                <strong>⚠️ IMPORTANT LEGAL NOTICE:</strong> This is a premium commercial software product. 
-                Unauthorized use, distribution, or modification is strictly prohibited and may result in legal action. 
+                <strong>⚠️ IMPORTANT LEGAL NOTICE:</strong> This is a premium commercial software product.
+                Unauthorized use, distribution, or modification is strictly prohibited and may result in legal action.
                 A valid license is required for all installations and usage.
             </div>
 
             <section id="overview" class="section">
                 <h2>System Overview</h2>
-                
-                <p>MedCare Rural is a comprehensive hospital management system specifically designed for rural healthcare facilities in India. Built with modern web technologies and optimized for areas with limited internet connectivity, it provides a complete solution for small to medium-sized hospitals.</p>
+
+                <p>MedCare Rural is a comprehensive hospital management system specifically designed for rural
+                    healthcare facilities in India. Built with modern web technologies and optimized for areas with
+                    limited internet connectivity, it provides a complete solution for small to medium-sized hospitals.
+                </p>
 
                 <h3>Key Highlights</h3>
                 <div class="grid">
                     <div class="card">
                         <h4>🏥 Rural Healthcare Focus</h4>
-                        <p>Designed specifically for the unique needs of rural hospitals with features like offline operation, multilingual support, and simplified workflows.</p>
+                        <p>Designed specifically for the unique needs of rural hospitals with features like offline
+                            operation, multilingual support, and simplified workflows.</p>
                     </div>
                     <div class="card">
                         <h4>💾 Offline-First Architecture</h4>
-                        <p>Complete functionality without internet connection using IndexedDB for local storage with automatic synchronization when online.</p>
+                        <p>Complete functionality without internet connection using IndexedDB for local storage with
+                            automatic synchronization when online.</p>
                     </div>
                     <div class="card">
                         <h4>🔐 Role-Based Security</h4>
-                        <p>Comprehensive user management with role-based access control for doctors, nurses, billing staff, and administrators.</p>
+                        <p>Comprehensive user management with role-based access control for doctors, nurses, billing
+                            staff, and administrators.</p>
                     </div>
                     <div class="card">
                         <h4>📊 Complete Healthcare Management</h4>
-                        <p>Patient records, appointments, billing, inventory, lab tests, and bed management in one integrated platform.</p>
+                        <p>Patient records, appointments, billing, inventory, lab tests, and bed management in one
+                            integrated platform.</p>
                     </div>
                 </div>
 
@@ -462,11 +472,13 @@
                 <div class="grid">
                     <div class="card">
                         <h4>🔔 Smart Notifications</h4>
-                        <p>SMS and email notifications for appointments, lab results, medication reminders, and critical alerts.</p>
+                        <p>SMS and email notifications for appointments, lab results, medication reminders, and critical
+                            alerts.</p>
                     </div>
                     <div class="card">
                         <h4>📊 Analytics & Reports</h4>
-                        <p>Comprehensive reporting system with patient statistics, revenue analysis, and operational metrics.</p>
+                        <p>Comprehensive reporting system with patient statistics, revenue analysis, and operational
+                            metrics.</p>
                     </div>
                     <div class="card">
                         <h4>🔒 Security & Compliance</h4>
@@ -483,7 +495,8 @@
                 <h2>Installation Guide</h2>
 
                 <div class="warning">
-                    <strong>Prerequisites Check:</strong> Ensure you have the required license and authorization before proceeding with installation.
+                    <strong>Prerequisites Check:</strong> Ensure you have the required license and authorization before
+                    proceeding with installation.
                 </div>
 
                 <h3>System Requirements</h3>
@@ -512,7 +525,7 @@
 
                 <h3>Quick Installation</h3>
                 <div class="code-block">
-<pre># 1. Extract the application files
+                    <pre># 1. Extract the application files
 tar -xzf medcare-rural-v1.0.tar.gz
 cd medcare-rural
 
@@ -534,7 +547,7 @@ npm run start
 
                 <h3>Docker Installation</h3>
                 <div class="code-block">
-<pre># Using Docker Compose
+                    <pre># Using Docker Compose
 docker-compose up -d
 
 # Or build manually
@@ -543,7 +556,8 @@ docker run -p 3000:3000 medcare-rural</pre>
                 </div>
 
                 <div class="info">
-                    <strong>Note:</strong> Detailed installation instructions and troubleshooting guides are available in the included setup documentation.
+                    <strong>Note:</strong> Detailed installation instructions and troubleshooting guides are available
+                    in the included setup documentation.
                 </div>
             </section>
 
@@ -552,7 +566,7 @@ docker run -p 3000:3000 medcare-rural</pre>
 
                 <h3>Environment Variables</h3>
                 <div class="code-block">
-<pre># Database Configuration
+                    <pre># Database Configuration
 DB_HOST=localhost
 DB_PORT=3306
 DB_NAME=medcare_rural
@@ -598,19 +612,23 @@ MAIL_PASSWORD=your_password</pre>
                 <div class="grid">
                     <div class="card">
                         <h4>1. Initial Setup</h4>
-                        <p>Log in with super admin credentials and configure your hospital settings, departments, and user accounts.</p>
+                        <p>Log in with super admin credentials and configure your hospital settings, departments, and
+                            user accounts.</p>
                     </div>
                     <div class="card">
                         <h4>2. User Management</h4>
-                        <p>Create user accounts for doctors, nurses, billing staff, and other hospital personnel with appropriate role-based permissions.</p>
+                        <p>Create user accounts for doctors, nurses, billing staff, and other hospital personnel with
+                            appropriate role-based permissions.</p>
                     </div>
                     <div class="card">
                         <h4>3. Patient Registration</h4>
-                        <p>Register patients with complete information including medical history, allergies, and insurance details.</p>
+                        <p>Register patients with complete information including medical history, allergies, and
+                            insurance details.</p>
                     </div>
                     <div class="card">
                         <h4>4. Daily Operations</h4>
-                        <p>Manage appointments, consultations, billing, and inventory through the intuitive dashboard interface.</p>
+                        <p>Manage appointments, consultations, billing, and inventory through the intuitive dashboard
+                            interface.</p>
                     </div>
                 </div>
 
@@ -618,7 +636,8 @@ MAIL_PASSWORD=your_password</pre>
                 <div class="grid">
                     <div class="card">
                         <h4>Super Admin</h4>
-                        <p>Complete system access, user management, system configuration, and all administrative functions.</p>
+                        <p>Complete system access, user management, system configuration, and all administrative
+                            functions.</p>
                     </div>
                     <div class="card">
                         <h4>Doctor</h4>
@@ -648,7 +667,7 @@ MAIL_PASSWORD=your_password</pre>
 
                 <h3>Authentication</h3>
                 <div class="code-block">
-<pre>POST /api/auth/login
+                    <pre>POST /api/auth/login
 {
   "email": "user@hospital.com",
   "password": "password"
@@ -672,7 +691,7 @@ Response:
                     <div class="card">
                         <h4>Patients</h4>
                         <div class="code-block">
-<pre>GET /api/patients
+                            <pre>GET /api/patients
 POST /api/patients
 PUT /api/patients/:id
 DELETE /api/patients/:id</pre>
@@ -681,7 +700,7 @@ DELETE /api/patients/:id</pre>
                     <div class="card">
                         <h4>Appointments</h4>
                         <div class="code-block">
-<pre>GET /api/appointments
+                            <pre>GET /api/appointments
 POST /api/appointments
 PUT /api/appointments/:id
 DELETE /api/appointments/:id</pre>
@@ -690,7 +709,8 @@ DELETE /api/appointments/:id</pre>
                 </div>
 
                 <div class="info">
-                    <strong>Complete API Documentation:</strong> Detailed API documentation with all endpoints, parameters, and examples is available in the included API reference guide.
+                    <strong>Complete API Documentation:</strong> Detailed API documentation with all endpoints,
+                    parameters, and examples is available in the included API reference guide.
                 </div>
             </section>
 
@@ -725,7 +745,8 @@ DELETE /api/appointments/:id</pre>
                 </ul>
 
                 <div class="warning">
-                    <strong>Customization Services:</strong> Professional customization and integration services are available. Contact support for custom development requirements.
+                    <strong>Customization Services:</strong> Professional customization and integration services are
+                    available. Contact support for custom development requirements.
                 </div>
             </section>
 
@@ -736,11 +757,13 @@ DELETE /api/appointments/:id</pre>
                 <div class="grid">
                     <div class="card">
                         <h4>📚 Documentation</h4>
-                        <p>Comprehensive user manuals, API documentation, and video tutorials for all system features.</p>
+                        <p>Comprehensive user manuals, API documentation, and video tutorials for all system features.
+                        </p>
                     </div>
                     <div class="card">
                         <h4>🔧 Technical Support</h4>
-                        <p>Email and phone support for technical issues, installation assistance, and troubleshooting.</p>
+                        <p>Email and phone support for technical issues, installation assistance, and troubleshooting.
+                        </p>
                     </div>
                     <div class="card">
                         <h4>🔄 Updates</h4>
@@ -748,7 +771,8 @@ DELETE /api/appointments/:id</pre>
                     </div>
                     <div class="card">
                         <h4>🎓 Training</h4>
-                        <p>On-site and remote training sessions for hospital staff to ensure effective system utilization.</p>
+                        <p>On-site and remote training sessions for hospital staff to ensure effective system
+                            utilization.</p>
                     </div>
                 </div>
 
@@ -801,7 +825,7 @@ DELETE /api/appointments/:id</pre>
 
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2024 MedCare Rural Hospital Management System. All rights reserved.</p>
+            <p>&copy; 2025 MedCare Rural Hospital Management System. All rights reserved.</p>
             <p>This is a premium commercial software product. Unauthorized use is prohibited.</p>
         </div>
     </footer>
@@ -810,4 +834,5 @@ DELETE /api/appointments/:id</pre>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
 </body>
+
 </html>

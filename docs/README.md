@@ -190,4 +190,4 @@ If you need assistance with any aspect of MedCare Rural:
 
 ---
 
-*© 2024 MedCare Rural. All rights reserved. Professional Hospital Management System for Rural Healthcare.*
+*© 2025 MedCare Rural. All rights reserved. Professional Hospital Management System for Rural Healthcare.*

@@ -3,7 +3,7 @@
 ## MedCare Rural - Premium Hospital Management System
 
 **Version**: 1.0.0  
-**Release Date**: January 2024  
+**Release Date**: January 2025  
 **License Type**: Commercial Single-Site License
 
 ---
@@ -19,7 +19,7 @@ By installing, copying, downloading, accessing, or otherwise using this software
 ## 🏢 LICENSOR INFORMATION
 
 **Software Name**: MedCare Rural - Hospital Management System  
-**Copyright**: © 2024 MedCare Solutions. All Rights Reserved.  
+**Copyright**: © 2025 MedCare Solutions. All Rights Reserved.  
 **Licensor**: MedCare Solutions  
 **Contact**: legal@medcare-rural.com  
 
@@ -297,7 +297,7 @@ By clicking "I Accept," installing, or using this software, you acknowledge that
 
 ---
 
-**© 2024 MedCare Solutions. All rights reserved.**
+**© 2025 MedCare Solutions. All rights reserved.**
 
 **This license agreement is effective as of the date of software activation and remains in effect until terminated in accordance with the terms herein.**
 

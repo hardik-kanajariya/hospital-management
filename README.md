@@ -92,13 +92,22 @@ npm run db:seed
 
 5. **Start the application**
 ```bash
-# Development mode
-npm run dev
+# Start both frontend and backend together (Recommended)
+npm start
+
+# Alternative: Start individually
+npm run dev          # Frontend only
+npm run server:dev   # Backend only
 
 # Production mode
-npm run build
-npm run start
+npm run build:full
+npm run server:start
 ```
+
+**Quick Start Options:**
+- **Windows**: Double-click `start.bat`
+- **Mac/Linux**: Run `./start.sh` or `bash start.sh`
+- **Command Line**: Run `npm start`
 
 6. **Access the application**
 - Open your browser and go to `http://localhost:3000`
@@ -123,10 +132,9 @@ medcare-rural/
 │   │   └── ui/               # shadcn/ui components
 │   ├── hooks/                # Custom React hooks
 │   │   ├── useAuth.ts        # Authentication hook
-│   │   ├── useDatabase.ts    # Database operations hooks
+│   │   ├── useApiHooks.ts    # API operations hooks
 │   │   └── useNotifications.ts
 │   ├── lib/                  # Utility libraries
-│   │   ├── database.ts       # Database management
 │   │   ├── api-endpoints.ts  # API endpoint definitions
 │   │   └── utils.ts          # Helper utilities
 │   ├── types/                # TypeScript type definitions
@@ -222,7 +230,7 @@ Similar patterns exist for all other modules. See `src/lib/api-endpoints.ts` for
 ### Adding New Features
 
 1. **Create Component**: Add new React component in appropriate directory
-2. **Add Database Hook**: Create custom hook in `src/hooks/`
+2. **Add API Hook**: Create custom hook in `src/hooks/useApiHooks.ts`
 3. **Update API**: Add new endpoints in `src/lib/api-endpoints.ts`
 4. **Add Permissions**: Update role permissions in `src/hooks/useAuth.ts`
 5. **Update Navigation**: Add to main navigation in `src/App.tsx`
@@ -233,33 +241,30 @@ The system uses custom hooks for data management:
 
 ```typescript
 // Example: Using the patient management hook
-import { usePatients } from '@/hooks/useDatabase'
+import { usePatientApi } from '@/hooks/useApiHooks'
 
 function PatientComponent() {
-  const { patients, loading, error, addPatient, updatePatient } = usePatients()
+  const { patients, loading, error, addPatient, updatePatient } = usePatientApi()
   
   // Component logic here
 }
 ```
 
-### Database Operations
+### API Operations
 
-All database operations go through the centralized database class:
+All data operations go through API hooks that communicate with the backend server:
 
 ```typescript
-import { db } from '@/lib/database'
+import { usePatientApi } from '@/hooks/useApiHooks'
 
-// Get all records
-const patients = await db.getAll('patients')
-
-// Add new record
-const id = await db.add('patients', patientData)
-
-// Update record
-await db.update('patients', id, updates)
-
-// Delete record
-await db.delete('patients', id)
+function MyComponent() {
+  const { patients, loading, addPatient, updatePatient, deletePatient } = usePatientApi()
+  
+  // All operations are async and communicate with backend
+  const handleAddPatient = async (patientData) => {
+    await addPatient(patientData)
+  }
+}
 ```
 
 ### Offline Support
@@ -460,7 +465,7 @@ For licensed users who want to contribute:
 
 ---
 
-**© 2024 MedCare Rural. All rights reserved.**
+**© 2025 MedCare Rural. All rights reserved.**
 
 For technical support: support@medcare-rural.com  
 For sales inquiries: sales@medcare-rural.com  

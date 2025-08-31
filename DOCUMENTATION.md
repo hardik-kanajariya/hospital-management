@@ -38,7 +38,7 @@
 - **Frontend**: React 18+ with TypeScript
 - **UI Framework**: Shadcn/UI Components
 - **Styling**: Tailwind CSS
-- **State Management**: React Hooks with Spark KV
+- **State Management**: React Hooks with Local Storage
 - **Icons**: Phosphor Icons
 - **Build Tool**: Vite
 - **Package Manager**: npm
@@ -407,7 +407,7 @@ Response:
       "address": "123 Main St, City",
       "medicalHistory": [],
       "vaccinations": [],
-      "createdAt": "2024-01-15T10:30:00Z"
+      "createdAt": "2025-01-15T10:30:00Z"
     }
   ],
   "pagination": {
@@ -444,7 +444,7 @@ Authorization: Bearer {token}
 
 #### Get Appointments
 ```typescript
-GET /api/appointments?date=2024-01-15&doctor_id=1
+GET /api/appointments?date=2025-01-15&doctor_id=1
 Authorization: Bearer {token}
 
 Response:
@@ -455,7 +455,7 @@ Response:
       "id": 1,
       "patientId": 1,
       "doctorId": 1,
-      "date": "2024-01-15",
+      "date": "2025-01-15",
       "time": "10:00:00",
       "duration": 30,
       "status": "scheduled",
@@ -860,4 +860,4 @@ We value your feedback and continuously improve the software based on user needs
 
 ---
 
-**© 2024 MedCare Rural. All rights reserved. This software is protected by copyright and international treaties. Unauthorized reproduction or distribution is prohibited.**
+**© 2025 MedCare Rural. All rights reserved. This software is protected by copyright and international treaties. Unauthorized reproduction or distribution is prohibited.**

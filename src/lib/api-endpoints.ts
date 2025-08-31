@@ -3,7 +3,7 @@
  * This file defines all the backend API endpoints that the application will use
  */
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 export const API_ENDPOINTS = {
   // Authentication endpoints
@@ -19,13 +19,19 @@ export const API_ENDPOINTS = {
   PATIENTS: {
     BASE: `${API_BASE_URL}/patients`,
     BY_ID: (id: string) => `${API_BASE_URL}/patients/${id}`,
+    STATS: `${API_BASE_URL}/patients/stats`,
     SEARCH: `${API_BASE_URL}/patients/search`,
     BULK_IMPORT: `${API_BASE_URL}/patients/bulk-import`,
     EXPORT: `${API_BASE_URL}/patients/export`,
+    APPOINTMENTS: (id: string) => `${API_BASE_URL}/patients/${id}/appointments`,
+    MEDICAL_RECORDS: (id: string) => `${API_BASE_URL}/patients/${id}/medical-records`,
+    BILLS: (id: string) => `${API_BASE_URL}/patients/${id}/bills`,
     MEDICAL_HISTORY: (id: string) => `${API_BASE_URL}/patients/${id}/medical-history`,
     VACCINATIONS: (id: string) => `${API_BASE_URL}/patients/${id}/vaccinations`,
     ALLERGIES: (id: string) => `${API_BASE_URL}/patients/${id}/allergies`,
-    CHRONIC_CONDITIONS: (id: string) => `${API_BASE_URL}/patients/${id}/chronic-conditions`
+    CHRONIC_CONDITIONS: (id: string) => `${API_BASE_URL}/patients/${id}/chronic-conditions`,
+    INSURANCE: (id: string) => `${API_BASE_URL}/patients/${id}/insurance`,
+    EMERGENCY_CONTACT: (id: string) => `${API_BASE_URL}/patients/${id}/emergency-contact`
   },
 
   // Appointment management endpoints
@@ -60,6 +66,7 @@ export const API_ENDPOINTS = {
     BASE: `${API_BASE_URL}/medical-records`,
     BY_ID: (id: string) => `${API_BASE_URL}/medical-records/${id}`,
     BY_PATIENT: (patientId: string) => `${API_BASE_URL}/medical-records/patient/${patientId}`,
+    SEARCH: `${API_BASE_URL}/medical-records/search`,
     CONSULTATIONS: `${API_BASE_URL}/medical-records/consultations`,
     PRESCRIPTIONS: `${API_BASE_URL}/medical-records/prescriptions`,
     DIAGNOSES: `${API_BASE_URL}/medical-records/diagnoses`,
@@ -172,6 +179,43 @@ export const API_ENDPOINTS = {
     BRANCH_LOCATIONS: `${API_BASE_URL}/hospital/branches`
   },
 
+  // Dashboard endpoints
+  DASHBOARD: {
+    MAIN: `${API_BASE_URL}/dashboard`,
+    USER: `${API_BASE_URL}/dashboard/user`,
+    RECENT_ACTIVITIES: `${API_BASE_URL}/dashboard/recent-activities`,
+    STATS: `${API_BASE_URL}/dashboard/stats`,
+    SUPER_ADMIN: `${API_BASE_URL}/dashboard/super-admin`
+  },
+
+  // Roles and Permissions endpoints
+  ROLES: {
+    BASE: `${API_BASE_URL}/roles`,
+    BY_ID: (id: string) => `${API_BASE_URL}/roles/${id}`,
+    PERMISSIONS: `${API_BASE_URL}/roles/permissions`,
+    ASSIGN_PERMISSION: (roleId: string) => `${API_BASE_URL}/roles/${roleId}/permissions`,
+    REVOKE_PERMISSION: (roleId: string, permissionId: string) => `${API_BASE_URL}/roles/${roleId}/permissions/${permissionId}`
+  },
+
+  PERMISSIONS: {
+    BASE: `${API_BASE_URL}/permissions`,
+    BY_ID: (id: string) => `${API_BASE_URL}/permissions/${id}`,
+    BY_ROLE: (roleId: string) => `${API_BASE_URL}/permissions/role/${roleId}`,
+    MODULES: `${API_BASE_URL}/permissions/modules`
+  },
+
+  // Master Data Management endpoints
+  MASTER_DATA: {
+    BASE: `${API_BASE_URL}/master-data`,
+    BY_ID: (id: string) => `${API_BASE_URL}/master-data/${id}`,
+    BY_CATEGORY: (category: string) => `${API_BASE_URL}/master-data/category/${category}`,
+    TOGGLE_STATUS: (id: string) => `${API_BASE_URL}/master-data/${id}/toggle-status`,
+    CATEGORIES: `${API_BASE_URL}/master-data/categories`,
+    SEED_DATA: `${API_BASE_URL}/master-data/seed`,
+    BULK_IMPORT: `${API_BASE_URL}/master-data/bulk-import`,
+    EXPORT: `${API_BASE_URL}/master-data/export`
+  },
+
   // System endpoints
   SYSTEM: {
     HEALTH: `${API_BASE_URL}/system/health`,
@@ -180,7 +224,9 @@ export const API_ENDPOINTS = {
     RESTORE: `${API_BASE_URL}/system/restore`,
     SYNC_STATUS: `${API_BASE_URL}/system/sync-status`,
     LOGS: `${API_BASE_URL}/system/logs`,
-    AUDIT_TRAIL: `${API_BASE_URL}/system/audit-trail`
+    AUDIT_TRAIL: `${API_BASE_URL}/system/audit-trail`,
+    UPTIME: `${API_BASE_URL}/system/uptime`,
+    PERFORMANCE: `${API_BASE_URL}/system/performance`
   }
 };
 

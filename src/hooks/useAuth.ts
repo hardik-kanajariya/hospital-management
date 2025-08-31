@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { db } from '@/lib/database';
-import { User, UserRole, ROLE_CONFIGS } from '@/types/auth';
+import { httpService } from '@/services/HttpService';
+import { User, UserRole, Role } from '@/types/auth';
 
 interface AuthState {
   user: User | null;
@@ -8,150 +8,242 @@ interface AuthState {
   isLoading: boolean;
 }
 
+// Utility function to safely set user data in localStorage
+const setUserData = (user: User) => {
+  try {
+    localStorage.setItem('current_user', JSON.stringify(user));
+  } catch (error) {
+    console.error('Failed to save user data:', error);
+  }
+};
+
+// Utility function to safely get user data from localStorage
+const getUserData = (): User | null => {
+  try {
+    const userData = localStorage.getItem('current_user');
+    return userData ? JSON.parse(userData) : null;
+  } catch (error) {
+    console.error('Failed to parse user data:', error);
+    localStorage.removeItem('current_user');
+    return null;
+  }
+};
+
+// Utility function to clear user data from localStorage
+const clearUserData = () => {
+  try {
+    localStorage.removeItem('current_user');
+    localStorage.removeItem('auth_token');
+  } catch (error) {
+    console.error('Failed to clear user data:', error);
+  }
+};
+
 export function useAuth() {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
     isAuthenticated: false,
-    isLoading: false
+    isLoading: true
   });
+  const [error, setError] = useState<string | null>(null);
 
-  // Check for existing session on mount
+  // Initialize auth state from localStorage on mount
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    const savedUser = localStorage.getItem('current_user');
-    
-    if (token && savedUser) {
-      try {
-        const parsedUser = JSON.parse(savedUser);
+    const initializeAuth = async () => {
+      const token = localStorage.getItem('auth_token');
+
+      if (!token) {
         setAuthState({
-          user: parsedUser,
+          user: null,
+          isAuthenticated: false,
+          isLoading: false
+        });
+        return;
+      }
+
+      const userData = getUserData();
+      if (userData) {
+        // Set the token in the HTTP service
+        httpService.setToken(token);
+
+        setAuthState({
+          user: userData,
           isAuthenticated: true,
           isLoading: false
         });
-      } catch (error) {
-        console.error('Failed to parse saved user:', error);
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('current_user');
+      } else {
+        // Token exists but no user data, clear everything
+        clearUserData();
+        setAuthState({
+          user: null,
+          isAuthenticated: false,
+          isLoading: false
+        });
       }
-    }
+    };
+
+    initializeAuth();
   }, []);
 
-  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+  // Login function
+  const login = async (email: string, password: string): Promise<User> => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
-    
+    setError(null);
+
     try {
-      if (db.isOnline()) {
-        // Try database authentication first
-        const authenticatedUser = await db.authenticate(email, password);
-        
-        // Store user data
-        localStorage.setItem('current_user', JSON.stringify(authenticatedUser));
-        
-        setAuthState({
-          user: authenticatedUser,
-          isAuthenticated: true,
-          isLoading: false
-        });
-
-        return { success: true };
-      } else {
-        // Offline mode - use demo users
-        const userRole = getUserRoleFromEmail(email);
-        
-        // Simple password check for demo
-        if (password === 'password') {
-          const user: User = {
-            id: crypto.randomUUID(),
-            email,
-            name: getNameFromEmail(email),
-            role: userRole,
-            isActive: true,
-            createdAt: new Date().toISOString(),
-            lastLogin: new Date().toISOString(),
-            permissions: ROLE_CONFIGS.find(r => r.role === userRole)?.permissions || []
-          };
-
-          // Store user data
-          localStorage.setItem('current_user', JSON.stringify(user));
-          localStorage.setItem('auth_token', 'offline_token');
-
-          setAuthState({
-            user,
-            isAuthenticated: true,
-            isLoading: false
-          });
-
-          return { success: true };
-        }
+      // Check if user is online
+      if (!navigator.onLine) {
+        throw new Error('Internet connection is required for authentication. Please check your connection and try again.');
       }
-      
-      throw new Error('Invalid credentials');
-    } catch (error) {
-      setAuthState(prev => ({ ...prev, isLoading: false }));
-      return { success: false, error: error instanceof Error ? error.message : 'Authentication failed' };
+
+      // Attempt HTTP authentication
+      const authResponse = await httpService.authenticate(email, password);
+
+      // Adapt the response to match User type - handle legacy string roles
+      const user: User = {
+        ...authResponse.user,
+        role: typeof authResponse.user.role === 'string'
+          ? undefined  // Legacy string role, will be migrated
+          : authResponse.user.role, // New Role object
+        roleId: (authResponse.user as any).roleId, // Handle potential missing roleId
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        permissions: authResponse.user.permissions || []
+      };
+
+      // Store user data safely
+      setUserData(user);
+
+      // Update auth state and force re-render
+      setAuthState({
+        user: user,
+        isAuthenticated: true,
+        isLoading: false
+      });
+
+      // Force a small delay to ensure state is properly updated
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // After successful login, refresh the page to reload the application
+      setTimeout(() => {
+        // Check if there's a stored redirect path
+        const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+        if (redirectPath) {
+          sessionStorage.removeItem('redirectAfterLogin');
+          window.location.href = redirectPath;
+        } else {
+          window.location.href = '/dashboard';
+        }
+      }, 100);
+
+      return user;
+
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
+      console.error('Authentication error:', errorMessage);
+      setError(errorMessage);
+
+      // Reset auth state on error
+      setAuthState({
+        user: null,
+        isAuthenticated: false,
+        isLoading: false
+      });
+
+      throw new Error(errorMessage);
     }
   };
 
-  const logout = () => {
-    setAuthState({
-      user: null,
-      isAuthenticated: false,
-      isLoading: false
-    });
-    
-    // Clear stored data
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('current_user');
-    
-    // Logout from database
-    db.logout();
+  // Logout function
+  const logout = async () => {
+    setAuthState(prev => ({ ...prev, isLoading: true }));
+
+    try {
+      // Call logout endpoint if online
+      if (navigator.onLine) {
+        await httpService.logout();
+      } else {
+      }
+    } catch (error) {
+      console.warn('Logout request failed:', error);
+      // Don't throw error - logout should always succeed locally
+    } finally {
+      // Always clear local data
+      clearUserData();
+
+      setAuthState({
+        user: null,
+        isAuthenticated: false,
+        isLoading: false
+      });
+
+      // After successful logout, refresh the page to reload the application
+      setTimeout(() => {
+        window.location.href = '/landing';
+      }, 100);
+    }
   };
 
-  const hasPermission = (module: string, action: 'create' | 'read' | 'update' | 'delete'): boolean => {
+  // Permission checking
+  const hasPermission = (permission: string, action: string = 'read'): boolean => {
     if (!authState.user) return false;
-    
-    // Super admin has all permissions
-    if (authState.user.role === 'super_admin') return true;
 
-    const userPermissions = authState.user.permissions;
-    
-    // Check for wildcard permission
-    const wildcardPermission = userPermissions.find(p => p.module === '*');
-    if (wildcardPermission && wildcardPermission.actions.includes(action)) return true;
+    // Check if user has the specific permission
+    return authState.user.permissions.some(p => {
+      // Check for wildcard permission (super admin)
+      if (p.module === '*') return true;
 
-    // Check for specific module permission
-    const modulePermission = userPermissions.find(p => p.module === module);
-    return modulePermission ? modulePermission.actions.includes(action) : false;
+      // Check for specific module permission with required action
+      return p.module === permission && p.actions?.includes(action as any);
+    });
   };
 
-  const canAccessModule = (module: string): boolean => {
-    return hasPermission(module, 'read');
+  // Role checking - works with both old string roles and new Role objects
+  const hasRole = (role: UserRole | UserRole[]): boolean => {
+    if (!authState.user || !authState.user.role) return false;
+
+    const roles = Array.isArray(role) ? role : [role];
+
+    // Handle new Role object structure
+    if (typeof authState.user.role === 'object') {
+      return roles.includes(authState.user.role.name as UserRole);
+    }
+
+    // Handle legacy string role structure
+    return roles.includes(authState.user.role as UserRole);
   };
+
+  // Check if user has admin privileges
+  const isAdmin = (): boolean => {
+    if (!authState.user || !authState.user.role) return false;
+
+    // Handle new Role object structure
+    if (typeof authState.user.role === 'object') {
+      return authState.user.role.name === 'super_admin';
+    }
+
+    // Handle legacy string role structure
+    return authState.user.role === 'super_admin';
+  };
+
+  // Clear any auth errors
+  const clearError = () => setError(null);
 
   return {
-    ...authState,
+    // Auth state
+    user: authState.user,
+    isAuthenticated: authState.isAuthenticated,
+    isLoading: authState.isLoading,
+    error,
+
+    // Auth actions
     login,
     logout,
+    clearError,
+
+    // Permission helpers
     hasPermission,
-    canAccessModule
+    hasRole,
+    isAdmin
   };
-}
-
-// Helper functions for demo data
-function getUserRoleFromEmail(email: string): UserRole {
-  if (email.includes('admin')) return 'super_admin';
-  if (email.includes('doctor') || email.includes('dr')) return 'doctor';
-  if (email.includes('billing')) return 'billing_manager';
-  if (email.includes('nurse')) return 'nurse';
-  if (email.includes('lab')) return 'lab_technician';
-  if (email.includes('pharmacy') || email.includes('pharma')) return 'pharmacist';
-  if (email.includes('store')) return 'medical_store_manager';
-  return 'receptionist';
-}
-
-function getNameFromEmail(email: string): string {
-  const name = email.split('@')[0];
-  return name.split('.').map(part => 
-    part.charAt(0).toUpperCase() + part.slice(1)
-  ).join(' ');
 }

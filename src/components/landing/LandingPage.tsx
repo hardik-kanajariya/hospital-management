@@ -1,28 +1,29 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Heart, 
-  Users, 
-  Calendar, 
-  FileText, 
-  CreditCard, 
-  Package, 
-  Activity,
+import {
+  Heart,
+  Users,
+  Calendar,
+  FileText,
+  CreditCard,
+  Package,
+  Pulse,
   TestTube,
   Bed,
   Shield,
   CheckCircle,
   Star,
   Globe,
-  Wifi,
+  WifiHigh,
   Database,
   Clock,
-  Award,
-  Zap,
+  Medal,
+  Lightning,
   PhoneCall,
-  Mail,
+  Envelope,
   ArrowRight,
   Download,
   Play
@@ -74,7 +75,7 @@ export default function LandingPage() {
 
   const benefits = [
     {
-      icon: Wifi,
+      icon: WifiHigh,
       title: 'Offline-First Design',
       description: 'Works without internet connection with automatic sync when online'
     },
@@ -187,20 +188,20 @@ export default function LandingPage() {
                 <p className="text-xl opacity-90">Hospital Management System</p>
               </div>
             </div>
-            
+
             <div className="max-w-3xl mx-auto mb-8">
               <p className="text-2xl mb-4 font-light">
                 Complete Healthcare Management Solution for Rural Hospitals
               </p>
               <p className="text-lg opacity-90">
-                Designed specifically for small and medium hospitals in rural India with offline-first architecture, 
+                Designed specifically for small and medium hospitals in rural India with offline-first architecture,
                 multi-language support, and comprehensive healthcare management features.
               </p>
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
               <Badge variant="secondary" className="bg-white/20 text-white border-white/30 px-4 py-2">
-                <Zap className="w-4 h-4 mr-2" />
+                <Lightning className="w-4 h-4 mr-2" />
                 Offline-First Design
               </Badge>
               <Badge variant="secondary" className="bg-white/20 text-white border-white/30 px-4 py-2">
@@ -212,15 +213,17 @@ export default function LandingPage() {
                 HIPAA Compliant
               </Badge>
               <Badge variant="secondary" className="bg-white/20 text-white border-white/30 px-4 py-2">
-                <Award className="w-4 h-4 mr-2" />
+                <Medal className="w-4 h-4 mr-2" />
                 Premium Software
               </Badge>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg">
-                <Download className="w-5 h-5 mr-2" />
-                Get Demo Access
+              <Button size="lg" asChild className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg">
+                <Link to="/login">
+                  <Download className="w-5 h-5 mr-2" />
+                  Get Demo Access
+                </Link>
               </Button>
               <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-lg">
                 <Play className="w-5 h-5 mr-2" />
@@ -350,9 +353,11 @@ export default function LandingPage() {
                       </li>
                     ))}
                   </ul>
-                  <Button className={`w-full ${plan.popular ? 'bg-blue-600 hover:bg-blue-700' : ''}`} size="lg">
-                    {plan.price === 'Custom' ? 'Contact Sales' : 'Get Started'}
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                  <Button className={`w-full ${plan.popular ? 'bg-blue-600 hover:bg-blue-700' : ''}`} size="lg" asChild>
+                    <Link to="/login">
+                      {plan.price === 'Custom' ? 'Contact Sales' : 'Get Started'}
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -369,13 +374,17 @@ export default function LandingPage() {
             Join hundreds of hospitals already using MedCare Rural to improve patient care and operational efficiency.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg">
-              <PhoneCall className="w-5 h-5 mr-2" />
-              Schedule Demo Call
+            <Button size="lg" asChild className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg">
+              <Link to="/login">
+                <PhoneCall className="w-5 h-5 mr-2" />
+                Schedule Demo Call
+              </Link>
             </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-lg">
-              <Mail className="w-5 h-5 mr-2" />
-              Request Quote
+            <Button size="lg" variant="outline" asChild className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-lg">
+              <Link to="/login">
+                <Envelope className="w-5 h-5 mr-2" />
+                Request Quote
+              </Link>
             </Button>
           </div>
         </div>
@@ -394,7 +403,7 @@ export default function LandingPage() {
                 Complete hospital management solution designed for rural healthcare facilities.
               </p>
             </div>
-            
+
             <div>
               <h3 className="text-lg font-semibold mb-4">Product</h3>
               <ul className="space-y-2 text-gray-400">
@@ -404,7 +413,7 @@ export default function LandingPage() {
                 <li><a href="#documentation" className="hover:text-white">Documentation</a></li>
               </ul>
             </div>
-            
+
             <div>
               <h3 className="text-lg font-semibold mb-4">Support</h3>
               <ul className="space-y-2 text-gray-400">
@@ -414,7 +423,7 @@ export default function LandingPage() {
                 <li><a href="#maintenance" className="hover:text-white">Maintenance Plans</a></li>
               </ul>
             </div>
-            
+
             <div>
               <h3 className="text-lg font-semibold mb-4">Contact</h3>
               <div className="space-y-2 text-gray-400">
@@ -425,9 +434,9 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
-          
+
           <div className="border-t border-gray-800 pt-8 mt-8 text-center text-gray-400">
-            <p>&copy; 2024 MedCare Rural. All rights reserved. This is premium commercial software.</p>
+            <p>&copy; 2025 MedCare Rural. All rights reserved. This is premium commercial software.</p>
           </div>
         </div>
       </footer>

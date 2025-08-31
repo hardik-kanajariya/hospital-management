@@ -1,8 +1,8 @@
 import { createRoot } from 'react-dom/client'
 import { ErrorBoundary } from "react-error-boundary";
-import "@github/spark/spark"
+import { RouterProvider } from 'react-router-dom';
 
-import App from './App.tsx'
+import { router } from './router/index.tsx'
 import { ErrorFallback } from './ErrorFallback.tsx'
 
 import "./main.css"
@@ -11,6 +11,6 @@ import "./index.css"
 
 createRoot(document.getElementById('root')!).render(
   <ErrorBoundary FallbackComponent={ErrorFallback}>
-    <App />
-   </ErrorBoundary>
+    <RouterProvider router={router} />
+  </ErrorBoundary>
 )
