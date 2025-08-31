@@ -7,32 +7,16 @@ export default class MasterDataController {
      */
     async getCategories({ response }: HttpContext) {
         try {
-            const categories = [
-                'departments',
-                'specializations',
-                'lab_test_types',
-                'appointment_types',
-                'room_types',
-                'bed_types',
-                'inventory_categories',
-                'medicine_types',
-                'user_titles',
-                'education_qualifications',
-                'blood_groups',
-                'marital_status',
-                'payment_methods',
-                'insurance_providers',
-                'emergency_contact_relations',
-                'referral_sources'
-            ]
+            const categories = await Database
+                .from('master_data')
+                .distinct('category')
+                .orderBy('category')
+
+            const categoriesList = categories.map(row => row.category)
 
             return response.ok({
                 success: true,
-                data: categories.map(category => ({
-                    id: category,
-                    name: category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                    key: category
-                }))
+                data: categoriesList
             })
         } catch (error) {
             return response.internalServerError({
@@ -373,89 +357,4 @@ export default class MasterDataController {
         }
     }
 
-    /**
-     * Seed default master data
-     */
-    async seedData({ response }: HttpContext) {
-        try {
-            const defaultData = [
-                // Departments
-                { category: 'departments', name: 'Emergency', description: 'Emergency Department', value: 'emergency', display_order: 1, is_system: true },
-                { category: 'departments', name: 'Cardiology', description: 'Heart and Cardiovascular Care', value: 'cardiology', display_order: 2, is_system: true },
-                { category: 'departments', name: 'Neurology', description: 'Brain and Nervous System', value: 'neurology', display_order: 3, is_system: true },
-                { category: 'departments', name: 'Orthopedics', description: 'Bone and Joint Care', value: 'orthopedics', display_order: 4, is_system: true },
-                { category: 'departments', name: 'Pediatrics', description: 'Child Healthcare', value: 'pediatrics', display_order: 5, is_system: true },
-                { category: 'departments', name: 'Gynecology', description: 'Women\'s Health', value: 'gynecology', display_order: 6, is_system: true },
-                { category: 'departments', name: 'Surgery', description: 'Surgical Services', value: 'surgery', display_order: 7, is_system: true },
-                { category: 'departments', name: 'Internal Medicine', description: 'General Internal Medicine', value: 'internal_medicine', display_order: 8, is_system: true },
-
-                // Specializations
-                { category: 'specializations', name: 'General Practitioner', description: 'Family Medicine', value: 'general_practitioner', display_order: 1, is_system: true },
-                { category: 'specializations', name: 'Cardiologist', description: 'Heart Specialist', value: 'cardiologist', display_order: 2, is_system: true },
-                { category: 'specializations', name: 'Neurologist', description: 'Brain and Nerve Specialist', value: 'neurologist', display_order: 3, is_system: true },
-                { category: 'specializations', name: 'Orthopedic Surgeon', description: 'Bone and Joint Surgery', value: 'orthopedic_surgeon', display_order: 4, is_system: true },
-                { category: 'specializations', name: 'Pediatrician', description: 'Child Specialist', value: 'pediatrician', display_order: 5, is_system: true },
-                { category: 'specializations', name: 'Gynecologist', description: 'Women\'s Health Specialist', value: 'gynecologist', display_order: 6, is_system: true },
-                { category: 'specializations', name: 'Emergency Medicine', description: 'Emergency Care Specialist', value: 'emergency_medicine', display_order: 7, is_system: true },
-                { category: 'specializations', name: 'Radiologist', description: 'Medical Imaging Specialist', value: 'radiologist', display_order: 8, is_system: true },
-
-                // Lab Test Types
-                { category: 'lab_test_types', name: 'Blood Test', description: 'Complete Blood Count', value: 'blood_test', display_order: 1, is_system: true },
-                { category: 'lab_test_types', name: 'Urine Test', description: 'Urine Analysis', value: 'urine_test', display_order: 2, is_system: true },
-                { category: 'lab_test_types', name: 'X-Ray', description: 'X-Ray Imaging', value: 'xray', display_order: 3, is_system: true },
-                { category: 'lab_test_types', name: 'CT Scan', description: 'Computed Tomography', value: 'ct_scan', display_order: 4, is_system: true },
-                { category: 'lab_test_types', name: 'MRI', description: 'Magnetic Resonance Imaging', value: 'mri', display_order: 5, is_system: true },
-                { category: 'lab_test_types', name: 'ECG', description: 'Electrocardiogram', value: 'ecg', display_order: 6, is_system: true },
-                { category: 'lab_test_types', name: 'Ultrasound', description: 'Ultrasound Imaging', value: 'ultrasound', display_order: 7, is_system: true },
-
-                // Appointment Types
-                { category: 'appointment_types', name: 'Consultation', description: 'Regular Doctor Consultation', value: 'consultation', display_order: 1, is_system: true },
-                { category: 'appointment_types', name: 'Follow-up', description: 'Follow-up Visit', value: 'followup', display_order: 2, is_system: true },
-                { category: 'appointment_types', name: 'Emergency', description: 'Emergency Appointment', value: 'emergency', display_order: 3, is_system: true },
-                { category: 'appointment_types', name: 'Procedure', description: 'Medical Procedure', value: 'procedure', display_order: 4, is_system: true },
-                { category: 'appointment_types', name: 'Surgery', description: 'Surgical Procedure', value: 'surgery', display_order: 5, is_system: true },
-
-                // Blood Groups
-                { category: 'blood_groups', name: 'A+', description: 'A Positive', value: 'a_positive', display_order: 1, is_system: true },
-                { category: 'blood_groups', name: 'A-', description: 'A Negative', value: 'a_negative', display_order: 2, is_system: true },
-                { category: 'blood_groups', name: 'B+', description: 'B Positive', value: 'b_positive', display_order: 3, is_system: true },
-                { category: 'blood_groups', name: 'B-', description: 'B Negative', value: 'b_negative', display_order: 4, is_system: true },
-                { category: 'blood_groups', name: 'AB+', description: 'AB Positive', value: 'ab_positive', display_order: 5, is_system: true },
-                { category: 'blood_groups', name: 'AB-', description: 'AB Negative', value: 'ab_negative', display_order: 6, is_system: true },
-                { category: 'blood_groups', name: 'O+', description: 'O Positive', value: 'o_positive', display_order: 7, is_system: true },
-                { category: 'blood_groups', name: 'O-', description: 'O Negative', value: 'o_negative', display_order: 8, is_system: true }
-            ]
-
-            // Insert or update data
-            for (const item of defaultData) {
-                const existing = await Database
-                    .from('master_data')
-                    .where('category', item.category)
-                    .where('value', item.value)
-                    .first()
-
-                if (!existing) {
-                    await Database
-                        .table('master_data')
-                        .insert({
-                            ...item,
-                            is_active: true,
-                            created_at: new Date(),
-                            updated_at: new Date()
-                        })
-                }
-            }
-
-            return response.ok({
-                success: true,
-                message: 'Default master data seeded successfully'
-            })
-        } catch (error) {
-            return response.internalServerError({
-                success: false,
-                message: 'Failed to seed master data',
-                error: error.message
-            })
-        }
-    }
 }

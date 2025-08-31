@@ -30,22 +30,7 @@ export default class extends BaseSeeder {
                         isRequired: true,
                         sortOrder: 2,
                         fieldOptions: {
-                            options: [
-                                { value: 'cardiology', label: 'Cardiology' },
-                                { value: 'neurology', label: 'Neurology' },
-                                { value: 'orthopedics', label: 'Orthopedics' },
-                                { value: 'pediatrics', label: 'Pediatrics' },
-                                { value: 'gynecology', label: 'Gynecology' },
-                                { value: 'psychiatry', label: 'Psychiatry' },
-                                { value: 'dermatology', label: 'Dermatology' },
-                                { value: 'ophthalmology', label: 'Ophthalmology' },
-                                { value: 'general_medicine', label: 'General Medicine' },
-                                { value: 'surgery', label: 'General Surgery' },
-                                { value: 'anesthesiology', label: 'Anesthesiology' },
-                                { value: 'radiology', label: 'Radiology' },
-                                { value: 'pathology', label: 'Pathology' },
-                                { value: 'emergency_medicine', label: 'Emergency Medicine' }
-                            ]
+                            masterDataCategory: 'specializations'
                         },
                         isSystemField: true
                     },
@@ -126,16 +111,7 @@ export default class extends BaseSeeder {
                         isRequired: true,
                         sortOrder: 2,
                         fieldOptions: {
-                            options: [
-                                { value: 'icu', label: 'ICU' },
-                                { value: 'emergency', label: 'Emergency' },
-                                { value: 'general', label: 'General Ward' },
-                                { value: 'pediatric', label: 'Pediatric' },
-                                { value: 'maternity', label: 'Maternity' },
-                                { value: 'surgery', label: 'Surgery' },
-                                { value: 'cardiology', label: 'Cardiology' },
-                                { value: 'neurology', label: 'Neurology' }
-                            ]
+                            masterDataCategory: 'departments'
                         },
                         isSystemField: true
                     },
@@ -146,12 +122,7 @@ export default class extends BaseSeeder {
                         isRequired: true,
                         sortOrder: 3,
                         fieldOptions: {
-                            options: [
-                                { value: 'day', label: 'Day (6 AM - 2 PM)' },
-                                { value: 'evening', label: 'Evening (2 PM - 10 PM)' },
-                                { value: 'night', label: 'Night (10 PM - 6 AM)' },
-                                { value: 'rotating', label: 'Rotating Shifts' }
-                            ]
+                            masterDataCategory: 'work_shifts'
                         },
                         isSystemField: true
                     },
@@ -162,14 +133,7 @@ export default class extends BaseSeeder {
                         isRequired: false,
                         sortOrder: 4,
                         fieldOptions: {
-                            options: [
-                                { value: 'rn', label: 'Registered Nurse (RN)' },
-                                { value: 'lpn', label: 'Licensed Practical Nurse (LPN)' },
-                                { value: 'cna', label: 'Certified Nursing Assistant (CNA)' },
-                                { value: 'bls', label: 'Basic Life Support (BLS)' },
-                                { value: 'acls', label: 'Advanced Cardiac Life Support (ACLS)' },
-                                { value: 'pals', label: 'Pediatric Advanced Life Support (PALS)' }
-                            ]
+                            masterDataCategory: 'nursing_certifications'
                         },
                         isSystemField: true
                     },
@@ -222,14 +186,7 @@ export default class extends BaseSeeder {
                         isRequired: false,
                         sortOrder: 3,
                         fieldOptions: {
-                            options: [
-                                { value: 'english', label: 'English' },
-                                { value: 'hindi', label: 'Hindi' },
-                                { value: 'spanish', label: 'Spanish' },
-                                { value: 'french', label: 'French' },
-                                { value: 'german', label: 'German' },
-                                { value: 'chinese', label: 'Chinese' }
-                            ]
+                            masterDataCategory: 'languages'
                         },
                         isSystemField: true
                     }
@@ -265,13 +222,7 @@ export default class extends BaseSeeder {
                         isRequired: false,
                         sortOrder: 3,
                         fieldOptions: {
-                            options: [
-                                { value: 'clinical', label: 'Clinical Pharmacy' },
-                                { value: 'hospital', label: 'Hospital Pharmacy' },
-                                { value: 'retail', label: 'Retail Pharmacy' },
-                                { value: 'oncology', label: 'Oncology Pharmacy' },
-                                { value: 'pediatric', label: 'Pediatric Pharmacy' }
-                            ]
+                            masterDataCategory: 'pharmacy_specializations'
                         },
                         isSystemField: true
                     }
@@ -299,14 +250,7 @@ export default class extends BaseSeeder {
                         isRequired: true,
                         sortOrder: 2,
                         fieldOptions: {
-                            options: [
-                                { value: 'hematology', label: 'Hematology' },
-                                { value: 'biochemistry', label: 'Biochemistry' },
-                                { value: 'microbiology', label: 'Microbiology' },
-                                { value: 'pathology', label: 'Pathology' },
-                                { value: 'radiology', label: 'Radiology' },
-                                { value: 'blood_bank', label: 'Blood Bank' }
-                            ]
+                            masterDataCategory: 'lab_sections'
                         },
                         isSystemField: true
                     },
@@ -317,12 +261,7 @@ export default class extends BaseSeeder {
                         isRequired: false,
                         sortOrder: 3,
                         fieldOptions: {
-                            options: [
-                                { value: 'mlt', label: 'Medical Laboratory Technician (MLT)' },
-                                { value: 'cls', label: 'Clinical Laboratory Scientist (CLS)' },
-                                { value: 'ascp', label: 'ASCP Certified' },
-                                { value: 'phlebotomy', label: 'Phlebotomy Certification' }
-                            ]
+                            masterDataCategory: 'lab_certifications'
                         },
                         isSystemField: true
                     }

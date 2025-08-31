@@ -363,10 +363,32 @@ function FieldEditor({ roleId, field, onSave, onCancel }: FieldEditorProps) {
         description: field?.description || '',
         sortOrder: field?.sortOrder || 0,
         options: field?.fieldOptions?.options || [],
-        validationRules: field?.validationRules || {}
+        validationRules: field?.validationRules || {},
+        useMasterData: field?.fieldOptions?.masterDataCategory ? true : false,
+        masterDataCategory: field?.fieldOptions?.masterDataCategory || ''
     })
     const [saving, setSaving] = useState(false)
+    const [masterDataCategories, setMasterDataCategories] = useState<Array<{ value: string, label: string }>>([])
     const { addNotification } = useNotifications()
+
+    useEffect(() => {
+        // Fetch master data categories when component mounts
+        fetchMasterDataCategories()
+    }, [])
+
+    const fetchMasterDataCategories = async () => {
+        try {
+            const response = await httpService.get('/master-data/categories')
+            if (response.success) {
+                setMasterDataCategories(response.data.map((category: string) => ({
+                    value: category,
+                    label: category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+                })))
+            }
+        } catch (error) {
+            console.error('Error fetching master data categories:', error)
+        }
+    }
 
     const addOption = () => {
         setFormData(prev => ({
@@ -395,6 +417,14 @@ function FieldEditor({ roleId, field, onSave, onCancel }: FieldEditorProps) {
         try {
             setSaving(true)
 
+            const fieldOptions: any = {}
+
+            if (formData.useMasterData && formData.masterDataCategory) {
+                fieldOptions.masterDataCategory = formData.masterDataCategory
+            } else {
+                fieldOptions.options = formData.options.filter((opt: FieldOption) => opt.value && opt.label)
+            }
+
             const payload = {
                 fieldName: formData.fieldName,
                 fieldLabel: formData.fieldLabel,
@@ -402,35 +432,27 @@ function FieldEditor({ roleId, field, onSave, onCancel }: FieldEditorProps) {
                 isRequired: formData.isRequired,
                 description: formData.description,
                 sortOrder: formData.sortOrder,
-                fieldOptions: {
-                    options: formData.options.filter((opt: FieldOption) => opt.value && opt.label)
-                },
+                fieldOptions,
                 validationRules: formData.validationRules
             }
 
             const url = field
-                ? `/api/role-fields/field/${field.id}`
-                : `/api/role-fields/role/${roleId}/fields`
+                ? `/role-fields/field/${field.id}`
+                : `/role-fields/role/${roleId}/fields`
 
-            const response = await fetch(url, {
-                method: field ? 'PUT' : 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify(payload)
-            })
+            const response = field
+                ? await httpService.put(url, payload)
+                : await httpService.post(url, payload)
 
-            if (!response.ok) {
-                throw new Error('Failed to save field')
+            if (response.success) {
+                addNotification({
+                    message: `Field ${field ? 'updated' : 'created'} successfully`,
+                    type: 'success'
+                })
+                onSave()
+            } else {
+                throw new Error(response.message || 'Failed to save field')
             }
-
-            addNotification({
-                message: `Field ${field ? 'updated' : 'created'} successfully`,
-                type: 'success'
-            })
-
-            onSave()
         } catch (error) {
             console.error('Error saving field:', error)
             addNotification({
@@ -471,7 +493,7 @@ function FieldEditor({ roleId, field, onSave, onCancel }: FieldEditorProps) {
                 <Label>Field Type</Label>
                 <Select
                     value={formData.fieldType}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, fieldType: value }))}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, fieldType: value, useMasterData: false }))}
                 >
                     <SelectTrigger>
                         <SelectValue />
@@ -505,35 +527,83 @@ function FieldEditor({ roleId, field, onSave, onCancel }: FieldEditorProps) {
             </div>
 
             {needsOptions && (
-                <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                        <Label>Options</Label>
-                        <Button size="sm" variant="outline" onClick={addOption}>
-                            <Plus className="h-4 w-4 mr-1" />
-                            Add Option
-                        </Button>
+                <div className="space-y-4">
+                    <div className="flex items-center space-x-2">
+                        <Switch
+                            checked={formData.useMasterData}
+                            onCheckedChange={(checked) => setFormData(prev => ({
+                                ...prev,
+                                useMasterData: checked,
+                                masterDataCategory: checked ? prev.masterDataCategory : '',
+                                options: checked ? [] : prev.options
+                            }))}
+                        />
+                        <Label>Use Master Data</Label>
+                        <Badge variant="outline" className="text-xs">
+                            Recommended
+                        </Badge>
                     </div>
-                    <div className="space-y-2 max-h-40 overflow-y-auto">
-                        {formData.options.map((option: FieldOption, index: number) => (
-                            <div key={index} className="flex space-x-2">
-                                <Input
-                                    value={option.value}
-                                    onChange={(e) => updateOption(index, 'value', e.target.value)}
-                                    placeholder="Value"
-                                    className="flex-1"
-                                />
-                                <Input
-                                    value={option.label}
-                                    onChange={(e) => updateOption(index, 'label', e.target.value)}
-                                    placeholder="Label"
-                                    className="flex-1"
-                                />
-                                <Button size="sm" variant="outline" onClick={() => removeOption(index)}>
-                                    <Trash2 className="h-4 w-4" />
+                    <p className="text-xs text-gray-500">
+                        Master data provides centrally managed dropdown options that can be updated without code changes
+                    </p>
+
+                    {formData.useMasterData ? (
+                        <div className="space-y-2">
+                            <Label>Master Data Category</Label>
+                            <Select
+                                value={formData.masterDataCategory}
+                                onValueChange={(value) => setFormData(prev => ({ ...prev, masterDataCategory: value }))}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select category..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {masterDataCategories.map((category) => (
+                                        <SelectItem key={category.value} value={category.value}>
+                                            {category.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <p className="text-xs text-gray-500">
+                                Options will be automatically loaded from the selected master data category
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label>Custom Options</Label>
+                                <Button size="sm" variant="outline" onClick={addOption}>
+                                    <Plus className="h-4 w-4 mr-1" />
+                                    Add Option
                                 </Button>
                             </div>
-                        ))}
-                    </div>
+                            <div className="space-y-2 max-h-40 overflow-y-auto">
+                                {formData.options.map((option: FieldOption, index: number) => (
+                                    <div key={index} className="flex space-x-2">
+                                        <Input
+                                            value={option.value}
+                                            onChange={(e) => updateOption(index, 'value', e.target.value)}
+                                            placeholder="Value"
+                                            className="flex-1"
+                                        />
+                                        <Input
+                                            value={option.label}
+                                            onChange={(e) => updateOption(index, 'label', e.target.value)}
+                                            placeholder="Label"
+                                            className="flex-1"
+                                        />
+                                        <Button size="sm" variant="outline" onClick={() => removeOption(index)}>
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="text-xs text-gray-500">
+                                Custom options are fixed and require code updates to modify
+                            </p>
+                        </div>
+                    )}
                 </div>
             )}
 

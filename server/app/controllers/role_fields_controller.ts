@@ -12,7 +12,7 @@ export default class RoleFieldsController {
     async index({ params, response }: HttpContext) {
         try {
             const { roleId } = params
-            const fields = await this.roleFieldService.getRoleFields(roleId)
+            const fields = await this.roleFieldService.getRoleFieldsWithOptions(roleId)
 
             return response.ok({
                 success: true,

@@ -3,6 +3,7 @@ import Role from '#models/role'
 import RoleField from '#models/role_field'
 import UserRoleData from '#models/user_role_data'
 import User from '#models/user'
+import Database from '@adonisjs/lucid/services/db'
 import { v4 as uuidv4 } from 'uuid'
 
 @inject()
@@ -101,6 +102,38 @@ export default class RoleFieldService {
     }
 
     /**
+     * Get all fields for a role with master data options populated
+     */
+    async getRoleFieldsWithOptions(roleId: string, activeOnly: boolean = true) {
+        const fields = await this.getRoleFields(roleId, activeOnly)
+
+        // Populate master data options for fields that reference master data
+        for (const field of fields) {
+            if (field.fieldOptions?.masterDataCategory) {
+                const masterDataOptions = await Database
+                    .from('master_data')
+                    .where('category', field.fieldOptions.masterDataCategory)
+                    .where('is_active', true)
+                    .orderBy('display_order', 'asc')
+                    .orderBy('name', 'asc')
+                    .select('value', 'name as label', 'description')
+
+                // Update field options with master data
+                field.fieldOptions = {
+                    ...field.fieldOptions,
+                    options: masterDataOptions.map(item => ({
+                        value: item.value,
+                        label: item.label,
+                        description: item.description
+                    }))
+                }
+            }
+        }
+
+        return fields
+    }
+
+    /**
      * Get all fields for a role
      */
     async getRoleFields(roleId: string, activeOnly: boolean = true) {
@@ -117,7 +150,7 @@ export default class RoleFieldService {
      * Get role field schema for frontend form generation
      */
     async getRoleFieldSchema(roleId: string) {
-        const fields = await this.getRoleFields(roleId)
+        const fields = await this.getRoleFieldsWithOptions(roleId)
 
         return fields.map(field => ({
             id: field.id,
