@@ -75,16 +75,72 @@ router.group(() => {
       router.get('/:id/appointments', '#controllers/patients_controller.appointments')
     }).prefix('/patients')
 
-    // Doctor management routes
+    // Doctor management routes (now handled through users with doctor role)
     router.group(() => {
-      router.get('/', '#controllers/doctors_controller.index')
-      router.get('/:id', '#controllers/doctors_controller.show')
-      router.post('/', '#controllers/doctors_controller.store')
-      router.put('/:id', '#controllers/doctors_controller.update')
-      router.delete('/:id', '#controllers/doctors_controller.destroy')
-      router.get('/:id/schedule', '#controllers/doctors_controller.schedule')
-      router.get('/:id/availability', '#controllers/doctors_controller.availability')
-      router.get('/:id/appointments', '#controllers/doctors_controller.appointments')
+      // Get all doctors (users with doctor role)
+      router.get('/', async ({ response }) => {
+        const User = (await import('#models/user')).default
+        try {
+          const doctors = await User.query()
+            .whereHas('role', (roleQuery) => {
+              roleQuery.where('name', 'doctor').orWhere('displayName', 'Doctor')
+            })
+            .preload('role')
+
+          const doctorsWithData = await Promise.all(
+            doctors.map(async (doctor) => ({
+              ...doctor.serialize(),
+              roleData: await doctor.getRoleData()
+            }))
+          )
+
+          return response.ok({
+            success: true,
+            data: doctorsWithData
+          })
+        } catch (error) {
+          return response.badRequest({
+            success: false,
+            message: error.message
+          })
+        }
+      })
+
+      // Get specific doctor by user ID
+      router.get('/:userId', async ({ params, response }) => {
+        const User = (await import('#models/user')).default
+        try {
+          const doctor = await User.query()
+            .where('id', params.userId)
+            .whereHas('role', (roleQuery) => {
+              roleQuery.where('name', 'doctor').orWhere('displayName', 'Doctor')
+            })
+            .preload('role')
+            .first()
+
+          if (!doctor) {
+            return response.notFound({
+              success: false,
+              message: 'Doctor not found'
+            })
+          }
+
+          const doctorProfile = await doctor.getCompleteProfile()
+
+          return response.ok({
+            success: true,
+            data: doctorProfile
+          })
+        } catch (error) {
+          return response.badRequest({
+            success: false,
+            message: error.message
+          })
+        }
+      })
+
+      // NOTE: Doctor creation/update is now handled through users controller with roleData
+      // NOTE: Schedule and availability can be managed through role fields
     }).prefix('/doctors')
 
     // Appointment management routes
@@ -238,6 +294,23 @@ router.group(() => {
       router.delete('/:id', '#controllers/master_data_controller.destroy')
       router.post('/seed', '#controllers/master_data_controller.seedData')
     }).prefix('/master-data')
+
+    // Role fields management routes
+    router.group(() => {
+      // Role field management
+      router.get('/role/:roleId/fields', '#controllers/role_fields_controller.index')
+      router.get('/role/:roleId/schema', '#controllers/role_fields_controller.schema')
+      router.post('/role/:roleId/fields', '#controllers/role_fields_controller.store')
+      router.put('/field/:fieldId', '#controllers/role_fields_controller.update')
+      router.delete('/field/:fieldId', '#controllers/role_fields_controller.destroy')
+      router.post('/role/:roleId/fields/bulk', '#controllers/role_fields_controller.bulkCreate')
+      router.post('/role/:roleId/fields/doctor-template', '#controllers/role_fields_controller.createDoctorTemplate')
+
+      // User role data management
+      router.post('/user-data', '#controllers/role_fields_controller.setUserData')
+      router.get('/user/:userId/data', '#controllers/role_fields_controller.getUserData')
+      router.get('/users-with-data', '#controllers/role_fields_controller.getUsersWithRoleData')
+    }).prefix('/role-fields')
 
   }).use(middleware.auth()) // Apply auth middleware to all protected routes
 

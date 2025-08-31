@@ -3,6 +3,7 @@ import { BaseModel, column, hasMany, manyToMany } from '@adonisjs/lucid/orm'
 import type { HasMany, ManyToMany } from '@adonisjs/lucid/types/relations'
 import User from './user.js'
 import Permission from './permission.js'
+import RoleField from './role_field.js'
 
 export default class Role extends BaseModel {
     @column({ isPrimary: true })
@@ -36,6 +37,9 @@ export default class Role extends BaseModel {
     @hasMany(() => User)
     declare users: HasMany<typeof User>
 
+    @hasMany(() => RoleField)
+    declare roleFields: HasMany<typeof RoleField>
+
     @manyToMany(() => Permission, {
         pivotTable: 'role_permissions',
         pivotColumns: ['actions'],
@@ -46,5 +50,10 @@ export default class Role extends BaseModel {
     // Computed properties
     get userCount() {
         return this.users?.length || 0
+    }
+
+    // Helper method to get active role fields
+    public async getActiveRoleFields() {
+        return await RoleField.query().where('roleId', this.id).where('isActive', true).orderBy('sortOrder', 'asc')
     }
 }

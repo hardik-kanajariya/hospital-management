@@ -4,8 +4,13 @@ import { updateUserValidator, createUserValidator } from '#validators/user'
 import Database from '@adonisjs/lucid/services/db'
 import { v4 as uuid } from 'uuid'
 import hash from '@adonisjs/core/services/hash'
+import { inject } from '@adonisjs/core'
+import RoleFieldService from '#services/role_field_service'
 
+@inject()
 export default class UsersController {
+    constructor(private roleFieldService: RoleFieldService) { }
+
     /**
      * Get all users with pagination and search
      */
@@ -14,10 +19,9 @@ export default class UsersController {
             const page = request.input('page', 1)
             const limit = request.input('limit', 10)
             const search = request.input('search', '')
+            const includeRoleData = request.input('includeRoleData', false)
 
-            let query = User.query().preload('role', (roleQuery) => {
-                roleQuery.preload('permissions')
-            })
+            let query = User.query().preload('role')
 
             if (search) {
                 query = query.where((builder) => {
@@ -28,6 +32,24 @@ export default class UsersController {
             }
 
             const users = await query.paginate(page, limit)
+
+            if (includeRoleData) {
+                const usersWithRoleData = await Promise.all(
+                    users.all().map(async (user) => ({
+                        ...user.serialize(),
+                        roleData: await user.getRoleData()
+                    }))
+                )
+
+                return response.status(200).json({
+                    success: true,
+                    data: {
+                        ...users.serialize(),
+                        data: usersWithRoleData
+                    },
+                    message: 'Users retrieved successfully'
+                })
+            }
 
             return response.status(200).json({
                 success: true,
@@ -51,9 +73,7 @@ export default class UsersController {
         try {
             const user = await User.query()
                 .where('id', params.id)
-                .preload('role', (roleQuery) => {
-                    roleQuery.preload('permissions')
-                })
+                .preload('role')
                 .first()
 
             if (!user) {
@@ -63,9 +83,12 @@ export default class UsersController {
                 })
             }
 
+            // Get complete profile with role data
+            const completeProfile = await user.getCompleteProfile()
+
             return response.status(200).json({
                 success: true,
-                data: user,
+                data: completeProfile,
                 message: 'User retrieved successfully'
             })
 
@@ -84,6 +107,7 @@ export default class UsersController {
     async store({ request, response }: HttpContext) {
         try {
             const payload = await request.validateUsing(createUserValidator)
+            const roleData = request.input('roleData', {})
 
             // Generate unique employee ID
             const employeeId = await this.generateEmployeeId()
@@ -105,14 +129,17 @@ export default class UsersController {
 
             await user.save()
 
-            // Load the created user with role and permissions
-            await user.load('role', (roleQuery) => {
-                roleQuery.preload('permissions')
-            })
+            // Set role data if provided
+            if (Object.keys(roleData).length > 0) {
+                await this.roleFieldService.setUserRoleData(user.id, roleData)
+            }
+
+            // Get complete profile with role data
+            const completeProfile = await user.getCompleteProfile()
 
             return response.status(201).json({
                 success: true,
-                data: user,
+                data: completeProfile,
                 message: 'User created successfully'
             })
 
@@ -183,6 +210,7 @@ export default class UsersController {
             }
 
             const payload = await request.validateUsing(updateUserValidator)
+            const roleData = request.input('roleData', {})
 
             // Handle password update if provided
             if (payload.password) {
@@ -196,14 +224,17 @@ export default class UsersController {
             user.merge(payload)
             await user.save()
 
-            // Load the updated user with role and permissions
-            await user.load('role', (roleQuery) => {
-                roleQuery.preload('permissions')
-            })
+            // Update role data if provided
+            if (Object.keys(roleData).length > 0) {
+                await this.roleFieldService.setUserRoleData(user.id, roleData)
+            }
+
+            // Get complete profile with role data
+            const completeProfile = await user.getCompleteProfile()
 
             return response.status(200).json({
                 success: true,
-                data: user,
+                data: completeProfile,
                 message: 'User updated successfully'
             })
 

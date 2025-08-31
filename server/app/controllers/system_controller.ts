@@ -1,5 +1,4 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import { promisify } from 'util'
 import * as os from 'os'
 import * as fs from 'fs'
 import * as path from 'path'
