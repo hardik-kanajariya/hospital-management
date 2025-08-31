@@ -36,21 +36,12 @@ export function useDoctorApi() {
             setLoadingDoctorUsers(true);
             setDoctorUsersError(null);
 
-            console.log('🔍 Fetching users to find doctor roles...');
             const response = await httpService.get('/users');
 
             if (response.success && response.data) {
                 // Filter users who have doctor role
                 const users = Array.isArray(response.data.data) ? response.data.data :
                     Array.isArray(response.data) ? response.data : [];
-
-                console.log('📊 Total users fetched:', users.length);
-                console.log('👥 Users data:', users.map(u => ({
-                    name: u.name,
-                    role: u.role,
-                    roleId: u.roleId,
-                    isActive: u.isActive
-                })));
 
                 const doctorRoleUsers = users.filter((user: any) => {
                     // Handle both object and string role structures
@@ -63,8 +54,6 @@ export function useDoctorApi() {
                     return false;
                 });
 
-                console.log('👨‍⚕️ Users with doctor role found:', doctorRoleUsers.length);
-
                 // Transform to doctor-like format for compatibility
                 const transformedDoctors = doctorRoleUsers.map((user: any) => ({
                     id: user.id,
@@ -76,10 +65,8 @@ export function useDoctorApi() {
                     isActive: user.isActive
                 }));
 
-                console.log('✅ Transformed doctor users:', transformedDoctors);
                 setDoctorUsers(transformedDoctors);
             } else {
-                console.log('❌ No data in response:', response);
                 setDoctorUsers([]);
             }
         } catch (error) {

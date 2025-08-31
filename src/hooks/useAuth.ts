@@ -91,17 +91,13 @@ export function useAuth() {
     setError(null);
 
     try {
-      console.log('Login attempt for:', email, 'isOnline:', navigator.onLine);
-
       // Check if user is online
       if (!navigator.onLine) {
         throw new Error('Internet connection is required for authentication. Please check your connection and try again.');
       }
 
       // Attempt HTTP authentication
-      console.log('Attempting HTTP authentication...');
       const authResponse = await httpService.authenticate(email, password);
-      console.log('HTTP authentication successful:', authResponse);
 
       // Adapt the response to match User type - handle legacy string roles
       const user: User = {
@@ -124,8 +120,6 @@ export function useAuth() {
         isAuthenticated: true,
         isLoading: false
       });
-
-      console.log('Auth state updated - user authenticated:', user.name, user.role);
 
       // Force a small delay to ensure state is properly updated
       await new Promise(resolve => setTimeout(resolve, 50));
@@ -168,9 +162,7 @@ export function useAuth() {
       // Call logout endpoint if online
       if (navigator.onLine) {
         await httpService.logout();
-        console.log('Server logout successful');
       } else {
-        console.log('Offline - performing client-side logout only');
       }
     } catch (error) {
       console.warn('Logout request failed:', error);
@@ -184,8 +176,6 @@ export function useAuth() {
         isAuthenticated: false,
         isLoading: false
       });
-
-      console.log('User logged out');
 
       // After successful logout, refresh the page to reload the application
       setTimeout(() => {

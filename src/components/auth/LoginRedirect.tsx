@@ -13,7 +13,6 @@ export default function LoginRedirect() {
     useEffect(() => {
         // If user is authenticated and tries to access login, redirect to dashboard
         if (isAuthenticated && user) {
-            console.log('Authenticated user accessing login page - redirecting to dashboard');
             window.location.href = '/dashboard';
         }
     }, [isAuthenticated, user]);

@@ -218,7 +218,6 @@ export default function EditMedicalRecord() {
             }
 
             // TODO: Use actual API call
-            console.log('Updating medical record:', recordData)
 
             toast.success('Medical record updated successfully!')
             navigate(`/medical-records/${id}`)

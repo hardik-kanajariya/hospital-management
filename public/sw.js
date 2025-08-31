@@ -12,26 +12,21 @@ const STATIC_ASSETS = [
 ];
 
 self.addEventListener('install', (event) => {
-  console.log('HTTP Service Worker installing...');
 
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Caching basic assets for performance...');
         return cache.addAll(STATIC_ASSETS);
       })
       .then(() => {
-        console.log('Basic assets cached successfully');
         return self.skipWaiting();
       })
       .catch((error) => {
-        console.error('Failed to cache basic assets:', error);
       })
   );
 });
 
 self.addEventListener('activate', (event) => {
-  console.log('HTTP Service Worker activating...');
 
   event.waitUntil(
     Promise.all([
@@ -40,7 +35,6 @@ self.addEventListener('activate', (event) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
             if (cacheName !== CACHE_NAME) {
-              console.log('Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
           })
@@ -99,7 +93,6 @@ async function handleNavigationRequest(request) {
 
     return networkResponse;
   } catch (error) {
-    console.log('Navigation request failed:', error);
 
     // Try to serve from cache if available
     const cachedResponse = await caches.match(request);
@@ -145,7 +138,6 @@ async function handleAssetRequest(request) {
 
     return networkResponse;
   } catch (error) {
-    console.log('Failed to fetch asset:', request.url, error);
 
     // Return empty response for failed assets to prevent broken page
     return new Response('', {

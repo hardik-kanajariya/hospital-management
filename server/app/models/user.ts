@@ -95,8 +95,7 @@ export default class User extends compose(BaseModel, AuthFinder) {
 
     return this.role.permissions.map(permission => ({
       module: permission.module,
-      actions: (permission as any).$extras?.pivot_actions ?
-        JSON.parse((permission as any).$extras.pivot_actions) : []
+      actions: permission || []
     }))
   }
 

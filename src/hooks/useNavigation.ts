@@ -15,7 +15,6 @@ export function useNavigation() {
 
     // Force update to dashboard when user logs in
     const navigateToDashboard = useCallback(() => {
-        console.log('Forcing navigation to dashboard');
         navigate('/dashboard');
     }, [navigate]);
 

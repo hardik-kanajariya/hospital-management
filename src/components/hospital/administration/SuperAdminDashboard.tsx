@@ -21,6 +21,7 @@ import {
     CheckCircleIcon,
     XCircleIcon,
 } from '@phosphor-icons/react';
+import { toast } from 'sonner';
 
 export default function SuperAdminDashboard() {
     const navigate = useNavigate();
@@ -40,9 +41,9 @@ export default function SuperAdminDashboard() {
             const result = await createSystemBackup();
             if (result.success) {
                 // You could add a toast notification here
-                console.log('Backup created successfully');
+                toast.success('Backup created successfully');
             } else {
-                console.error('Backup failed:', result.message);
+                toast.error('Backup failed');
             }
         } catch (error) {
             console.error('Backup error:', error);

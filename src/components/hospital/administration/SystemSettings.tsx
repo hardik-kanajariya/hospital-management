@@ -15,6 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSuperAdminDashboard } from '@/hooks/useSuperAdminDashboard';
 import { WrenchIcon, FloppyDiskIcon, ArrowClockwiseIcon } from '@phosphor-icons/react';
+import { toast } from 'sonner';
 
 interface SystemSettingsProps {
     children: React.ReactNode;
@@ -66,10 +67,10 @@ export default function SystemSettings({ children }: SystemSettingsProps) {
         try {
             const result = await updateSystemSettings(settings);
             if (result.success) {
-                console.log('Settings updated successfully');
                 setOpen(false);
+                toast.success('Settings updated successfully');
             } else {
-                console.error('Failed to update settings:', result.message);
+                toast.error('Failed to update settings');
             }
         } catch (error) {
             console.error('Settings update error:', error);

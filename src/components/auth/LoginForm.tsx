@@ -35,21 +35,17 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
     }
 
     try {
-      console.log('LoginForm: Starting login process for:', email);
       const result = await login(email, password);
 
-      console.log('LoginForm: Login result:', result);
 
       if (result) {
         toast.success('Login successful!');
-        console.log('LoginForm: Login successful, page will refresh automatically');
 
         // Call the onLogin callback if provided (for backward compatibility)
         onLogin?.();
 
         // The useAuth hook will handle the page refresh automatically
       } else {
-        console.log('LoginForm: Login failed:', result);
         toast.error(result || 'Login failed');
       }
     } catch (error) {

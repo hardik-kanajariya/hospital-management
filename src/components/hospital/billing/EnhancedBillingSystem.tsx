@@ -250,7 +250,6 @@ export default function EnhancedBillingSystem() {
     }
 
     // In a real application, this would generate a PDF or export to Excel
-    console.log('Daily Report:', report)
     toast.success('Daily report generated')
 
     return report
@@ -274,7 +273,6 @@ export default function EnhancedBillingSystem() {
       }, {} as Record<string, number>)
     }
 
-    console.log('Monthly Report:', report)
     toast.success('Monthly report generated')
 
     return report

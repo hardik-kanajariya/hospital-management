@@ -49,7 +49,6 @@ export function useMasterDataApi() {
 
     // Fetch master data
     const fetchMasterData = useCallback(async (params?: MasterDataSearchParams) => {
-        console.log('🔍 fetchMasterData called with params:', params);
         setLoading(true);
         setError(null);
 
@@ -67,21 +66,15 @@ export function useMasterDataApi() {
             const queryString = queryParams.toString();
             const endpoint = queryString ? `${API_ENDPOINTS.MASTER_DATA.BASE}?${queryString}` : API_ENDPOINTS.MASTER_DATA.BASE;
 
-            console.log('📡 Making API call to:', endpoint);
-
             const response = await httpService.get<{
                 data: MasterDataItem[];
                 meta: typeof pagination;
             }>(endpoint);
 
-            console.log('📊 API Response:', response);
-
             if (response.success && response.data) {
                 if (Array.isArray(response.data)) {
-                    console.log('✅ Setting master data (direct array):', response.data);
                     setMasterData(response.data);
                 } else if (response.data.data) {
-                    console.log('✅ Setting master data (paginated):', response.data.data);
                     setMasterData(response.data.data);
                     if (response.data.meta) {
                         setPagination(response.data.meta);
@@ -103,18 +96,12 @@ export function useMasterDataApi() {
     // Create master data item
     const createMasterDataItem = useCallback(async (itemData: MasterDataCreateRequest) => {
         try {
-            console.log('🏥 useMasterDataApi - createMasterDataItem called with:', itemData);
-            console.log('🌐 API endpoint:', API_ENDPOINTS.MASTER_DATA.BASE);
-
             setLoading(true);
             const response = await httpService.post<MasterDataItem>(API_ENDPOINTS.MASTER_DATA.BASE, itemData);
-
-            console.log('📡 API Response received:', response);
 
             if (response.success && response.data) {
                 setMasterData(prev => [response.data!, ...prev]);
                 toast.success('Master data item created successfully');
-                console.log('✅ Master data item created and added to state:', response.data);
                 return response.data;
             } else {
                 console.error('❌ API call unsuccessful:', response);

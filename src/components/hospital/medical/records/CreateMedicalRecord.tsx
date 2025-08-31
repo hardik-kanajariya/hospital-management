@@ -160,11 +160,7 @@ export default function CreateMedicalRecord() {
             }
 
             // Create medical record via API
-            console.log('🚀 About to create medical record with data:', recordData)
-            console.log('🔗 API endpoint:', 'POST /medical-records')
-
             const newRecord = await createMedicalRecord(recordData)
-            console.log('✅ Medical record created successfully:', newRecord)
 
             if (newRecord) {
                 toast.success('Medical record created successfully!')

@@ -126,7 +126,6 @@ export function useMedicalRecordApi() {
 
     // Fetch medical records with search and pagination
     const fetchMedicalRecords = useCallback(async (params?: MedicalRecordSearchParams) => {
-        console.log('🔍 fetchMedicalRecords called with params:', params);
         setLoading(true);
         setError(null);
 
@@ -144,23 +143,17 @@ export function useMedicalRecordApi() {
             const queryString = queryParams.toString();
             const endpoint = queryString ? `${API_ENDPOINTS.MEDICAL_RECORDS.BASE}?${queryString}` : API_ENDPOINTS.MEDICAL_RECORDS.BASE;
 
-            console.log('📡 Making API call to:', endpoint);
-
             const response = await httpService.get<{
                 data: MedicalRecord[];
                 meta: typeof pagination;
             }>(endpoint);
 
-            console.log('📊 API Response:', response);
-
             if (response.success && response.data) {
                 if (Array.isArray(response.data)) {
                     // Direct array response
-                    console.log('✅ Setting medical records (direct array):', response.data);
                     setMedicalRecords(response.data);
                 } else if (response.data.data) {
                     // Paginated response
-                    console.log('✅ Setting medical records (paginated):', response.data.data);
                     setMedicalRecords(response.data.data);
                     if (response.data.meta) {
                         setPagination(response.data.meta);
@@ -224,18 +217,12 @@ export function useMedicalRecordApi() {
     // Create medical record
     const createMedicalRecord = useCallback(async (recordData: MedicalRecordCreateRequest) => {
         try {
-            console.log('🏥 useMedicalRecordApi - createMedicalRecord called with:', recordData);
-            console.log('🌐 API endpoint:', API_ENDPOINTS.MEDICAL_RECORDS.BASE);
-
             setLoading(true);
             const response = await httpService.post<MedicalRecord>(API_ENDPOINTS.MEDICAL_RECORDS.BASE, recordData);
-
-            console.log('📡 API Response received:', response);
 
             if (response.success && response.data) {
                 setMedicalRecords(prev => [response.data!, ...prev]);
                 toast.success('Medical record created successfully');
-                console.log('✅ Medical record created and added to state:', response.data);
                 return response.data;
             } else {
                 console.error('❌ API call unsuccessful:', response);

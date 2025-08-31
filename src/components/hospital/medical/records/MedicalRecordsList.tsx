@@ -61,13 +61,7 @@ export default function MedicalRecordsList() {
 
     // Debug logging
     useEffect(() => {
-        console.log('🏥 MedicalRecordsList state:', {
-            medicalRecords,
-            loading,
-            patientId,
-            selectedPatient,
-            recordsCount: medicalRecords?.length
-        });
+        
     }, [medicalRecords, loading, patientId, selectedPatient])
 
     // Update selected patient when patientId changes
