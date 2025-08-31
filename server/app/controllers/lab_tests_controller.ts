@@ -98,7 +98,7 @@ export default class LabTestsController {
 
             // Verify patient and doctor exist
             const patient = await Patient.find(payload.patientId)
-            const doctor = await Doctor.find(payload.doctorId)
+            const doctor = await User.find(payload.doctorId)
 
             if (!patient) {
                 return response.status(400).json({
