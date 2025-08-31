@@ -164,7 +164,7 @@ export default function SystemSettingsPage() {
             ...prev,
             [key]: value
         }));
-        
+
         // Clear validation error for this field if it exists
         if (validationErrors[key]) {
             setValidationErrors(prev => {
@@ -291,22 +291,22 @@ export default function SystemSettingsPage() {
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         onClick={handleReset}
                         disabled={!hasChanges}
                     >
                         <ArrowClockwiseIcon className="h-4 w-4 mr-2" />
                         Reset Changes
                     </Button>
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         onClick={handleResetToDefaults}
                     >
                         Reset to Defaults
                     </Button>
-                    <Button 
-                        onClick={handleSave} 
+                    <Button
+                        onClick={handleSave}
                         disabled={loading || !hasChanges}
                         className="bg-orange-600 hover:bg-orange-700"
                     >
@@ -482,8 +482,8 @@ export default function SystemSettingsPage() {
                                         <Label htmlFor="backupFrequency">
                                             Backup Frequency
                                         </Label>
-                                        <Select 
-                                            value={settings.backupFrequency} 
+                                        <Select
+                                            value={settings.backupFrequency}
                                             onValueChange={(value) => handleSettingChange('backupFrequency', value)}
                                         >
                                             <SelectTrigger>
