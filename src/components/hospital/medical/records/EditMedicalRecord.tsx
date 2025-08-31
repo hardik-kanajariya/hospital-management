@@ -21,6 +21,8 @@ import {
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { usePatientApi } from '@/hooks/usePatientApi'
+import { useMedicalRecord } from '@/hooks/useMedicalRecordApi'
+import { useDoctorApi } from '@/hooks/useDoctorApi'
 
 interface MedicalRecordFormData {
     id: string
@@ -91,90 +93,40 @@ export default function EditMedicalRecord() {
 
     const [activeTab, setActiveTab] = useState('basic')
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [loading, setLoading] = useState(true)
 
     const { patients } = usePatientApi()
-
-    // Mock doctors data for now
-    const doctors = [
-        { id: 'doctor_1', name: 'Dr. Smith', specialization: 'Internal Medicine' },
-        { id: 'doctor_2', name: 'Dr. Johnson', specialization: 'Cardiology' },
-        { id: 'doctor_3', name: 'Dr. Williams', specialization: 'Pediatrics' }
-    ]
+    const { medicalRecord, loading, updateMedicalRecord: updateRecord } = useMedicalRecord(id)
+    const { doctorUsers: doctors } = useDoctorApi()
 
     useEffect(() => {
-        fetchMedicalRecord()
-    }, [id])
-
-    const fetchMedicalRecord = async () => {
-        try {
-            setLoading(true)
-
-            // Mock data for demonstration - this would typically come from API
-            const mockRecord = {
-                id: id || '1',
-                patient_id: 'patient_1',
-                doctor_id: 'doctor_1',
-                visit_date: '2024-08-30',
-                diagnosis: 'Hypertension Stage 1, Type 2 Diabetes Mellitus',
-                treatment: 'Medication adjustment with Lisinopril and Metformin. Lifestyle modifications including diet and exercise counseling.',
-                medications: [
-                    {
-                        name: 'Lisinopril',
-                        dosage: '10mg',
-                        frequency: 'Once daily',
-                        duration: '90 days',
-                        instructions: 'Take with or without food, preferably at the same time each day'
-                    },
-                    {
-                        name: 'Metformin',
-                        dosage: '500mg',
-                        frequency: 'Twice daily',
-                        duration: '90 days',
-                        instructions: 'Take with meals to reduce stomach upset'
-                    }
-                ],
-                lab_results: [
-                    {
-                        test_name: 'HbA1c',
-                        result: '7.2%',
-                        normal_range: '<7.0%',
-                        status: 'completed'
-                    },
-                    {
-                        test_name: 'Blood Pressure',
-                        result: '140/85 mmHg',
-                        normal_range: '<120/80 mmHg',
-                        status: 'completed'
-                    }
-                ],
-                follow_up_instructions: [
-                    'Monitor blood pressure daily at home',
-                    'Check blood glucose levels twice daily',
-                    'Follow low-sodium, diabetic diet'
-                ],
-                next_visit_date: '2024-11-30',
-                vital_signs: {
-                    temperature: '98.6',
-                    blood_pressure: '140/85',
-                    heart_rate: '72',
-                    respiratory_rate: '16',
-                    oxygen_saturation: '98',
-                    weight: '78.5',
-                    height: '175'
+        if (medicalRecord) {
+            // Transform the fetched medical record to match our form data structure
+            setFormData({
+                id: medicalRecord.id,
+                patient_id: medicalRecord.patient_id,
+                doctor_id: medicalRecord.doctor_id,
+                appointment_id: medicalRecord.appointment_id,
+                visit_date: medicalRecord.visit_date,
+                diagnosis: medicalRecord.diagnosis,
+                treatment: medicalRecord.treatment,
+                medications: medicalRecord.medications || [],
+                lab_results: medicalRecord.lab_results || [],
+                follow_up_instructions: medicalRecord.follow_up_instructions || [],
+                next_visit_date: medicalRecord.next_visit_date,
+                vital_signs: medicalRecord.vital_signs || {
+                    temperature: '',
+                    blood_pressure: '',
+                    heart_rate: '',
+                    respiratory_rate: '',
+                    oxygen_saturation: '',
+                    weight: '',
+                    height: ''
                 },
-                notes: 'Patient is compliant with medications. Reports improved energy levels. Needs to work on diet compliance.',
-                attachments: []
-            }
-
-            setFormData(mockRecord)
-        } catch (error) {
-            console.error('Error fetching medical record:', error)
-            toast.error('Failed to fetch medical record')
-        } finally {
-            setLoading(false)
+                notes: medicalRecord.notes || '',
+                attachments: medicalRecord.attachments || []
+            })
         }
-    }
+    }, [medicalRecord])
 
     const selectedPatient = patients.find(p => p.id === formData.patient_id)
 
@@ -210,14 +162,25 @@ export default function EditMedicalRecord() {
             const cleanedLabResults = formData.lab_results.filter(lab => lab.test_name.trim())
             const cleanedFollowUpInstructions = formData.follow_up_instructions.filter(instruction => instruction.trim())
 
+            // Transform form data to API format
             const recordData = {
-                ...formData,
+                patientId: formData.patient_id,
+                doctorId: formData.doctor_id,
+                appointmentId: formData.appointment_id,
+                visitDate: formData.visit_date,
+                diagnosis: formData.diagnosis,
+                treatment: formData.treatment,
                 medications: cleanedMedications,
-                lab_results: cleanedLabResults,
-                follow_up_instructions: cleanedFollowUpInstructions
+                labResults: cleanedLabResults,
+                followUpInstructions: cleanedFollowUpInstructions,
+                nextVisitDate: formData.next_visit_date,
+                vitalSigns: formData.vital_signs,
+                notes: formData.notes,
+                attachments: formData.attachments
             }
 
-            // TODO: Use actual API call
+            // Use actual API call
+            await updateRecord(recordData)
 
             toast.success('Medical record updated successfully!')
             navigate(`/medical-records/${id}`)
@@ -386,7 +349,7 @@ export default function EditMedicalRecord() {
                                                     <SelectValue placeholder="Select doctor" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {doctors.filter(doctor => doctor.id && doctor.id.trim() !== '').map(doctor => (
+                                                    {doctors && doctors.filter(doctor => doctor.id && doctor.id.trim() !== '').map(doctor => (
                                                         <SelectItem key={doctor.id} value={doctor.id}>
                                                             <div className="flex items-center gap-2">
                                                                 <StethoscopeIcon className="w-4 h-4" />

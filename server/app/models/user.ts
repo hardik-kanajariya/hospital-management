@@ -77,27 +77,38 @@ export default class User extends compose(BaseModel, AuthFinder) {
   }
 
   // Method to get user permissions through role
-  public async getUserPermissions() {
-    if (!this.role) {
-      const user = await User.query()
-        .where('id', this.id)
-        .preload('role', (roleQuery) => {
-          roleQuery.preload('permissions')
-        })
-        .first()
-
-      if (user?.role) {
-        this.role = user.role
+    public async getUserPermissions(): Promise<Array<{ module: string; actions: string[] }>> {
+      if (!this.role) {
+        const user = await User.query()
+          .where('id', this.id)
+          .preload('role', (roleQuery) => {
+            roleQuery.preload('permissions')
+          })
+          .first()
+  
+        if (user?.role) {
+          this.role = user.role
+        }
       }
+  
+      if (!this.role) return []
+  
+      return (this.role as any).permissions.map((permission: any) => {
+        // Derive actions array safely
+        let actions: string[] = []
+        if (Array.isArray(permission.actions)) {
+          actions = permission.actions
+        } else {
+          // Fallback: infer boolean action flags (e.g., create/read/update/delete/manage)
+          const possible = ['create', 'read', 'update', 'delete', 'manage']
+          actions = possible.filter(a => permission[a] === true)
+        }
+        return {
+          module: permission.module,
+          actions
+        }
+      })
     }
-
-    if (!this.role) return []
-
-    return this.role.permissions.map(permission => ({
-      module: permission.module,
-      actions: permission || []
-    }))
-  }
 
   // Method to check if user has specific permission
   public async hasPermission(module: string, action: string = 'read'): Promise<boolean> {
