@@ -29,6 +29,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { EnhancedUserForm } from './EnhancedUserForm';
 import { httpService } from '@/services/HttpService';
 import { User, Role } from '@/types/auth';
 import {
@@ -60,16 +61,6 @@ export default function SuperAdminUserManagement() {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [viewingUser, setViewingUser] = useState<User | null>(null);
-    const [formData, setFormData] = useState<UserFormData>({
-        name: '',
-        email: '',
-        password: '',
-        roleId: '',
-        phone: '',
-        department: '',
-        employeeId: '',
-        isActive: true
-    });
 
     useEffect(() => {
         loadUsers();
@@ -82,7 +73,6 @@ export default function SuperAdminUserManagement() {
         if (preSelectedRole && roles.length > 0) {
             const doctorRole = roles.find(role => role.name === preSelectedRole);
             if (doctorRole) {
-                setFormData(prev => ({ ...prev, roleId: doctorRole.id }));
                 // Auto-open the create user dialog when coming from doctor module
                 setDialogOpen(true);
             }
@@ -124,17 +114,15 @@ export default function SuperAdminUserManagement() {
 
     const handleCreateUser = () => {
         setEditingUser(null);
-        setFormData({
-            name: '',
-            email: '',
-            password: '',
-            roleId: '',
-            phone: '',
-            department: '',
-            employeeId: '', // Will be auto-generated for new users
-            isActive: true
-        });
         setDialogOpen(true);
+    };
+
+
+
+    const handleUserSaved = () => {
+        loadUsers(); // Refresh the user list
+        setDialogOpen(false);
+        setEditingUser(null);
     };
 
     // Helper function to check if user has super admin role
@@ -157,16 +145,6 @@ export default function SuperAdminUserManagement() {
         }
 
         setEditingUser(user);
-        setFormData({
-            name: user.name,
-            email: user.email,
-            password: '',
-            roleId: user.roleId || '',
-            phone: user.phone || '',
-            department: user.department || '',
-            employeeId: user.employeeId || '',
-            isActive: user.isActive
-        });
         setDialogOpen(true);
     };
 
@@ -194,48 +172,7 @@ export default function SuperAdminUserManagement() {
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
 
-        // Extra protection: prevent submitting changes for super admin users
-        if (editingUser && isSuperAdmin(editingUser)) {
-            toast.error('Super Administrator users cannot be modified');
-            return;
-        }
-
-        try {
-            let payload: any = {
-                ...formData,
-                phone: formData.phone || undefined,
-                department: formData.department || undefined
-            };
-
-            // Only include employeeId for updates, not for new users (it will be auto-generated)
-            if (editingUser) {
-                payload.employeeId = formData.employeeId || undefined;
-            }
-
-            let response;
-
-            // Remove password if editing and password is empty
-            if (editingUser && !formData.password) {
-                const { password, ...payloadWithoutPassword } = payload;
-                response = await httpService.put(`/users/${editingUser.id}`, payloadWithoutPassword);
-            } else {
-                response = editingUser
-                    ? await httpService.put(`/users/${editingUser.id}`, payload)
-                    : await httpService.post('/users', payload);
-            }
-
-            if (response.success) {
-                toast.success(`User ${editingUser ? 'updated' : 'created'} successfully`);
-                setDialogOpen(false);
-                loadUsers();
-            }
-        } catch (error) {
-            toast.error(`Failed to ${editingUser ? 'update' : 'create'} user`);
-        }
-    };
 
     const getRoleName = (user: User): string => {
         if (typeof user.role === 'object' && user.role?.displayName) {
@@ -372,135 +309,13 @@ export default function SuperAdminUserManagement() {
             </Card>
 
             {/* Create/Edit User Dialog */}
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
-                    <DialogHeader className="flex-shrink-0">
-                        <DialogTitle>
-                            {editingUser ? 'Edit User' : 'Create New User'}
-                        </DialogTitle>
-                        <DialogDescription>
-                            Configure user details and assign role
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <div className="flex-1 overflow-y-auto pr-2">
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label htmlFor="name">Full Name</Label>
-                                    <Input
-                                        id="name"
-                                        value={formData.name}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <Label htmlFor="email">Email</Label>
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        value={formData.email}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <Label htmlFor="password">
-                                    Password {editingUser && '(leave empty to keep current)'}
-                                </Label>
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    value={formData.password}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                                    required={!editingUser}
-                                />
-                            </div>
-
-                            <div>
-                                <Label htmlFor="role">Role</Label>
-                                <Select
-                                    value={formData.roleId}
-                                    onValueChange={(value) => setFormData(prev => ({ ...prev, roleId: value }))}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a role" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {roles.map((role) => (
-                                            <SelectItem key={role.id} value={role.id}>
-                                                {role.displayName}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label htmlFor="phone">Phone</Label>
-                                    <Input
-                                        id="phone"
-                                        value={formData.phone}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                                    />
-                                </div>
-                                <div>
-                                    <Label htmlFor="employeeId">Employee ID</Label>
-                                    {editingUser ? (
-                                        <Input
-                                            id="employeeId"
-                                            value={formData.employeeId}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, employeeId: e.target.value }))}
-                                        />
-                                    ) : (
-                                        <Input
-                                            id="employeeId"
-                                            value="Auto-generated"
-                                            disabled
-                                            className="text-muted-foreground bg-muted"
-                                        />
-                                    )}
-                                </div>
-                            </div>
-
-                            <div>
-                                <Label htmlFor="department">Department</Label>
-                                <Input
-                                    id="department"
-                                    value={formData.department}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
-                                />
-                            </div>
-
-                            <div className="flex items-center space-x-2">
-                                <Switch
-                                    id="isActive"
-                                    checked={formData.isActive}
-                                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
-                                />
-                                <Label htmlFor="isActive">Active</Label>
-                            </div>
-
-                            <div className="flex justify-end space-x-2 pt-4 border-t">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setDialogOpen(false)}
-                                >
-                                    Cancel
-                                </Button>
-                                <Button type="submit">
-                                    {editingUser ? 'Update User' : 'Create User'}
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
-                </DialogContent>
-            </Dialog>
+            <EnhancedUserForm
+                open={dialogOpen}
+                onOpenChange={setDialogOpen}
+                user={editingUser}
+                roles={roles}
+                onSave={handleUserSaved}
+            />
 
             {/* View User Dialog */}
             <Dialog open={!!viewingUser} onOpenChange={() => setViewingUser(null)}>
