@@ -1,5 +1,6 @@
-import { useCallback } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useApiRequest } from "./useApiHooks";
+import { httpService } from "../services/HttpService";
 
 /**
  * Hook for doctor management operations
@@ -15,6 +16,10 @@ export function useDoctorApi() {
         refresh
     } = useApiRequest('/doctors');
 
+    const [doctorUsers, setDoctorUsers] = useState<any[]>([]);
+    const [loadingDoctorUsers, setLoadingDoctorUsers] = useState(false);
+    const [doctorUsersError, setDoctorUsersError] = useState<string | null>(null);
+
     const createDoctor = useCallback(async (doctorData: any) => {
         const doctor = {
             ...doctorData,
@@ -25,6 +30,72 @@ export function useDoctorApi() {
         return createRecord(doctor);
     }, [createRecord]);
 
+    // Fetch users with doctor role
+    const fetchDoctorUsers = useCallback(async () => {
+        try {
+            setLoadingDoctorUsers(true);
+            setDoctorUsersError(null);
+
+            console.log('🔍 Fetching users to find doctor roles...');
+            const response = await httpService.get('/users');
+
+            if (response.success && response.data) {
+                // Filter users who have doctor role
+                const users = Array.isArray(response.data.data) ? response.data.data :
+                    Array.isArray(response.data) ? response.data : [];
+
+                console.log('📊 Total users fetched:', users.length);
+                console.log('👥 Users data:', users.map(u => ({
+                    name: u.name,
+                    role: u.role,
+                    roleId: u.roleId,
+                    isActive: u.isActive
+                })));
+
+                const doctorRoleUsers = users.filter((user: any) => {
+                    // Handle both object and string role structures
+                    if (typeof user.role === 'object' && user.role?.name) {
+                        return user.role.name === 'doctor' && user.isActive;
+                    }
+                    if (typeof user.role === 'string') {
+                        return user.role === 'doctor' && user.isActive;
+                    }
+                    return false;
+                });
+
+                console.log('👨‍⚕️ Users with doctor role found:', doctorRoleUsers.length);
+
+                // Transform to doctor-like format for compatibility
+                const transformedDoctors = doctorRoleUsers.map((user: any) => ({
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    phone: user.phone,
+                    department: user.department || 'General Medicine',
+                    specialization: user.specialization || user.department || 'General Medicine', // Use department as fallback
+                    isActive: user.isActive
+                }));
+
+                console.log('✅ Transformed doctor users:', transformedDoctors);
+                setDoctorUsers(transformedDoctors);
+            } else {
+                console.log('❌ No data in response:', response);
+                setDoctorUsers([]);
+            }
+        } catch (error) {
+            console.error('❌ Error fetching doctor users:', error);
+            setDoctorUsersError('Failed to fetch doctor users');
+            setDoctorUsers([]);
+        } finally {
+            setLoadingDoctorUsers(false);
+        }
+    }, []);
+
+    // Auto-fetch doctor users when hook is used
+    useEffect(() => {
+        fetchDoctorUsers();
+    }, [fetchDoctorUsers]);
+
     return {
         doctors,
         loading,
@@ -32,6 +103,11 @@ export function useDoctorApi() {
         createDoctor,
         updateDoctor: updateRecord,
         deleteDoctor: deleteRecord,
-        refreshDoctors: refresh
+        refreshDoctors: refresh,
+        // New doctor users functionality
+        doctorUsers,
+        loadingDoctorUsers,
+        doctorUsersError,
+        refreshDoctorUsers: fetchDoctorUsers
     };
 }

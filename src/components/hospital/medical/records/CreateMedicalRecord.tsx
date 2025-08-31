@@ -96,14 +96,10 @@ export default function CreateMedicalRecord() {
 
     const { patients } = usePatientApi()
     const { createMedicalRecord } = useMedicalRecordApi()
-    // const { doctors } = useDoctorApi() // Uncomment when hook is available
+    const { doctorUsers, loadingDoctorUsers } = useDoctorApi()
 
-    // Mock doctors data for now
-    const doctors = [
-        { id: 'doctor_1', name: 'Dr. Smith', specialization: 'Internal Medicine' },
-        { id: 'doctor_2', name: 'Dr. Johnson', specialization: 'Cardiology' },
-        { id: 'doctor_3', name: 'Dr. Williams', specialization: 'Pediatrics' }
-    ]
+    // Use real doctor users instead of mock data
+    const doctors = doctorUsers
 
     const selectedPatient = patients.find(p => p.id === formData.patient_id)
 
@@ -118,6 +114,14 @@ export default function CreateMedicalRecord() {
                 setActiveTab('basic')
                 return
             }
+
+            // Check if doctors are available
+            if (doctors.length === 0) {
+                toast.error('No doctors available. Please ensure users with doctor role exist in the system.')
+                setActiveTab('basic')
+                return
+            }
+
             if (!formData.doctor_id) {
                 toast.error('Please select a doctor')
                 setActiveTab('basic')
@@ -336,21 +340,63 @@ export default function CreateMedicalRecord() {
                                             <Select
                                                 value={formData.doctor_id}
                                                 onValueChange={(value) => setFormData(prev => ({ ...prev, doctor_id: value }))}
+                                                disabled={loadingDoctorUsers}
                                             >
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder="Select doctor" />
+                                                    <SelectValue
+                                                        placeholder={
+                                                            loadingDoctorUsers
+                                                                ? "Loading doctors..."
+                                                                : doctors.length === 0
+                                                                    ? "No doctors available"
+                                                                    : "Select doctor"
+                                                        }
+                                                    />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {doctors.filter(doctor => doctor.id && doctor.id.trim() !== '').map(doctor => (
-                                                        <SelectItem key={doctor.id} value={doctor.id}>
+                                                    {loadingDoctorUsers ? (
+                                                        <SelectItem value="0" disabled>
                                                             <div className="flex items-center gap-2">
-                                                                <StethoscopeIcon className="w-4 h-4" />
-                                                                {doctor.name} - {doctor.specialization}
+                                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-300"></div>
+                                                                Loading doctors...
                                                             </div>
                                                         </SelectItem>
-                                                    ))}
+                                                    ) : doctors.length === 0 ? (
+                                                        <SelectItem value="0" disabled>
+                                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                                <StethoscopeIcon className="w-4 h-4" />
+                                                                No doctors with doctor role found
+                                                            </div>
+                                                        </SelectItem>
+                                                    ) : (
+                                                        doctors
+                                                            .filter(doctor => doctor.id && doctor.id.trim() !== '' && doctor.isActive)
+                                                            .map(doctor => (
+                                                                <SelectItem key={doctor.id} value={doctor.id}>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <StethoscopeIcon className="w-4 h-4" />
+                                                                        {doctor.name} - {doctor.specialization}
+                                                                        {doctor.department && (
+                                                                            <span className="text-xs text-muted-foreground">
+                                                                                ({doctor.department})
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                </SelectItem>
+                                                            ))
+                                                    )}
                                                 </SelectContent>
                                             </Select>
+                                            {loadingDoctorUsers && (
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    Fetching users with doctor role...
+                                                </p>
+                                            )}
+                                            {!loadingDoctorUsers && doctors.length === 0 && (
+                                                <p className="text-xs text-amber-600 mt-1">
+                                                    No active users with doctor role found. Please ensure users are assigned the doctor role.
+                                                </p>
+                                            )}
                                         </div>
 
                                         <div>
