@@ -1,6 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Patient from '#models/patient'
-import Doctor from '#models/doctor'
 import Appointment from '#models/appointment'
 import MedicalRecord from '#models/medical_record'
 import Bill from '#models/bill'
@@ -26,11 +25,17 @@ export default class DashboardController {
                 .whereRaw('DATE(created_at) = CURDATE()')
                 .count('* as total')
 
-            // Doctor Statistics
-            const totalDoctors = await Doctor.query().count('* as total')
-            const availableDoctors = await Doctor.query()
-                .where('is_available', true)
-                .count('* as total')
+            // Doctor Statistics (Users with doctor role)
+            const doctorRole = await Role.query().where('name', 'doctor').first()
+            const totalDoctors = doctorRole
+                ? await User.query().where('role_id', doctorRole.id).count('* as total')
+                : [{ $extras: { total: 0 } }]
+            const availableDoctors = doctorRole
+                ? await User.query()
+                    .where('role_id', doctorRole.id)
+                    .where('is_active', true)
+                    .count('* as total')
+                : [{ $extras: { total: 0 } }]
 
             // Appointment Statistics
             const totalAppointments = await Appointment.query().count('* as total')
@@ -228,10 +233,10 @@ export default class DashboardController {
 
             // Department-wise appointments
             const departmentStats = await Appointment.query()
-                .join('doctors', 'appointments.doctor_id', 'doctors.id')
+                .join('users', 'appointments.doctor_id', 'users.id')
                 .whereRaw(`DATE(appointments.appointment_date) ${dateCondition}`)
-                .groupBy('doctors.department')
-                .select('doctors.department')
+                .groupBy('users.department')
+                .select('users.department')
                 .count('* as count')
 
             const analytics = {
@@ -330,31 +335,28 @@ export default class DashboardController {
             const user = auth.user!
             let userStats: any = {}
 
-            if (user.role.name === 'doctor') {
+            if (user.role?.name === 'doctor') {
                 // Doctor-specific stats
-                const doctor = await Doctor.query().where('user_id', user.id).first()
-                if (doctor) {
-                    const todayAppointments = await Appointment.query()
-                        .where('doctor_id', doctor.id)
-                        .whereRaw('DATE(appointment_date) = CURDATE()')
-                        .count('* as total')
+                const todayAppointments = await Appointment.query()
+                    .where('doctor_id', user.id)
+                    .whereRaw('DATE(appointment_date) = CURDATE()')
+                    .count('* as total')
 
-                    const pendingAppointments = await Appointment.query()
-                        .where('doctor_id', doctor.id)
-                        .where('status', 'scheduled')
-                        .count('* as total')
+                const pendingAppointments = await Appointment.query()
+                    .where('doctor_id', user.id)
+                    .where('status', 'scheduled')
+                    .count('* as total')
 
-                    const thisMonthPatients = await Appointment.query()
-                        .where('doctor_id', doctor.id)
-                        .whereRaw('MONTH(appointment_date) = MONTH(CURDATE())')
-                        .countDistinct('patient_id as total')
+                const thisMonthPatients = await Appointment.query()
+                    .where('doctor_id', user.id)
+                    .whereRaw('MONTH(appointment_date) = MONTH(CURDATE())')
+                    .countDistinct('patient_id as total')
 
-                    userStats = {
-                        role: 'doctor',
-                        todayAppointments: todayAppointments[0].$extras.total,
-                        pendingAppointments: pendingAppointments[0].$extras.total,
-                        thisMonthPatients: thisMonthPatients[0].$extras.total
-                    }
+                userStats = {
+                    role: 'doctor',
+                    todayAppointments: todayAppointments[0].$extras.total,
+                    pendingAppointments: pendingAppointments[0].$extras.total,
+                    thisMonthPatients: thisMonthPatients[0].$extras.total
                 }
             } else if (user.role.name === 'nurse' || user.role.name === 'receptionist') {
                 // Nurse/Receptionist stats
@@ -433,7 +435,10 @@ export default class DashboardController {
 
             // System Statistics
             const totalPatients = await Patient.query().count('* as total')
-            const totalDoctors = await Doctor.query().count('* as total')
+            const doctorRole = await Role.query().where('name', 'doctor').first()
+            const totalDoctors = doctorRole
+                ? await User.query().where('role_id', doctorRole.id).count('* as total')
+                : [{ $extras: { total: 0 } }]
             const totalAppointments = await Appointment.query().count('* as total')
 
             const dashboard = {

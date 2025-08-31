@@ -2,7 +2,7 @@ import { DateTime } from 'luxon'
 import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import Patient from './patient.js'
-import Doctor from './doctor.js'
+import User from './user.js'
 
 export default class LabTest extends BaseModel {
     public static table = 'lab_tests'
@@ -110,6 +110,6 @@ export default class LabTest extends BaseModel {
     @belongsTo(() => Patient)
     declare patient: BelongsTo<typeof Patient>
 
-    @belongsTo(() => Doctor)
-    declare doctor: BelongsTo<typeof Doctor>
+    @belongsTo(() => User)
+    declare doctor: BelongsTo<typeof User>
 }

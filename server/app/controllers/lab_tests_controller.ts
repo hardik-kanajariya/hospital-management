@@ -1,7 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import LabTest from '#models/lab_test'
 import Patient from '#models/patient'
-import Doctor from '#models/doctor'
+import User from '#models/user'
 import { DateTime } from 'luxon'
 import { v4 as uuid } from 'uuid'
 import { labTestValidator, updateLabTestValidator } from '#validators/lab_test'

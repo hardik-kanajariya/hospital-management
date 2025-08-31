@@ -1,7 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import MedicalRecord from '#models/medical_record'
 import Patient from '#models/patient'
-import Doctor from '#models/doctor'
+import User from '#models/user'
 import { DateTime } from 'luxon'
 import { v4 as uuid } from 'uuid'
 import { medicalRecordValidator, updateMedicalRecordValidator } from '#validators/medical_record'
@@ -90,7 +90,7 @@ export default class MedicalRecordsController {
 
             // Verify patient and doctor exist
             const patient = await Patient.find(payload.patientId)
-            const doctor = await Doctor.find(payload.doctorId)
+            const doctor = await User.find(payload.doctorId)
 
             if (!patient) {
                 return response.status(400).json({
