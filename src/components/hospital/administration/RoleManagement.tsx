@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     Table,
     TableBody,
@@ -21,7 +21,6 @@ import { httpService } from '@/services/HttpService';
 import { Role, Permission, RolePermission } from '@/types/auth';
 import { PlusIcon, PencilIcon, TrashIcon, UsersIcon, ShieldIcon, GearIcon } from '@phosphor-icons/react';
 import { toast } from 'sonner';
-import { RoleFieldManagement } from './RoleFieldManagement';
 
 interface RoleFormData {
     name: string;
@@ -33,12 +32,12 @@ interface RoleFormData {
 }
 
 export default function RoleManagement() {
+    const navigate = useNavigate();
     const [roles, setRoles] = useState<Role[]>([]);
     const [permissions, setPermissions] = useState<Permission[]>([]);
     const [loading, setLoading] = useState(true);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingRole, setEditingRole] = useState<Role | null>(null);
-    const [selectedRoleForFields, setSelectedRoleForFields] = useState<Role | null>(null);
     const [formData, setFormData] = useState<RoleFormData>({
         name: '',
         displayName: '',
@@ -201,137 +200,99 @@ export default function RoleManagement() {
 
     return (
         <div className="space-y-6">
-            <Tabs defaultValue="roles" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="roles">Role Management</TabsTrigger>
-                    <TabsTrigger value="fields">Role Fields</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="roles" className="space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <CardTitle>System Roles</CardTitle>
-                                    <CardDescription>
-                                        Manage roles and their associated permissions
-                                    </CardDescription>
-                                </div>
-                                <Button onClick={handleCreateRole}>
-                                    <PlusIcon className="h-4 w-4 mr-2" />
-                                    Create Role
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Role</TableHead>
-                                        <TableHead>Access Level</TableHead>
-                                        <TableHead>Users</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Type</TableHead>
-                                        <TableHead>Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {roles.map((role) => (
-                                        <TableRow key={role.id}>
-                                            <TableCell>
-                                                <div>
-                                                    <div className="font-medium">{role.displayName}</div>
-                                                    <div className="text-sm text-muted-foreground">
-                                                        {role.description}
-                                                    </div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant="secondary">
-                                                    Level {role.accessLevel}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center">
-                                                    <UsersIcon className="h-4 w-4 mr-1" />
-                                                    {role.userCount || 0}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant={role.isActive ? "default" : "secondary"}>
-                                                    {role.isActive ? "Active" : "Inactive"}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant={role.isSystemRole ? "destructive" : "outline"}>
-                                                    {role.isSystemRole ? "System" : "Custom"}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex space-x-2">
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => handleEditRole(role)}
-                                                        disabled={role.isSystemRole}
-                                                    >
-                                                        <PencilIcon className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => {
-                                                            setSelectedRoleForFields(role)
-                                                            // Switch to fields tab
-                                                            const tabsList = document.querySelector('[role="tablist"]')
-                                                            const fieldsTab = tabsList?.querySelector('[value="fields"]') as HTMLElement
-                                                            fieldsTab?.click()
-                                                        }}
-                                                        title="Configure Role Fields"
-                                                    >
-                                                        <GearIcon className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => handleDeleteRole(role)}
-                                                        disabled={role.isSystemRole || Boolean(role.userCount && role.userCount > 0)}
-                                                    >
-                                                        <TrashIcon className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-
-                <TabsContent value="fields" className="space-y-6">
-                    {selectedRoleForFields ? (
-                        <RoleFieldManagement
-                            roleId={selectedRoleForFields.id}
-                            roleName={selectedRoleForFields.displayName}
-                        />
-                    ) : (
-                        <Card>
-                            <CardContent className="pt-6">
-                                <div className="text-center py-8">
-                                    <GearIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                                        Select a Role to Configure Fields
-                                    </h3>
-                                    <p className="text-gray-500">
-                                        Choose a role from the Role Management tab to configure its custom fields
-                                    </p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-                </TabsContent>
-            </Tabs>
+            <Card>
+                <CardHeader>
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <CardTitle>System Roles</CardTitle>
+                            <CardDescription>
+                                Manage roles and their associated permissions. Click the gear icon to configure role-specific fields.
+                            </CardDescription>
+                        </div>
+                        <Button onClick={handleCreateRole}>
+                            <PlusIcon className="h-4 w-4 mr-2" />
+                            Create Role
+                        </Button>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Role</TableHead>
+                                <TableHead>Access Level</TableHead>
+                                <TableHead>Users</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Type</TableHead>
+                                <TableHead>Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {roles.map((role) => (
+                                <TableRow key={role.id}>
+                                    <TableCell>
+                                        <div>
+                                            <div className="font-medium">{role.displayName}</div>
+                                            <div className="text-sm text-muted-foreground">
+                                                {role.description}
+                                            </div>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant="secondary">
+                                            Level {role.accessLevel}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center">
+                                            <UsersIcon className="h-4 w-4 mr-1" />
+                                            {role.userCount || 0}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant={role.isActive ? "default" : "secondary"}>
+                                            {role.isActive ? "Active" : "Inactive"}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant={role.isSystemRole ? "destructive" : "outline"}>
+                                            {role.isSystemRole ? "System" : "Custom"}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex space-x-2">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleEditRole(role)}
+                                                disabled={role.isSystemRole}
+                                            >
+                                                <PencilIcon className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => navigate(`/admin/roles/${role.id}/fields`)}
+                                                title="Configure Role Fields"
+                                            >
+                                                <GearIcon className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleDeleteRole(role)}
+                                                disabled={role.isSystemRole || Boolean(role.userCount && role.userCount > 0)}
+                                            >
+                                                <TrashIcon className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col">

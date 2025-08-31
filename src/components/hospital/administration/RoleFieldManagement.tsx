@@ -11,6 +11,7 @@ import { Trash2, Plus, Edit, MoveUp, MoveDown } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { useNotifications } from '@/hooks/useNotifications'
+import { httpService } from '@/services/HttpService'
 
 interface RoleField {
     id: string
@@ -21,6 +22,7 @@ interface RoleField {
     isRequired: boolean
     sortOrder: number
     isActive: boolean
+    isSystemField: boolean
     description: string | null
     validationRules: Record<string, any>
 }
@@ -48,9 +50,10 @@ const FIELD_TYPES = [
 interface RoleFieldManagementProps {
     roleId: string
     roleName: string
+    isSystemRole?: boolean
 }
 
-export function RoleFieldManagement({ roleId, roleName }: RoleFieldManagementProps) {
+export function RoleFieldManagement({ roleId, roleName, isSystemRole = false }: RoleFieldManagementProps) {
     const [fields, setFields] = useState<RoleField[]>([])
     const [loading, setLoading] = useState(true)
     const [editingField, setEditingField] = useState<RoleField | null>(null)
@@ -64,18 +67,13 @@ export function RoleFieldManagement({ roleId, roleName }: RoleFieldManagementPro
     const fetchRoleFields = async () => {
         try {
             setLoading(true)
-            const response = await fetch(`/api/role-fields/role/${roleId}/fields`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            })
+            const response = await httpService.get(`/role-fields/role/${roleId}/fields`)
 
-            if (!response.ok) {
-                throw new Error('Failed to fetch role fields')
+            if (response.success) {
+                setFields(response.data || [])
+            } else {
+                throw new Error(response.message || 'Failed to fetch role fields')
             }
-
-            const result = await response.json()
-            setFields(result.data || [])
         } catch (error) {
             console.error('Error fetching role fields:', error)
             addNotification({
@@ -89,22 +87,17 @@ export function RoleFieldManagement({ roleId, roleName }: RoleFieldManagementPro
 
     const createDoctorTemplate = async () => {
         try {
-            const response = await fetch(`/api/role-fields/role/${roleId}/fields/doctor-template`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            })
+            const response = await httpService.post(`/role-fields/role/${roleId}/fields/doctor-template`, {})
 
-            if (!response.ok) {
-                throw new Error('Failed to create doctor template')
+            if (response.success) {
+                await fetchRoleFields()
+                addNotification({
+                    message: 'Doctor template fields created successfully',
+                    type: 'success'
+                })
+            } else {
+                throw new Error(response.message || 'Failed to create doctor template')
             }
-
-            await fetchRoleFields()
-            addNotification({
-                message: 'Doctor template fields created successfully',
-                type: 'success'
-            })
         } catch (error) {
             console.error('Error creating doctor template:', error)
             addNotification({
@@ -116,22 +109,17 @@ export function RoleFieldManagement({ roleId, roleName }: RoleFieldManagementPro
 
     const deleteField = async (fieldId: string) => {
         try {
-            const response = await fetch(`/api/role-fields/field/${fieldId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            })
+            const response = await httpService.delete(`/role-fields/field/${fieldId}`)
 
-            if (!response.ok) {
-                throw new Error('Failed to delete field')
+            if (response.success) {
+                await fetchRoleFields()
+                addNotification({
+                    message: 'Field deleted successfully',
+                    type: 'success'
+                })
+            } else {
+                throw new Error(response.message || 'Failed to delete field')
             }
-
-            await fetchRoleFields()
-            addNotification({
-                message: 'Field deleted successfully',
-                type: 'success'
-            })
         } catch (error) {
             console.error('Error deleting field:', error)
             addNotification({
@@ -143,20 +131,13 @@ export function RoleFieldManagement({ roleId, roleName }: RoleFieldManagementPro
 
     const updateFieldOrder = async (fieldId: string, newSortOrder: number) => {
         try {
-            const response = await fetch(`/api/role-fields/field/${fieldId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({ sortOrder: newSortOrder })
-            })
+            const response = await httpService.put(`/role-fields/field/${fieldId}`, { sortOrder: newSortOrder })
 
-            if (!response.ok) {
-                throw new Error('Failed to update field order')
+            if (response.success) {
+                await fetchRoleFields()
+            } else {
+                throw new Error(response.message || 'Failed to update field order')
             }
-
-            await fetchRoleFields()
         } catch (error) {
             console.error('Error updating field order:', error)
             addNotification({
@@ -166,7 +147,29 @@ export function RoleFieldManagement({ roleId, roleName }: RoleFieldManagementPro
         }
     }
 
-    const moveField = (fieldId: string, direction: 'up' | 'down') => {
+    const toggleFieldActive = async (fieldId: string, isActive: boolean) => {
+        try {
+            const response = await httpService.put(`/role-fields/field/${fieldId}`, { isActive })
+
+            if (response.success) {
+                await fetchRoleFields()
+                addNotification({
+                    message: `Field ${isActive ? 'activated' : 'deactivated'} successfully`,
+                    type: 'success'
+                })
+            } else {
+                throw new Error(response.message || 'Failed to update field status')
+            }
+        } catch (error) {
+            console.error('Error updating field status:', error)
+            addNotification({
+                message: 'Failed to update field status',
+                type: 'error'
+            })
+        }
+    }
+
+    const moveField = async (fieldId: string, direction: 'up' | 'down') => {
         const currentIndex = fields.findIndex(f => f.id === fieldId)
         const currentField = fields[currentIndex]
 
@@ -252,6 +255,16 @@ export function RoleFieldManagement({ roleId, roleName }: RoleFieldManagementPro
                                             <Badge variant="outline">
                                                 {FIELD_TYPES.find(t => t.value === field.fieldType)?.label || field.fieldType}
                                             </Badge>
+                                            {field.isSystemField && (
+                                                <Badge variant="destructive" className="text-xs">
+                                                    System Field
+                                                </Badge>
+                                            )}
+                                            {!field.isActive && (
+                                                <Badge variant="secondary" className="text-xs">
+                                                    Inactive
+                                                </Badge>
+                                            )}
                                         </div>
                                         <p className="text-sm text-gray-600">
                                             Field name: <code className="bg-gray-100 px-1 rounded">{field.fieldName}</code>
@@ -284,30 +297,46 @@ export function RoleFieldManagement({ roleId, roleName }: RoleFieldManagementPro
                                                 setEditingField(field)
                                                 setShowFieldDialog(true)
                                             }}
+                                            disabled={field.isSystemField}
+                                            title={field.isSystemField ? "System fields cannot be edited" : "Edit field"}
                                         >
                                             <Edit className="h-4 w-4" />
                                         </Button>
-                                        <AlertDialog>
-                                            <AlertDialogTrigger asChild>
-                                                <Button size="sm" variant="outline">
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </AlertDialogTrigger>
-                                            <AlertDialogContent>
-                                                <AlertDialogHeader>
-                                                    <AlertDialogTitle>Delete Field</AlertDialogTitle>
-                                                    <AlertDialogDescription>
-                                                        Are you sure you want to delete "{field.fieldLabel}"? This action cannot be undone.
-                                                    </AlertDialogDescription>
-                                                </AlertDialogHeader>
-                                                <AlertDialogFooter>
-                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => deleteField(field.id)}>
-                                                        Delete
-                                                    </AlertDialogAction>
-                                                </AlertDialogFooter>
-                                            </AlertDialogContent>
-                                        </AlertDialog>
+
+                                        {field.isSystemField ? (
+                                            // For system fields, show toggle active/inactive button instead of delete
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => toggleFieldActive(field.id, !field.isActive)}
+                                                title={field.isActive ? "Deactivate field" : "Activate field"}
+                                            >
+                                                <Switch checked={field.isActive} />
+                                            </Button>
+                                        ) : (
+                                            // For custom fields, show delete button
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button size="sm" variant="outline" title="Delete field">
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Delete Field</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            Are you sure you want to delete "{field.fieldLabel}"? This action cannot be undone.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => deleteField(field.id)}>
+                                                            Delete
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        )}
                                     </div>
                                 </div>
                             ))}

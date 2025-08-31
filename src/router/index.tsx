@@ -20,6 +20,7 @@ import BedManagement from '../components/hospital/facilities/BedManagement';
 import NotificationCenter from '../components/hospital/notifications/NotificationCenter';
 import SuperAdminDashboard from '../components/hospital/administration/SuperAdminDashboard';
 import RoleManagement from '../components/hospital/administration/RoleManagement';
+import RoleFieldsPage from '../components/hospital/administration/RoleFieldsPage';
 import SuperAdminUserManagement from '../components/hospital/administration/SuperAdminUserManagement';
 import MastersManagement from '../components/hospital/administration/MastersManagement';
 import SystemSettingsPage from '../components/hospital/administration/SystemSettingsPage';
@@ -256,6 +257,14 @@ export const router = createBrowserRouter([
                 element: (
                     <ProtectedRoute requiredRole="super_admin">
                         <RoleManagement />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'admin/roles/:roleId/fields',
+                element: (
+                    <ProtectedRoute requiredRole="super_admin">
+                        <RoleFieldsPage />
                     </ProtectedRoute>
                 )
             },

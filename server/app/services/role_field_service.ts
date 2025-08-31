@@ -49,6 +49,7 @@ export default class RoleFieldService {
         roleField.description = fieldData.description || null
         roleField.validationRules = fieldData.validationRules || {}
         roleField.isActive = true
+        roleField.isSystemField = (fieldData as any).isSystemField || false
 
         await roleField.save()
         return roleField

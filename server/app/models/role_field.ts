@@ -42,6 +42,9 @@ export default class RoleField extends BaseModel {
     @column({ columnName: 'is_active' })
     declare isActive: boolean
 
+    @column({ columnName: 'is_system_field' })
+    declare isSystemField: boolean
+
     @column()
     declare description: string | null
 
