@@ -65,12 +65,18 @@ export default class Prescription extends BaseModel {
     declare updatedAt: DateTime
 
     // Relationships
-    @belongsTo(() => Patient)
+    @belongsTo(() => Patient, {
+        foreignKey: 'patientId'
+    })
     declare patient: BelongsTo<typeof Patient>
 
-    @belongsTo(() => User)
+    @belongsTo(() => User, {
+        foreignKey: 'doctorId'
+    })
     declare doctor: BelongsTo<typeof User>
 
-    @belongsTo(() => Appointment)
+    @belongsTo(() => Appointment, {
+        foreignKey: 'appointmentId'
+    })
     declare appointment: BelongsTo<typeof Appointment>
 }

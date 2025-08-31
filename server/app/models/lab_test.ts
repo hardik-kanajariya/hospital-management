@@ -107,9 +107,13 @@ export default class LabTest extends BaseModel {
     declare updatedAt: DateTime
 
     // Relationships
-    @belongsTo(() => Patient)
+    @belongsTo(() => Patient, {
+        foreignKey: 'patientId'
+    })
     declare patient: BelongsTo<typeof Patient>
 
-    @belongsTo(() => User)
+    @belongsTo(() => User, {
+        foreignKey: 'doctorId'
+    })
     declare doctor: BelongsTo<typeof User>
 }
