@@ -4,6 +4,16 @@ import { useNavigation } from '@/hooks/useNavigation'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
 import { useAuth } from '@/hooks/useAuth'
+import { Icon } from '@phosphor-icons/react'
+
+interface TabItem {
+  id: string
+  label: string
+  icon: Icon
+  module: string
+  path: string
+  requiresRole?: string
+}
 import {
   Sidebar,
   SidebarContent,
@@ -60,7 +70,7 @@ function App() {
       ? user.role?.name === 'super_admin'
       : user.role === 'super_admin';
 
-    const tabs = [
+    const tabs: TabItem[] = [
       { id: 'landing', label: 'Home', icon: HouseIcon, module: 'dashboard', path: '/landing' },
       { id: 'dashboard', label: 'Dashboard', icon: PulseIcon, module: 'dashboard', path: '/dashboard' },
       { id: 'patients', label: 'Patients', icon: UsersIcon, module: 'patients', path: '/patients' },
