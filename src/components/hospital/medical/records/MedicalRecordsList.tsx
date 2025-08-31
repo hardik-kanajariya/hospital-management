@@ -61,7 +61,7 @@ export default function MedicalRecordsList() {
 
     // Debug logging
     useEffect(() => {
-        
+
     }, [medicalRecords, loading, patientId, selectedPatient])
 
     // Update selected patient when patientId changes
@@ -156,17 +156,8 @@ export default function MedicalRecordsList() {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <FileTextIcon className="w-6 h-6 text-primary" />
-                    <div>
-                        <h1 className="text-2xl font-bold">Medical Records</h1>
-                        <p className="text-muted-foreground">
-                            {patientId ? 'Patient Medical History' : 'Manage all medical records'}
-                        </p>
-                    </div>
-                </div>
+            {/* Actions */}
+            <div className="flex items-center justify-end">
                 <Button onClick={() => navigate('/medical-records/create')}>
                     <PlusIcon className="w-4 h-4 mr-2" />
                     New Medical Record

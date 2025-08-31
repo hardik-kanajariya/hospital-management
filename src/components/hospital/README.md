@@ -13,7 +13,7 @@ This directory contains all hospital management components organized into logica
 - `PatientManagement.tsx` - Main patient management hub
 
 ### 📅 **appointments/** - Appointment Management
-- `AppointmentScheduling.tsx` - Appointment booking and scheduling system
+- `AppointmentList.tsx` - Appointment booking and scheduling system
 
 ### 👨‍⚕️ **doctors/** - Doctor Management
 - `DoctorSchedule.tsx` - Doctor availability and schedule management
@@ -51,7 +51,7 @@ This directory contains all hospital management components organized into logica
 ### Import Individual Components
 ```typescript
 import { CreatePatient, PatientList } from '@/components/hospital/patients'
-import { AppointmentScheduling } from '@/components/hospital/appointments'
+import { AppointmentList } from '@/components/hospital/appointments'
 import { Dashboard } from '@/components/hospital/dashboard'
 ```
 

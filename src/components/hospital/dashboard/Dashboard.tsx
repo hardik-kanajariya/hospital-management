@@ -79,25 +79,11 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Welcome Message */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Welcome back, {user?.name}</h1>
-          <p className="text-muted-foreground">
-            {getRoleSpecificWelcome()}
-          </p>
-        </div>
+      {/* Quick Actions or Welcome Note - more compact */}
+      <div className="flex items-center justify-end">
         <div className="text-right">
-          <Badge variant={user?.role?.name === 'super_admin' ? 'destructive' : 'secondary'} className="mb-2">
-            {user?.role?.name?.replace('_', ' ').toUpperCase()}
-          </Badge>
           <p className="text-sm text-muted-foreground">
-            {new Date().toLocaleDateString('en-IN', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}
+            {getRoleSpecificWelcome()}
           </p>
         </div>
       </div>

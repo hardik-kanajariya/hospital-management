@@ -213,12 +213,7 @@ export default function DoctorSchedule() {
   return (
     <div className="space-y-6">
       {/* Header Actions */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold">Doctor Schedule Management</h3>
-          <p className="text-muted-foreground">Manage doctor schedules, availability and shifts</p>
-        </div>
-
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-end">
         <div className="flex gap-2">
           <Button
             variant="outline"

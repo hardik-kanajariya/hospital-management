@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { PageHeader } from '@/components/ui/page-header'
 import { useNavigate } from 'react-router-dom'
 import {
     UsersIcon,
@@ -115,71 +116,43 @@ export default function PatientList() {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <UsersIcon className="w-6 h-6 text-primary" />
-                    <h1 className="text-2xl font-bold">Patient Management</h1>
-                </div>
+            {/* Enhanced Page Header with Stats */}
+            <PageHeader
+                stats={stats ? [
+                    {
+                        label: 'Total Patients',
+                        value: stats.totalPatients || 0,
+                        icon: UsersIcon,
+                        color: 'bg-blue-100 text-blue-600'
+                    },
+                    {
+                        label: 'New This Month',
+                        value: stats.newPatientsThisMonth || 0,
+                        icon: CalendarIcon,
+                        color: 'bg-green-100 text-green-600'
+                    },
+                    {
+                        label: 'Recent Registrations',
+                        value: stats.recentRegistrations || 0,
+                        icon: UserIcon,
+                        color: 'bg-orange-100 text-orange-600'
+                    },
+                    {
+                        label: 'Monthly Growth',
+                        value: `${stats.growth?.monthly || 0}%`,
+                        icon: ArrowUpIcon,
+                        color: 'bg-purple-100 text-purple-600'
+                    }
+                ] : undefined}
+                actions={
+                    <Button onClick={() => navigate('/patients/create')}>
+                        <PlusIcon className="w-4 h-4 mr-2" />
+                        Add New Patient
+                    </Button>
+                }
+            />
 
-                <Button onClick={() => navigate('/patients/create')}>
-                    <PlusIcon className="w-4 h-4 mr-2" />
-                    Add New Patient
-                </Button>
-            </div>
-
-            {/* Statistics Cards */}
-            {stats && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card>
-                        <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Total Patients</p>
-                                    <p className="text-2xl font-bold">{stats.totalPatients || 0}</p>
-                                </div>
-                                <UsersIcon className="w-8 h-8 text-blue-500" />
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">New This Month</p>
-                                    <p className="text-2xl font-bold">{stats.newPatientsThisMonth || 0}</p>
-                                </div>
-                                <CalendarIcon className="w-8 h-8 text-green-500" />
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Recent Registrations</p>
-                                    <p className="text-2xl font-bold">{stats.recentRegistrations || 0}</p>
-                                </div>
-                                <UsersIcon className="w-8 h-8 text-orange-500" />
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Monthly Growth</p>
-                                    <p className="text-2xl font-bold">{stats.growth?.monthly || 0}%</p>
-                                </div>
-                                <ArrowUpIcon className="w-8 h-8 text-green-600" />
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
+            {/* Remove old statistics cards section since it's now in the header */}
 
             {/* Search and Filters */}
             <Card>

@@ -10,7 +10,6 @@ import PatientList from '../components/hospital/patients/PatientList';
 import CreatePatient from '../components/hospital/patients/CreatePatient';
 import PatientProfile from '../components/hospital/patients/PatientProfile';
 import EditPatient from '../components/hospital/patients/EditPatient';
-import AppointmentScheduling from '../components/hospital/appointments/AppointmentScheduling';
 import EnhancedBillingSystem from '../components/hospital/billing/EnhancedBillingSystem';
 import InventoryManagement from '../components/hospital/inventory/InventoryManagement';
 import DoctorSchedule from '../components/hospital/doctors/DoctorSchedule';
@@ -34,6 +33,9 @@ import MedicalRecordsList from '../components/hospital/medical/records/MedicalRe
 import CreateMedicalRecord from '../components/hospital/medical/records/CreateMedicalRecord';
 import ViewMedicalRecord from '../components/hospital/medical/records/ViewMedicalRecord';
 import EditMedicalRecord from '../components/hospital/medical/records/EditMedicalRecord';
+import AppointmentList from '@/components/hospital/appointments/AppointmentList';
+import CreateAppointment from '@/components/hospital/appointments/CreateAppointment';
+import { EditAppointment } from '@/components/hospital';
 
 export const router = createBrowserRouter([
     {
@@ -165,7 +167,27 @@ export const router = createBrowserRouter([
                 element: (
                     <ProtectedRoute>
                         <RoleBasedAccess requiredModule="appointments">
-                            <AppointmentScheduling />
+                            <AppointmentList />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'appointment/create',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="appointments">
+                            <CreateAppointment />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'appointment/:id',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="appointments">
+                            <EditAppointment appointment={null} />
                         </RoleBasedAccess>
                     </ProtectedRoute>
                 )

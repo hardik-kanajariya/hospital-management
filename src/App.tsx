@@ -287,14 +287,81 @@ function App() {
 
         {/* Main Content */}
         <div className="flex flex-col flex-1 min-w-0">
-          {/* Header */}
-          <header className="border-b bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50">
-            <div className="flex items-center justify-between h-16 px-6">
+          {/* Enhanced Header */}
+          <header className="border-b bg-gradient-to-r from-card/80 to-card/60 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+            <div className="flex items-center justify-between min-h-20 px-6 py-4">
               <div className="flex items-center gap-4">
                 <SidebarTrigger className="lg:hidden" />
-                <div>
-                  <h1 className="text-xl font-semibold text-foreground">{getPageTitle()}</h1>
-                  <p className="text-sm text-muted-foreground">{getPageDescription()}</p>
+                <div className="flex items-center gap-4">
+                  {/* Page Icon */}
+                  <div className="flex items-center justify-center w-12 h-12 bg-primary/10 text-primary rounded-xl">
+                    {(() => {
+                      const currentPath = location.pathname.slice(1)
+                      switch (currentPath) {
+                        case 'dashboard': return <PulseIcon className="w-6 h-6" />
+                        case 'patients': return <UsersIcon className="w-6 h-6" />
+                        case 'appointments': return <CalendarIcon className="w-6 h-6" />
+                        case 'records': return <FileTextIcon className="w-6 h-6" />
+                        case 'doctors': return <UserCircleIcon className="w-6 h-6" />
+                        case 'lab': return <TestTubeIcon className="w-6 h-6" />
+                        case 'beds': return <BedIcon className="w-6 h-6" />
+                        case 'billing': return <CreditCardIcon className="w-6 h-6" />
+                        case 'inventory': return <PackageIcon className="w-6 h-6" />
+                        case 'notifications': return <BellIcon className="w-6 h-6" />
+                        case 'users': return <UsersIcon className="w-6 h-6" />
+                        case 'admin': return <ShieldIcon className="w-6 h-6" />
+                        case 'admin/roles': return <KeyIcon className="w-6 h-6" />
+                        case 'masters': return <StackIcon className="w-6 h-6" />
+                        case 'landing': return <HouseIcon className="w-6 h-6" />
+                        default: return <HouseIcon className="w-6 h-6" />
+                      }
+                    })()}
+                  </div>
+
+                  {/* Page Title and Description */}
+                  <div>
+                    <h1 className="text-2xl font-bold text-foreground">{getPageTitle()}</h1>
+                    <p className="text-sm text-muted-foreground">{getPageDescription()}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Header Actions Area */}
+              <div className="flex items-center gap-3">
+                {/* Current Date & Time */}
+                <div className="hidden md:flex flex-col items-end text-right">
+                  <p className="text-sm font-medium text-foreground">
+                    {new Date().toLocaleDateString('en-US', {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date().toLocaleTimeString('en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                </div>
+
+                {/* User Info Badge */}
+                <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
+                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
+                    {user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U'}
+                  </div>
+                  <div className="hidden sm:block">
+                    <p className="text-sm font-medium">{user?.name || 'User'}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {user ? (
+                        typeof user.role === 'object'
+                          ? user.role?.displayName || 'USER'
+                          : typeof user.role === 'string'
+                            ? (user.role as string).replace('_', ' ').toUpperCase()
+                            : 'USER'
+                      ) : 'USER'}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
