@@ -23,7 +23,7 @@ export default class MedicalRecord extends BaseModel {
     @column({ columnName: 'appointment_id' })
     declare appointmentId: string | null
 
-    @column({ columnName: 'visit_date' })
+    @column.dateTime({ columnName: 'visit_date' })
     declare visitDate: DateTime
 
     @column()
@@ -87,7 +87,7 @@ export default class MedicalRecord extends BaseModel {
     })
     declare followUpInstructions: string[]
 
-    @column({ columnName: 'next_visit_date' })
+    @column.dateTime({ columnName: 'next_visit_date' })
     declare nextVisitDate: DateTime | null
 
     @column({
@@ -110,12 +110,18 @@ export default class MedicalRecord extends BaseModel {
     declare updatedAt: DateTime
 
     // Relationships
-    @belongsTo(() => Patient)
+    @belongsTo(() => Patient, {
+        foreignKey: 'patientId'
+    })
     declare patient: BelongsTo<typeof Patient>
 
-    @belongsTo(() => User)
+    @belongsTo(() => User, {
+        foreignKey: 'doctorId'
+    })
     declare doctor: BelongsTo<typeof User>
 
-    @belongsTo(() => Appointment)
+    @belongsTo(() => Appointment, {
+        foreignKey: 'appointmentId'
+    })
     declare appointment: BelongsTo<typeof Appointment>
 }

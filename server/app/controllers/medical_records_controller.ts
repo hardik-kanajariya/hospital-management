@@ -116,13 +116,13 @@ export default class MedicalRecordsController {
             medicalRecord.patientId = payload.patientId
             medicalRecord.doctorId = payload.doctorId
             medicalRecord.appointmentId = payload.appointmentId || null
-            medicalRecord.visitDate = payload.visitDate ? DateTime.fromJSDate(payload.visitDate) : DateTime.now()
+            medicalRecord.visitDate = payload.visitDate ? DateTime.fromJSDate(new Date(payload.visitDate)) : DateTime.now()
             medicalRecord.diagnosis = payload.diagnosis
             medicalRecord.treatment = payload.treatment
             medicalRecord.medications = payload.medications || []
             medicalRecord.labResults = payload.labResults || []
             medicalRecord.followUpInstructions = payload.followUpInstructions || []
-            medicalRecord.nextVisitDate = payload.nextVisitDate ? DateTime.fromJSDate(payload.nextVisitDate) : null
+            medicalRecord.nextVisitDate = payload.nextVisitDate ? DateTime.fromJSDate(new Date(payload.nextVisitDate)) : null
             medicalRecord.vitalSigns = payload.vitalSigns || {}
             medicalRecord.notes = payload.notes || null
             medicalRecord.attachments = payload.attachments || []
@@ -164,13 +164,13 @@ export default class MedicalRecordsController {
 
             const payload = await request.validateUsing(updateMedicalRecordValidator)
 
-            if (payload.visitDate !== undefined) medicalRecord.visitDate = payload.visitDate ? DateTime.fromJSDate(payload.visitDate) : DateTime.now()
+            if (payload.visitDate !== undefined) medicalRecord.visitDate = payload.visitDate ? DateTime.fromJSDate(new Date(payload.visitDate)) : DateTime.now()
             if (payload.diagnosis !== undefined) medicalRecord.diagnosis = payload.diagnosis
             if (payload.treatment !== undefined) medicalRecord.treatment = payload.treatment
             if (payload.medications !== undefined) medicalRecord.medications = payload.medications
             if (payload.labResults !== undefined) medicalRecord.labResults = payload.labResults
             if (payload.followUpInstructions !== undefined) medicalRecord.followUpInstructions = payload.followUpInstructions
-            if (payload.nextVisitDate !== undefined) medicalRecord.nextVisitDate = payload.nextVisitDate ? DateTime.fromJSDate(payload.nextVisitDate) : null
+            if (payload.nextVisitDate !== undefined) medicalRecord.nextVisitDate = payload.nextVisitDate ? DateTime.fromJSDate(new Date(payload.nextVisitDate)) : null
             if (payload.vitalSigns !== undefined) medicalRecord.vitalSigns = payload.vitalSigns
             if (payload.notes !== undefined) medicalRecord.notes = payload.notes || null
             if (payload.attachments !== undefined) medicalRecord.attachments = payload.attachments
