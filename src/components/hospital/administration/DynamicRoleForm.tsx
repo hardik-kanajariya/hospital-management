@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CalendarIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
+import { httpService } from '@/services/HttpService'
 import { useNotifications } from '@/hooks/useNotifications'
 
 interface RoleFieldSchema {
@@ -62,18 +63,13 @@ export function DynamicRoleForm({ roleId, initialData = {}, onSubmit, className 
     const fetchRoleSchema = async () => {
         try {
             setLoading(true)
-            const response = await fetch(`/api/role-fields/role/${roleId}/schema`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            })
+            const response = await httpService.get(`/role-fields/role/${roleId}/schema`)
 
-            if (!response.ok) {
-                throw new Error('Failed to fetch role schema')
+            if (response.success) {
+                setSchema(response.data || [])
+            } else {
+                throw new Error(response.message || 'Failed to fetch role schema')
             }
-
-            const result = await response.json()
-            setSchema(result.data || [])
         } catch (error) {
             console.error('Error fetching role schema:', error)
             addNotification({
