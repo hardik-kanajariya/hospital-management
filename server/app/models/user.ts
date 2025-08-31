@@ -97,7 +97,7 @@ export default class User extends compose(BaseModel, AuthFinder) {
       // Access pivot data correctly - cast to any to access $pivot
       const pivotData = (permission as any).$pivot
       let actions: string[] = []
-      
+
       if (pivotData?.actions) {
         // If actions is already an array
         if (Array.isArray(pivotData.actions)) {
@@ -111,7 +111,7 @@ export default class User extends compose(BaseModel, AuthFinder) {
           }
         }
       }
-      
+
       return {
         module: permission.module,
         actions

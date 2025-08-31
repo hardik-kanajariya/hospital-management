@@ -44,7 +44,7 @@ export default function CreateUser() {
 
     useEffect(() => {
         loadRoles()
-        
+
         // Handle role preselection from URL parameters
         const preSelectedRole = searchParams.get('role')
         if (preSelectedRole && roles.length > 0) {
@@ -83,7 +83,7 @@ export default function CreateUser() {
             }
 
             const response = await httpService.post('/users', payload)
-            
+
             if (response.success) {
                 addNotification({ type: 'success', message: 'User created successfully' })
                 navigate('/users')
@@ -92,9 +92,9 @@ export default function CreateUser() {
             }
         } catch (error: any) {
             console.error('Error creating user:', error)
-            addNotification({ 
-                type: 'error', 
-                message: error.response?.data?.message || 'Failed to create user' 
+            addNotification({
+                type: 'error',
+                message: error.response?.data?.message || 'Failed to create user'
             })
         } finally {
             setLoading(false)
@@ -112,9 +112,9 @@ export default function CreateUser() {
             <Card>
                 <CardHeader>
                     <div className="flex items-center space-x-4">
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={handleCancel}
                             className="p-2"
                         >
@@ -223,9 +223,9 @@ export default function CreateUser() {
 
                                 {formData.roleId && (
                                     <div className="pt-4">
-                                        <Button 
-                                            type="button" 
-                                            variant="outline" 
+                                        <Button
+                                            type="button"
+                                            variant="outline"
                                             onClick={() => setActiveTab('role')}
                                         >
                                             Continue to Role Details →

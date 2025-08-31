@@ -122,9 +122,9 @@ export default function ViewUser() {
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
-                            <Button 
-                                variant="ghost" 
-                                size="sm" 
+                            <Button
+                                variant="ghost"
+                                size="sm"
                                 onClick={handleBack}
                                 className="p-2"
                             >
