@@ -273,27 +273,6 @@ export default function MastersManagement() {
         setIsDialogOpen(true)
     }
 
-    // Seed Data functionality
-    const handleSeedData = async () => {
-        if (!confirm('This will populate the system with default master data. Are you sure?')) {
-            return
-        }
-
-        setIsSeeding(true)
-        try {
-            const result = await seedMasterData()
-            if (result.success) {
-                // Refresh the current category data
-                await fetchMasterData({ category: selectedCategory })
-            }
-        } catch (error) {
-            console.error('Seed data error:', error)
-            toast.error('Failed to seed master data')
-        } finally {
-            setIsSeeding(false)
-        }
-    }
-
     // Export functionality
     const handleExport = async () => {
         setIsExporting(true)
@@ -508,15 +487,6 @@ export default function MastersManagement() {
                     >
                         <UploadIcon className="h-4 w-4" />
                         {isImporting ? 'Importing...' : 'Import'}
-                    </Button>
-                    <Button
-                        variant="outline"
-                        className="flex items-center gap-2"
-                        onClick={handleSeedData}
-                        disabled={isSeeding}
-                    >
-                        <PlantIcon className="h-4 w-4" />
-                        {isSeeding ? 'Seeding...' : 'Seed Data'}
                     </Button>
                 </div>
             </div>

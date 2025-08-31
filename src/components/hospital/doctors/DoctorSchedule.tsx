@@ -22,20 +22,6 @@ import {
 import { toast } from 'sonner'
 import { useDoctorApi } from '@/hooks/useDoctorApi'
 
-interface Doctor {
-  id: string
-  name: string
-  specialization: string
-  phone: string
-  email: string
-  licenseNumber: string
-  experience: number
-  consultationFee: number
-  department: string
-  status: 'active' | 'inactive'
-  joiningDate: string
-}
-
 interface Schedule {
   id: string
   doctorId: string
@@ -58,34 +44,18 @@ interface Availability {
   replacement?: string
 }
 
-const specializations = [
-  'General Medicine', 'Cardiology', 'Pediatrics', 'Orthopedics',
-  'Gynecology', 'Surgery', 'Psychiatry', 'Dermatology', 'Neurology', 'Emergency Medicine'
-]
-
-const departments = [
-  'Emergency', 'General Medicine', 'Surgery', 'Pediatrics', 'Maternity', 'Orthopedics'
-]
-
 const daysOfWeek = [
   'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
 ]
 
 export default function DoctorSchedule() {
   const navigate = useNavigate()
-  const { doctors, createDoctor, updateDoctor } = useDoctorApi()
+  const { doctors } = useDoctorApi()
   // For schedules and availability, we'll use local state for now since they're not in the API hooks
   const [schedules, setSchedules] = useState<Schedule[]>([])
   const [availability, setAvailability] = useState<Availability[]>([])
-
-  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null)
-  const [isDoctorDialogOpen, setIsDoctorDialogOpen] = useState(false)
   const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false)
   const [isAvailabilityDialogOpen, setIsAvailabilityDialogOpen] = useState(false)
-
-  const [doctorFormData, setDoctorFormData] = useState<Partial<Doctor>>({
-    status: 'active'
-  })
 
   const [scheduleFormData, setScheduleFormData] = useState<Partial<Schedule>>({
     status: 'active',
@@ -95,35 +65,6 @@ export default function DoctorSchedule() {
   const [availabilityFormData, setAvailabilityFormData] = useState<Partial<Availability>>({
     isAvailable: false
   })
-
-  const handleAddDoctor = async () => {
-    if (!doctorFormData.name || !doctorFormData.specialization || !doctorFormData.phone) {
-      toast.error('Please fill in all required fields')
-      return
-    }
-
-    try {
-      const newDoctor: Omit<Doctor, 'id'> = {
-        name: doctorFormData.name!,
-        specialization: doctorFormData.specialization!,
-        phone: doctorFormData.phone!,
-        email: doctorFormData.email || '',
-        licenseNumber: doctorFormData.licenseNumber || '',
-        experience: Number(doctorFormData.experience) || 0,
-        consultationFee: Number(doctorFormData.consultationFee) || 0,
-        department: doctorFormData.department || '',
-        status: doctorFormData.status as 'active' | 'inactive',
-        joiningDate: new Date().toISOString().split('T')[0]
-      }
-
-      await createDoctor(newDoctor)
-      setDoctorFormData({ status: 'active' })
-      setIsDoctorDialogOpen(false)
-      toast.success('Doctor added successfully')
-    } catch (error) {
-      console.error('Failed to create doctor:', error)
-    }
-  }
 
   const handleAddSchedule = () => {
     if (!scheduleFormData.doctorId || !scheduleFormData.dayOfWeek || !scheduleFormData.startTime || !scheduleFormData.endTime) {
@@ -223,7 +164,7 @@ export default function DoctorSchedule() {
           <Button
             variant="outline"
             className="flex items-center gap-2"
-            onClick={() => navigate('/users?role=doctor')}
+            onClick={() => navigate('/users/create?role=doctor')}
           >
             <UserCircleIcon className="h-4 w-4" />
             Add Doctor
