@@ -1,2 +1,2 @@
 // Medical Records Module - Centralized exports
-export { default as MedicalRecords } from './MedicalRecords'
+export { default as MedicalRecordList } from './records/MedicalRecordsList'

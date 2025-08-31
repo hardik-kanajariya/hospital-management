@@ -19,7 +19,7 @@ This directory contains all hospital management components organized into logica
 - `DoctorSchedule.tsx` - Doctor availability and schedule management
 
 ### 📋 **medical/** - Medical Records
-- `MedicalRecords.tsx` - Patient medical history and records management
+- `MedicalRecordsList.tsx` - Patient medical history and records management
 
 ### 💰 **billing/** - Billing System
 - `BillingSystem.tsx` - Basic billing functionality

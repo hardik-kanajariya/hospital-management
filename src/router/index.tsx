@@ -11,7 +11,6 @@ import CreatePatient from '../components/hospital/patients/CreatePatient';
 import PatientProfile from '../components/hospital/patients/PatientProfile';
 import EditPatient from '../components/hospital/patients/EditPatient';
 import AppointmentScheduling from '../components/hospital/appointments/AppointmentScheduling';
-import MedicalRecords from '../components/hospital/medical/MedicalRecords';
 import EnhancedBillingSystem from '../components/hospital/billing/EnhancedBillingSystem';
 import InventoryManagement from '../components/hospital/inventory/InventoryManagement';
 import DoctorSchedule from '../components/hospital/doctors/DoctorSchedule';

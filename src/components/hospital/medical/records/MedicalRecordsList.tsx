@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -7,15 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import {
     FileTextIcon,
     PlusIcon,
-    MagnifyingGlassIcon,
     EyeIcon,
     PencilSimpleIcon,
     CalendarIcon,
     UserIcon,
-    StethoscopeIcon
-} from '@phosphor-icons/react'
+    StethoscopeIcon,
+} from '@phosphor-icons/react';
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { toast } from 'sonner'
 import { useMedicalRecordApi } from '@/hooks/useMedicalRecordApi'
 import { usePatientApi } from '@/hooks/usePatientApi'
 
