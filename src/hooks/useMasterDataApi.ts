@@ -205,6 +205,84 @@ export function useMasterDataApi() {
         return masterData.filter(item => item.category === category && item.is_active);
     }, [masterData]);
 
+    // Get categories with item counts
+    const getCategories = useCallback(async () => {
+        try {
+            setLoading(true);
+            const response = await httpService.get<{
+                name: string;
+                count: number;
+                is_system: boolean;
+            }[]>(API_ENDPOINTS.MASTER_DATA.CATEGORIES);
+
+            if (response.success && response.data) {
+                return response.data;
+            } else {
+                throw new Error(response.error || 'Failed to fetch categories');
+            }
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to fetch categories';
+            console.error('Error fetching categories:', err);
+            toast.error(`Error: ${errorMessage}`);
+            return [];
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Create a new category
+    const createCategory = useCallback(async (categoryData: { name: string; description?: string }) => {
+        try {
+            setLoading(true);
+            const response = await httpService.post<{
+                category: string;
+                sample_item: MasterDataItem;
+            }>(API_ENDPOINTS.MASTER_DATA.CREATE_CATEGORY, categoryData);
+
+            if (response.success && response.data) {
+                // Add the sample item to masterData
+                if (response.data.sample_item) {
+                    setMasterData(prev => [response.data!.sample_item, ...prev]);
+                }
+                toast.success('Category created successfully');
+                return response.data;
+            } else {
+                throw new Error(response.error || 'Failed to create category');
+            }
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to create category';
+            console.error('Error creating category:', err);
+            toast.error(`Error: ${errorMessage}`);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Delete a category
+    const deleteCategory = useCallback(async (category: string) => {
+        try {
+            setLoading(true);
+            const response = await httpService.delete(API_ENDPOINTS.MASTER_DATA.DELETE_CATEGORY(category));
+
+            if (response.success) {
+                // Remove all items of this category from masterData
+                setMasterData(prev => prev.filter(item => item.category !== category));
+                toast.success('Category deleted successfully');
+                return true;
+            } else {
+                throw new Error(response.error || 'Failed to delete category');
+            }
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to delete category';
+            console.error('Error deleting category:', err);
+            toast.error(`Error: ${errorMessage}`);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
     return {
         masterData,
         loading,
@@ -216,6 +294,9 @@ export function useMasterDataApi() {
         toggleMasterDataStatus,
         getMasterDataByCategory,
         getActiveMasterData,
+        getCategories,
+        createCategory,
+        deleteCategory,
         refreshMasterData: fetchMasterData
     };
 }

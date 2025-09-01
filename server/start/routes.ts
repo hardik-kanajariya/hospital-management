@@ -287,12 +287,13 @@ router.group(() => {
     router.group(() => {
       router.get('/', '#controllers/master_data_controller.index')
       router.get('/categories', '#controllers/master_data_controller.getCategories')
+      router.post('/categories', '#controllers/master_data_controller.createCategory')
+      router.delete('/categories/:category', '#controllers/master_data_controller.deleteCategory')
       router.get('/category/:category', '#controllers/master_data_controller.getByCategory')
       router.post('/', '#controllers/master_data_controller.store')
       router.put('/:id', '#controllers/master_data_controller.update')
       router.post('/:id/toggle-status', '#controllers/master_data_controller.toggleStatus')
       router.delete('/:id', '#controllers/master_data_controller.destroy')
-      router.post('/seed', '#controllers/master_data_controller.seedData')
     }).prefix('/master-data')
 
     // Role fields management routes

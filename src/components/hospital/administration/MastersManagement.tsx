@@ -26,6 +26,7 @@ import {
     DownloadIcon,
     UploadIcon,
     ListIcon,
+    TrashIcon,
 } from '@phosphor-icons/react';
 import { toast } from 'sonner'
 import { useMasterDataApi } from '@/hooks/useMasterDataApi'
@@ -71,7 +72,10 @@ export default function MastersManagement() {
         fetchMasterData,
         createMasterDataItem,
         updateMasterDataItem,
-        toggleMasterDataStatus
+        toggleMasterDataStatus,
+        getCategories,
+        createCategory,
+        deleteCategory
     } = useMasterDataApi()
 
     const [categories, setCategories] = useState<CategoryInfo[]>([])
@@ -160,25 +164,53 @@ export default function MastersManagement() {
         }
 
         try {
-            // Create a sample item in the new category to establish it
-            await createMasterDataItem({
-                name: `${newCategoryName} Sample`,
-                description: `Sample item for ${newCategoryName} category`,
-                category: newCategoryName.toLowerCase().replace(/\s+/g, '_'),
-                value: 'sample',
-                is_active: true,
-                display_order: 0
+            await createCategory({
+                name: newCategoryName,
+                description: `${newCategoryName} category for master data management`
             })
 
             setNewCategoryName('')
             setIsCategoryDialogOpen(false)
-            toast.success('Category created successfully')
 
             // Refresh data to show new category
             await fetchMasterData({})
         } catch (error) {
             console.error('Failed to create category:', error)
-            toast.error('Failed to create category')
+            // Error handling is already done in the createCategory function
+        }
+    }
+
+    const handleDeleteCategory = async (categoryName: string) => {
+        if (!categoryName) {
+            toast.error('Category name is required')
+            return
+        }
+
+        // Check if category is system-generated
+        const categoryInfo = categories.find(cat => cat.name === categoryName)
+        if (categoryInfo?.is_system) {
+            toast.error('System categories cannot be deleted')
+            return
+        }
+
+        try {
+            await deleteCategory(categoryName)
+
+            // If deleted category was selected, switch to first available category
+            if (selectedCategory === categoryName) {
+                const remainingCategories = categories.filter(cat => cat.name !== categoryName)
+                if (remainingCategories.length > 0) {
+                    setSelectedCategory(remainingCategories[0].name)
+                } else {
+                    setSelectedCategory('')
+                }
+            }
+
+            // Refresh data
+            await fetchMasterData({})
+        } catch (error) {
+            console.error('Failed to delete category:', error)
+            // Error handling is already done in the deleteCategory function
         }
     }
 
@@ -578,27 +610,44 @@ export default function MastersManagement() {
                     </CardHeader>
                     <CardContent className="space-y-2">
                         {categories.map((category) => (
-                            <Button
-                                key={category.name}
-                                variant={selectedCategory === category.name ? "default" : "ghost"}
-                                className="w-full justify-start h-auto p-3"
-                                onClick={() => handleCategoryChange(category.name)}
-                            >
-                                <div className="flex items-center gap-3 w-full">
-                                    <TagIcon className="h-4 w-4 flex-shrink-0" />
-                                    <div className="flex-1 text-left">
-                                        <div className="font-medium text-sm flex items-center gap-2">
-                                            {category.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                                            {category.is_system && (
-                                                <Badge variant="secondary" className="text-xs">System</Badge>
-                                            )}
-                                        </div>
-                                        <div className="text-xs text-muted-foreground">
-                                            {category.count} items
+                            <div key={category.name} className="flex items-center gap-2">
+                                <Button
+                                    variant={selectedCategory === category.name ? "default" : "ghost"}
+                                    className="flex-1 justify-start h-auto p-3"
+                                    onClick={() => handleCategoryChange(category.name)}
+                                >
+                                    <div className="flex items-center gap-3 w-full">
+                                        <TagIcon className="h-4 w-4 flex-shrink-0" />
+                                        <div className="flex-1 text-left">
+                                            <div className="font-medium text-sm flex items-center gap-2">
+                                                {category.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                                {category.is_system && (
+                                                    <Badge variant="secondary" className="text-xs">System</Badge>
+                                                )}
+                                            </div>
+                                            <div className="text-xs text-muted-foreground">
+                                                {category.count} items
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </Button>
+                                </Button>
+                                {!category.is_system && (
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0"
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            if (window.confirm(`Are you sure you want to delete the "${category.name}" category? This will delete all items in this category.`)) {
+                                                handleDeleteCategory(category.name)
+                                            }
+                                        }}
+                                        title="Delete category"
+                                    >
+                                        <TrashIcon className="h-4 w-4 text-red-500" />
+                                    </Button>
+                                )}
+                            </div>
                         ))}
                     </CardContent>
                 </Card>
@@ -649,65 +698,67 @@ export default function MastersManagement() {
                                 </p>
                             </div>
                         ) : (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Name</TableHead>
-                                        <TableHead>Value</TableHead>
-                                        <TableHead>Description</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Type</TableHead>
-                                        <TableHead>Sort Order</TableHead>
-                                        <TableHead>Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {filteredData.map((item) => (
-                                        <TableRow key={item.id}>
-                                            <TableCell className="font-medium">{item.name}</TableCell>
-                                            <TableCell>
-                                                <Badge variant="outline">{item.value || '-'}</Badge>
-                                            </TableCell>
-                                            <TableCell>{item.description || '-'}</TableCell>
-                                            <TableCell>
-                                                <Badge variant={item.is_active ? "default" : "secondary"}>
-                                                    {item.is_active ? 'Active' : 'Inactive'}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant={item.is_system ? "destructive" : "outline"}>
-                                                    {item.is_system ? 'System' : 'Custom'}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>{item.display_order}</TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center gap-2">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => openEditDialog(item)}
-                                                        disabled={item.is_system}
-                                                    >
-                                                        <PencilSimpleIcon className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => handleToggleStatus(item)}
-                                                        disabled={item.is_system}
-                                                    >
-                                                        {item.is_active ? (
-                                                            <XCircleIcon className="h-4 w-4 text-red-500" />
-                                                        ) : (
-                                                            <CheckCircleIcon className="h-4 w-4 text-green-500" />
-                                                        )}
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-[180px]">Name</TableHead>
+                                            <TableHead className="w-[120px]">Value</TableHead>
+                                            <TableHead className="w-[200px]">Description</TableHead>
+                                            <TableHead className="w-[100px]">Status</TableHead>
+                                            <TableHead className="w-[90px]">Type</TableHead>
+                                            <TableHead className="w-[100px]">Sort Order</TableHead>
+                                            <TableHead className="w-[120px]">Actions</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {filteredData.map((item) => (
+                                            <TableRow key={item.id}>
+                                                <TableCell className="font-medium max-w-[180px] truncate">{item.name}</TableCell>
+                                                <TableCell className="max-w-[120px]">
+                                                    <Badge variant="outline" className="text-xs">{item.value || '-'}</Badge>
+                                                </TableCell>
+                                                <TableCell className="max-w-[200px] truncate">{item.description || '-'}</TableCell>
+                                                <TableCell className="max-w-[100px]">
+                                                    <Badge variant={item.is_active ? "default" : "secondary"} className="text-xs whitespace-nowrap">
+                                                        {item.is_active ? 'Active' : 'Inactive'}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="max-w-[90px]">
+                                                    <Badge variant={item.is_system ? "destructive" : "outline"} className="text-xs whitespace-nowrap">
+                                                        {item.is_system ? 'System' : 'Custom'}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="max-w-[100px] text-center">{item.display_order}</TableCell>
+                                                <TableCell className="max-w-[120px]">
+                                                    <div className="flex items-center gap-2">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => openEditDialog(item)}
+                                                            disabled={item.is_system}
+                                                        >
+                                                            <PencilSimpleIcon className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => handleToggleStatus(item)}
+                                                            disabled={item.is_system}
+                                                        >
+                                                            {item.is_active ? (
+                                                                <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                                                            ) : (
+                                                                <XCircleIcon className="h-4 w-4 text-red-500" />
+                                                            )}
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         )}
                     </CardContent>
                 </Card>

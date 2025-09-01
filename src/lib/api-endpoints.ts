@@ -211,7 +211,8 @@ export const API_ENDPOINTS = {
     BY_CATEGORY: (category: string) => `${API_BASE_URL}/master-data/category/${category}`,
     TOGGLE_STATUS: (id: string) => `${API_BASE_URL}/master-data/${id}/toggle-status`,
     CATEGORIES: `${API_BASE_URL}/master-data/categories`,
-    SEED_DATA: `${API_BASE_URL}/master-data/seed`,
+    CREATE_CATEGORY: `${API_BASE_URL}/master-data/categories`,
+    DELETE_CATEGORY: (category: string) => `${API_BASE_URL}/master-data/categories/${category}`,
     BULK_IMPORT: `${API_BASE_URL}/master-data/bulk-import`,
     EXPORT: `${API_BASE_URL}/master-data/export`
   },

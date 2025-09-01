@@ -9,10 +9,17 @@ export default class MasterDataController {
         try {
             const categories = await Database
                 .from('master_data')
-                .distinct('category')
+                .select('category')
+                .count('* as item_count')
+                .max('is_system as is_system')
+                .groupBy('category')
                 .orderBy('category')
 
-            const categoriesList = categories.map(row => row.category)
+            const categoriesList = categories.map(row => ({
+                name: row.category,
+                count: row.item_count,
+                is_system: Boolean(row.is_system)
+            }))
 
             return response.ok({
                 success: true,
@@ -22,6 +29,122 @@ export default class MasterDataController {
             return response.internalServerError({
                 success: false,
                 message: 'Failed to fetch categories',
+                error: error.message
+            })
+        }
+    }
+
+    /**
+     * Create a new category by creating a sample item
+     */
+    async createCategory({ request, response }: HttpContext) {
+        try {
+            const { name, description } = request.only(['name', 'description'])
+
+            if (!name || !name.trim()) {
+                return response.badRequest({
+                    success: false,
+                    message: 'Category name is required'
+                })
+            }
+
+            const categoryName = name.toLowerCase().replace(/\s+/g, '_')
+
+            // Check if category already exists
+            const existingCategory = await Database
+                .from('master_data')
+                .where('category', categoryName)
+                .first()
+
+            if (existingCategory) {
+                return response.badRequest({
+                    success: false,
+                    message: 'Category already exists'
+                })
+            }
+
+            // Create a sample item to establish the category
+            const [insertedId] = await Database
+                .table('master_data')
+                .insert({
+                    category: categoryName,
+                    name: `${name} Sample`,
+                    description: description || `Sample item for ${name} category`,
+                    value: 'sample',
+                    display_order: 1,
+                    is_system: false,
+                    is_active: true,
+                    created_at: new Date(),
+                    updated_at: new Date()
+                })
+
+            const newItem = await Database
+                .from('master_data')
+                .where('id', insertedId)
+                .first()
+
+            return response.created({
+                success: true,
+                message: 'Category created successfully',
+                data: {
+                    category: categoryName,
+                    sample_item: newItem
+                }
+            })
+        } catch (error) {
+            return response.internalServerError({
+                success: false,
+                message: 'Failed to create category',
+                error: error.message
+            })
+        }
+    }
+
+    /**
+     * Delete a category and all its items (only if not system)
+     */
+    async deleteCategory({ params, response }: HttpContext) {
+        try {
+            const { category } = params
+
+            // Check if category exists and has system items
+            const categoryItems = await Database
+                .from('master_data')
+                .where('category', category)
+
+            if (categoryItems.length === 0) {
+                return response.notFound({
+                    success: false,
+                    message: 'Category not found'
+                })
+            }
+
+            const hasSystemItems = categoryItems.some(item => item.is_system)
+
+            if (hasSystemItems) {
+                return response.badRequest({
+                    success: false,
+                    message: 'Cannot delete category containing system items'
+                })
+            }
+
+            // Soft delete all items in the category
+            await Database
+                .from('master_data')
+                .where('category', category)
+                .update({
+                    is_active: false,
+                    updated_at: new Date()
+                })
+
+            return response.ok({
+                success: true,
+                message: 'Category and all its items deleted successfully'
+            })
+        } catch (error) {
+            return response.internalServerError({
+                success: false,
+                message: 'Failed to delete category',
                 error: error.message
             })
         }
