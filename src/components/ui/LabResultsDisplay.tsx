@@ -31,12 +31,12 @@ interface LabResultsDisplayProps {
     onViewDetails?: (result: LabResult) => void
 }
 
-export function LabResultsDisplay({ 
-    labResults, 
-    className, 
-    compact = false, 
+export function LabResultsDisplay({
+    labResults,
+    className,
+    compact = false,
     showActions = false,
-    onViewDetails 
+    onViewDetails
 }: LabResultsDisplayProps) {
     if (!labResults || labResults.length === 0) {
         return (
@@ -83,8 +83,8 @@ export function LabResultsDisplay({
         return (
             <div className={`space-y-2 ${className}`}>
                 {labResults.map((result, index) => (
-                    <div 
-                        key={index} 
+                    <div
+                        key={index}
                         className={`flex items-center justify-between p-3 rounded-lg border ${getStatusColor(result.status)}`}
                     >
                         <div className="flex items-center gap-3">
@@ -116,12 +116,11 @@ export function LabResultsDisplay({
             <CardContent>
                 <div className="space-y-4">
                     {labResults.map((result, index) => (
-                        <Card key={index} className={`border-l-4 ${
-                            result.status === 'normal' ? 'border-l-green-500' :
-                            result.status === 'high' || result.status === 'critical' ? 'border-l-red-500' :
-                            result.status === 'low' ? 'border-l-yellow-500' :
-                            'border-l-gray-500'
-                        }`}>
+                        <Card key={index} className={`border-l-4 ${result.status === 'normal' ? 'border-l-green-500' :
+                                result.status === 'high' || result.status === 'critical' ? 'border-l-red-500' :
+                                    result.status === 'low' ? 'border-l-yellow-500' :
+                                        'border-l-gray-500'
+                            }`}>
                             <CardContent className="p-4">
                                 <div className="flex items-start justify-between mb-3">
                                     <div className="flex-1">
@@ -129,26 +128,25 @@ export function LabResultsDisplay({
                                             {getStatusIcon(result.status)}
                                             <h4 className="font-semibold">{result.testName}</h4>
                                         </div>
-                                        
+
                                         <div className="grid md:grid-cols-3 gap-4 text-sm">
                                             <div>
                                                 <span className="font-medium">Result:</span>
-                                                <p className={`text-lg font-bold ${
-                                                    result.status === 'critical' ? 'text-red-700' :
-                                                    result.status === 'high' ? 'text-red-600' :
-                                                    result.status === 'low' ? 'text-yellow-600' :
-                                                    result.status === 'normal' ? 'text-green-600' :
-                                                    'text-gray-600'
-                                                }`}>
+                                                <p className={`text-lg font-bold ${result.status === 'critical' ? 'text-red-700' :
+                                                        result.status === 'high' ? 'text-red-600' :
+                                                            result.status === 'low' ? 'text-yellow-600' :
+                                                                result.status === 'normal' ? 'text-green-600' :
+                                                                    'text-gray-600'
+                                                    }`}>
                                                     {result.result} {result.unit}
                                                 </p>
                                             </div>
-                                            
+
                                             <div>
                                                 <span className="font-medium">Normal Range:</span>
                                                 <p className="text-muted-foreground">{result.normalRange}</p>
                                             </div>
-                                            
+
                                             {result.date && (
                                                 <div>
                                                     <span className="font-medium">Date:</span>
@@ -157,7 +155,7 @@ export function LabResultsDisplay({
                                             )}
                                         </div>
                                     </div>
-                                    
+
                                     <div className="flex items-center gap-2">
                                         <Badge className={getStatusBadgeColor(result.status)}>
                                             {result.status || 'Pending'}

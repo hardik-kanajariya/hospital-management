@@ -36,11 +36,11 @@ interface MedicalTimelineProps {
     showViewAll?: boolean
 }
 
-export function MedicalTimeline({ 
-    events, 
-    className, 
+export function MedicalTimeline({
+    events,
+    className,
     maxItems = 10,
-    showViewAll = true 
+    showViewAll = true
 }: MedicalTimelineProps) {
     const navigate = useNavigate()
 
@@ -191,13 +191,13 @@ export function MedicalTimeline({
                                                 {event.status && (
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-xs font-medium">Status:</span>
-                                                        <Badge 
-                                                            variant="outline" 
+                                                        <Badge
+                                                            variant="outline"
                                                             className={
                                                                 event.status === 'completed' ? 'bg-green-100 text-green-800' :
-                                                                event.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                                                event.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                                                                'bg-gray-100 text-gray-800'
+                                                                    event.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                                        event.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                                                                            'bg-gray-100 text-gray-800'
                                                             }
                                                         >
                                                             {event.status}

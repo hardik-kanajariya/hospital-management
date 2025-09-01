@@ -101,7 +101,7 @@ export default class MedicalRecord extends BaseModel {
             }
         }
     })
-    declare attachments: string[]
+    declare attachments: Record<string, any>[]
 
     @column.dateTime({ autoCreate: true, columnName: 'created_at' })
     declare createdAt: DateTime

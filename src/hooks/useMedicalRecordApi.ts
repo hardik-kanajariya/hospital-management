@@ -306,6 +306,146 @@ export function useMedicalRecordApi() {
 }
 
 /**
+ * Hook for enhanced medical record analytics and insights
+ */
+export function useMedicalRecordAnalytics() {
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+
+    // Get patient medical statistics
+    const getPatientStatistics = useCallback(async (patientId: string) => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await httpService.get(API_ENDPOINTS.MEDICAL_RECORDS.PATIENT_STATISTICS(patientId));
+
+            if (response.success && response.data) {
+                return response.data;
+            } else {
+                throw new Error(response.error || 'Failed to fetch patient statistics');
+            }
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to fetch patient statistics';
+            setError(errorMessage);
+            console.error('Error fetching patient statistics:', err);
+            toast.error(`Error: ${errorMessage}`);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Get patient medical timeline
+    const getPatientTimeline = useCallback(async (patientId: string) => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await httpService.get(API_ENDPOINTS.MEDICAL_RECORDS.PATIENT_TIMELINE(patientId));
+
+            if (response.success && response.data) {
+                return response.data;
+            } else {
+                throw new Error(response.error || 'Failed to fetch patient timeline');
+            }
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to fetch patient timeline';
+            setError(errorMessage);
+            console.error('Error fetching patient timeline:', err);
+            toast.error(`Error: ${errorMessage}`);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Get vital signs trends
+    const getVitalSignsTrends = useCallback(async (patientId: string, days: number = 30) => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await httpService.get(
+                `${API_ENDPOINTS.MEDICAL_RECORDS.PATIENT_VITAL_SIGNS_TRENDS(patientId)}?days=${days}`
+            );
+
+            if (response.success && response.data) {
+                return response.data;
+            } else {
+                throw new Error(response.error || 'Failed to fetch vital signs trends');
+            }
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to fetch vital signs trends';
+            setError(errorMessage);
+            console.error('Error fetching vital signs trends:', err);
+            toast.error(`Error: ${errorMessage}`);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Get patient alerts
+    const getPatientAlerts = useCallback(async (patientId: string) => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await httpService.get(API_ENDPOINTS.MEDICAL_RECORDS.PATIENT_ALERTS(patientId));
+
+            if (response.success && response.data) {
+                return response.data;
+            } else {
+                throw new Error(response.error || 'Failed to fetch patient alerts');
+            }
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to fetch patient alerts';
+            setError(errorMessage);
+            console.error('Error fetching patient alerts:', err);
+            toast.error(`Error: ${errorMessage}`);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Validate medical data
+    const validateMedicalData = useCallback(async (data: any) => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await httpService.post(API_ENDPOINTS.MEDICAL_RECORDS.VALIDATE, data);
+
+            if (response.success) {
+                return response.data;
+            } else {
+                throw new Error(response.error || 'Failed to validate medical data');
+            }
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to validate medical data';
+            setError(errorMessage);
+            console.error('Error validating medical data:', err);
+            toast.error(`Error: ${errorMessage}`);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    return {
+        loading,
+        error,
+        getPatientStatistics,
+        getPatientTimeline,
+        getVitalSignsTrends,
+        getPatientAlerts,
+        validateMedicalData
+    };
+}
+
+/**
  * Hook for managing single medical record state
  */
 export function useMedicalRecord(recordId?: string) {

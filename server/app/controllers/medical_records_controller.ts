@@ -5,6 +5,7 @@ import User from '#models/user'
 import { DateTime } from 'luxon'
 import { v4 as uuid } from 'uuid'
 import { medicalRecordValidator, updateMedicalRecordValidator } from '#validators/medical_record'
+import MedicalDataService from '#services/medical_data_service'
 
 export default class MedicalRecordsController {
     /**
@@ -257,6 +258,107 @@ export default class MedicalRecordsController {
     }
 
     /**
+     * Get medical statistics for a patient
+     */
+    async statistics({ params, response }: HttpContext) {
+        try {
+            const patientId = params.patientId
+
+            // Use the medical data service for comprehensive statistics
+            const stats = await MedicalDataService.calculatePatientStatistics(patientId)
+
+            return response.status(200).json({
+                success: true,
+                data: stats,
+                message: 'Medical records statistics retrieved successfully'
+            })
+
+        } catch (error) {
+            console.error('Medical records statistics error:', error)
+            return response.status(500).json({
+                success: false,
+                message: 'Server error while retrieving medical records statistics'
+            })
+        }
+    }
+
+    /**
+     * Get medical timeline for a patient
+     */
+    async timeline({ params, request, response }: HttpContext) {
+        try {
+            const patientId = params.patientId
+            const limit = request.input('limit', 50)
+
+            // Get medical records
+            const medicalRecords = await MedicalRecord.query()
+                .where('patient_id', patientId)
+                .preload('doctor')
+                .orderBy('visit_date', 'desc')
+                .limit(limit)
+
+            // Transform to timeline events
+            const timelineEvents = medicalRecords.map(record => ({
+                id: record.id,
+                type: 'medical_record',
+                date: record.visitDate.toString(),
+                title: record.diagnosis,
+                description: record.treatment,
+                status: 'completed',
+                data: {
+                    recordId: record.recordId,
+                    doctor: record.doctor?.name || 'Unknown Doctor',
+                    hasMedications: record.medications && record.medications.length > 0,
+                    hasLabResults: record.labResults && record.labResults.length > 0,
+                    hasVitalSigns: record.vitalSigns && Object.keys(record.vitalSigns).length > 0
+                }
+            }))
+
+            // TODO: Add other timeline events (appointments, prescriptions, lab tests, etc.)
+            // This would require querying other tables and merging the results
+
+            return response.status(200).json({
+                success: true,
+                data: timelineEvents,
+                message: 'Medical timeline retrieved successfully'
+            })
+
+        } catch (error) {
+            console.error('Medical timeline error:', error)
+            return response.status(500).json({
+                success: false,
+                message: 'Server error while retrieving medical timeline'
+            })
+        }
+    }
+
+    /**
+     * Get vital signs trends for a patient
+     */
+    async vitalSignsTrends({ params, request, response }: HttpContext) {
+        try {
+            const patientId = params.patientId
+            const days = request.input('days', 30)
+
+            // Use the medical data service for comprehensive trends analysis
+            const trends = await MedicalDataService.getVitalSignsTrends(patientId, days)
+
+            return response.status(200).json({
+                success: true,
+                data: trends,
+                message: 'Vital signs trends retrieved successfully'
+            })
+
+        } catch (error) {
+            console.error('Vital signs trends error:', error)
+            return response.status(500).json({
+                success: false,
+                message: 'Server error while retrieving vital signs trends'
+            })
+        }
+    }
+
+    /**
      * Search medical records
      */
     async search({ request, response }: HttpContext) {
@@ -293,6 +395,81 @@ export default class MedicalRecordsController {
             return response.status(500).json({
                 success: false,
                 message: 'Server error while searching medical records'
+            })
+        }
+    }
+
+    /**
+     * Get medical alerts for a patient
+     */
+    async alerts({ params, response }: HttpContext) {
+        try {
+            const patientId = params.patientId
+
+            // Generate comprehensive medical alerts
+            const alerts = await MedicalDataService.generateMedicalAlerts(patientId)
+
+            return response.status(200).json({
+                success: true,
+                data: alerts,
+                message: 'Medical alerts retrieved successfully'
+            })
+
+        } catch (error) {
+            console.error('Medical alerts error:', error)
+            return response.status(500).json({
+                success: false,
+                message: 'Server error while retrieving medical alerts'
+            })
+        }
+    }
+
+    /**
+     * Validate medical data before saving
+     */
+    async validate({ request, response }: HttpContext) {
+        try {
+            const { vitalSigns, medications, labResults } = request.only(['vitalSigns', 'medications', 'labResults'])
+
+            const alerts = []
+
+            // Validate vital signs
+            if (vitalSigns) {
+                const vitalAlerts = MedicalDataService.validateVitalSigns(vitalSigns)
+                alerts.push(...vitalAlerts)
+            }
+
+            // Check medication interactions
+            if (medications && medications.length > 0) {
+                const medicationAlerts = MedicalDataService.checkMedicationInteractions(medications)
+                alerts.push(...medicationAlerts)
+            }
+
+            // Validate lab results
+            if (labResults && labResults.length > 0) {
+                const labAlerts = MedicalDataService.validateLabResults(labResults)
+                alerts.push(...labAlerts)
+            }
+
+            return response.status(200).json({
+                success: true,
+                data: {
+                    isValid: alerts.filter(a => a.type === 'critical').length === 0,
+                    alerts,
+                    summary: {
+                        critical: alerts.filter(a => a.type === 'critical').length,
+                        warnings: alerts.filter(a => a.type === 'warning').length,
+                        info: alerts.filter(a => a.type === 'info').length
+                    }
+                },
+                message: 'Medical data validation completed'
+            })
+
+        } catch (error) {
+            console.error('Medical data validation error:', error)
+            return response.status(500).json({
+                success: false,
+                message: 'Server error while validating medical data'
             })
         }
     }
