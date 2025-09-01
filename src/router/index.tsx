@@ -38,6 +38,25 @@ import CreateAppointment from '@/components/hospital/appointments/CreateAppointm
 import AppointmentView from '@/components/hospital/appointments/AppointmentView';
 import EditAppointment from '@/components/hospital/appointments/EditAppointment';
 
+// Billing Components
+import CreateBill from '@/components/hospital/billing/CreateBill';
+import ViewBill from '@/components/hospital/billing/ViewBill';
+import EditBill from '@/components/hospital/billing/EditBill';
+
+// Lab Components
+import CreateLabTest from '@/components/hospital/laboratory/CreateLabTest';
+import CreateLabOrder from '@/components/hospital/laboratory/CreateLabOrder';
+import ViewLabOrder from '@/components/hospital/laboratory/ViewLabOrder';
+import EnterLabResults from '@/components/hospital/laboratory/EnterLabResults';
+
+// Bed Components
+import CreateBed from '@/components/hospital/facilities/CreateBed';
+import EditBed from '@/components/hospital/facilities/EditBed';
+
+// Inventory Components
+import CreateInventoryItem from '@/components/hospital/inventory/CreateInventoryItem';
+import EditInventoryItem from '@/components/hospital/inventory/EditInventoryItem';
+
 export const router = createBrowserRouter([
     {
         path: '/',
@@ -259,6 +278,156 @@ export const router = createBrowserRouter([
                     <ProtectedRoute>
                         <RoleBasedAccess requiredModule="inventory">
                             <InventoryManagement />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'billing',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="billing">
+                            <EnhancedBillingSystem />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'billing/create',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="billing">
+                            <CreateBill />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'billing/:id',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="billing">
+                            <ViewBill />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'billing/:id/edit',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="billing">
+                            <EditBill />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'lab',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="lab_tests">
+                            <LabManagement />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'lab/tests/create',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="lab_tests">
+                            <CreateLabTest />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'lab/orders/create',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="lab_tests">
+                            <CreateLabOrder />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'lab/orders/:id',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="lab_tests">
+                            <ViewLabOrder />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'lab/orders/:id/results',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="lab_tests">
+                            <EnterLabResults />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'beds',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="beds">
+                            <BedManagement />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'beds/create',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="beds">
+                            <CreateBed />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'beds/:id/edit',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="beds">
+                            <EditBed />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'inventory',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="inventory">
+                            <InventoryManagement />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'inventory/create',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="inventory">
+                            <CreateInventoryItem />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'inventory/:id/edit',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="inventory">
+                            <EditInventoryItem />
                         </RoleBasedAccess>
                     </ProtectedRoute>
                 )
