@@ -32,6 +32,10 @@ import {
 } from '@phosphor-icons/react';
 import { usePatient } from '@/hooks/usePatientApi'
 import { useMedicalRecordApi, useMedicalRecordAnalytics } from '@/hooks/useMedicalRecordApi'
+import { MedicalRecordCard } from '@/components/hospital/medical/MedicalRecordCard'
+import { MedicalTimeline } from '@/components/hospital/medical/MedicalTimeline'
+import { VitalSignsDisplay } from '@/components/hospital/medical/VitalSignsDisplay'
+import { MedicalStatistics } from '@/components/hospital/medical/MedicalStatistics'
 
 export default function PatientProfile() {
     const navigate = useNavigate()
@@ -481,236 +485,123 @@ export default function PatientProfile() {
                                     </div>
                                 </div>
 
-                                {patient.medicalRecords && patient.medicalRecords.length > 0 ? (
-                                    <div className="space-y-6">
-                                        {/* Records Summary */}
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                            <Card className="p-4">
-                                                <div className="text-center">
-                                                    <p className="text-2xl font-bold text-primary">{patient.medicalRecords.length}</p>
-                                                    <p className="text-sm text-muted-foreground">Total Records</p>
-                                                </div>
-                                            </Card>
-                                            <Card className="p-4">
-                                                <div className="text-center">
-                                                    <p className="text-2xl font-bold text-blue-600">
-                                                        {patient.medicalRecords.filter((r: any) => r.medications && r.medications.length > 0).length}
-                                                    </p>
-                                                    <p className="text-sm text-muted-foreground">With Medications</p>
-                                                </div>
-                                            </Card>
-                                            <Card className="p-4">
-                                                <div className="text-center">
-                                                    <p className="text-2xl font-bold text-green-600">
-                                                        {patient.medicalRecords.filter((r: any) => r.labResults && r.labResults.length > 0).length}
-                                                    </p>
-                                                    <p className="text-sm text-muted-foreground">With Lab Results</p>
-                                                </div>
-                                            </Card>
-                                            <Card className="p-4">
-                                                <div className="text-center">
-                                                    <p className="text-2xl font-bold text-orange-600">
-                                                        {patient.medicalRecords.filter((r: any) => r.followUpInstructions && r.followUpInstructions.length > 0).length}
-                                                    </p>
-                                                    <p className="text-sm text-muted-foreground">With Follow-ups</p>
-                                                </div>
-                                            </Card>
-                                        </div>
+                                {/* Medical Statistics Dashboard */}
+                                {medicalStats && (
+                                    <MedicalStatistics
+                                        data={medicalStats}
+                                        className="mb-6"
+                                    />
+                                )}
 
-                                        {/* Medical Records Timeline */}
-                                        <div className="space-y-4">
-                                            <h4 className="text-md font-semibold flex items-center gap-2">
-                                                <ClockIcon className="w-4 h-4" />
-                                                Recent Medical Records
-                                            </h4>
-
-                                            {patient.medicalRecords
-                                                .sort((a: any, b: any) => new Date(b.visitDate).getTime() - new Date(a.visitDate).getTime())
-                                                .slice(0, 5)
-                                                .map((record: any, index: number) => (
-                                                    <Card key={record.id} className="relative">
-                                                        {/* Timeline indicator */}
-                                                        {index < (patient.medicalRecords?.length || 0) - 1 && (
-                                                            <div className="absolute left-6 top-12 bottom-0 w-0.5 bg-border"></div>
-                                                        )}
-
-                                                        <CardContent className="p-6">
-                                                            <div className="flex items-start gap-4">
-                                                                {/* Timeline dot */}
-                                                                <div className="flex-shrink-0 w-3 h-3 bg-primary rounded-full mt-2"></div>
-
-                                                                <div className="flex-1 min-w-0">
-                                                                    {/* Header */}
-                                                                    <div className="flex items-start justify-between mb-4">
-                                                                        <div>
-                                                                            <div className="flex items-center gap-2 mb-1">
-                                                                                <Badge variant="outline" className="text-xs">
-                                                                                    {record.recordId}
-                                                                                </Badge>
-                                                                                <span className="text-sm font-medium">
-                                                                                    {formatDate(record.visitDate)}
-                                                                                </span>
-                                                                            </div>
-                                                                            <p className="text-sm text-muted-foreground">
-                                                                                Doctor ID: {record.doctorId}
-                                                                                {record.appointmentId && ` • Appointment: ${record.appointmentId}`}
-                                                                            </p>
-                                                                        </div>
-                                                                        <div className="flex items-center gap-2">
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                size="sm"
-                                                                                onClick={() => navigate(`/medical-records/${record.id}`)}
-                                                                            >
-                                                                                <EyeIcon className="w-4 h-4 mr-1" />
-                                                                                View
-                                                                            </Button>
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                size="sm"
-                                                                                onClick={() => navigate(`/medical-records/${record.id}/edit`)}
-                                                                            >
-                                                                                <PencilIcon className="w-4 h-4 mr-1" />
-                                                                                Edit
-                                                                            </Button>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    {/* Diagnosis & Treatment */}
-                                                                    <div className="grid md:grid-cols-2 gap-4 mb-4">
-                                                                        <div className="space-y-2">
-                                                                            <div className="flex items-center gap-2">
-                                                                                <StethoscopeIcon className="w-4 h-4 text-red-500" />
-                                                                                <h5 className="font-medium text-sm">Diagnosis</h5>
-                                                                            </div>
-                                                                            <p className="text-sm pl-6">{record.diagnosis}</p>
-                                                                        </div>
-                                                                        <div className="space-y-2">
-                                                                            <div className="flex items-center gap-2">
-                                                                                <HeartIcon className="w-4 h-4 text-blue-500" />
-                                                                                <h5 className="font-medium text-sm">Treatment</h5>
-                                                                            </div>
-                                                                            <p className="text-sm pl-6">{record.treatment}</p>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    {/* Quick Info Grid */}
-                                                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                                                                        {/* Medications */}
-                                                                        <div className="text-center p-3 bg-muted/50 rounded-lg">
-                                                                            <PillIcon className="w-5 h-5 mx-auto mb-1 text-green-600" />
-                                                                            <p className="text-sm font-medium">
-                                                                                {record.medications ? record.medications.length : 0}
-                                                                            </p>
-                                                                            <p className="text-xs text-muted-foreground">Medications</p>
-                                                                        </div>
-
-                                                                        {/* Lab Results */}
-                                                                        <div className="text-center p-3 bg-muted/50 rounded-lg">
-                                                                            <TestTubeIcon className="w-5 h-5 mx-auto mb-1 text-purple-600" />
-                                                                            <p className="text-sm font-medium">
-                                                                                {record.labResults ? record.labResults.length : 0}
-                                                                            </p>
-                                                                            <p className="text-xs text-muted-foreground">Lab Results</p>
-                                                                        </div>
-
-                                                                        {/* Vital Signs */}
-                                                                        <div className="text-center p-3 bg-muted/50 rounded-lg">
-                                                                            <ActivityIcon className="w-5 h-5 mx-auto mb-1 text-red-600" />
-                                                                            <p className="text-sm font-medium">
-                                                                                {record.vitalSigns && Object.keys(record.vitalSigns).length > 0 ? 'Yes' : 'No'}
-                                                                            </p>
-                                                                            <p className="text-xs text-muted-foreground">Vital Signs</p>
-                                                                        </div>
-
-                                                                        {/* Attachments */}
-                                                                        <div className="text-center p-3 bg-muted/50 rounded-lg">
-                                                                            <PaperclipIcon className="w-5 h-5 mx-auto mb-1 text-orange-600" />
-                                                                            <p className="text-sm font-medium">
-                                                                                {record.attachments ? record.attachments.length : 0}
-                                                                            </p>
-                                                                            <p className="text-xs text-muted-foreground">Attachments</p>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    {/* Follow-up Instructions */}
-                                                                    {record.followUpInstructions && record.followUpInstructions.length > 0 && (
-                                                                        <div className="space-y-2">
-                                                                            <div className="flex items-center gap-2">
-                                                                                <CalendarIcon className="w-4 h-4 text-orange-500" />
-                                                                                <h5 className="font-medium text-sm">Follow-up Instructions</h5>
-                                                                            </div>
-                                                                            <ul className="text-sm pl-6 space-y-1">
-                                                                                {record.followUpInstructions.slice(0, 2).map((instruction: string, idx: number) => (
-                                                                                    <li key={idx} className="list-disc">{instruction}</li>
-                                                                                ))}
-                                                                                {record.followUpInstructions.length > 2 && (
-                                                                                    <li className="text-muted-foreground">
-                                                                                        +{record.followUpInstructions.length - 2} more instructions
-                                                                                    </li>
-                                                                                )}
-                                                                            </ul>
-                                                                        </div>
-                                                                    )}
-
-                                                                    {/* Next Visit Date */}
-                                                                    {record.nextVisitDate && (
-                                                                        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                                                            <div className="flex items-center gap-2">
-                                                                                <CalendarIcon className="w-4 h-4 text-blue-600" />
-                                                                                <span className="text-sm font-medium text-blue-800">
-                                                                                    Next Visit: {formatDate(record.nextVisitDate)}
-                                                                                </span>
-                                                                            </div>
-                                                                        </div>
-                                                                    )}
-
-                                                                    {/* Notes */}
-                                                                    {record.notes && (
-                                                                        <div className="mt-4 p-3 bg-muted/30 rounded-lg">
-                                                                            <div className="flex items-start gap-2">
-                                                                                <FileTextIcon className="w-4 h-4 text-muted-foreground mt-0.5" />
-                                                                                <div>
-                                                                                    <h5 className="font-medium text-sm mb-1">Clinical Notes</h5>
-                                                                                    <p className="text-sm text-muted-foreground">{record.notes}</p>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        </CardContent>
-                                                    </Card>
+                                {/* Medical Alerts */}
+                                {medicalAlerts && medicalAlerts.length > 0 && (
+                                    <Card className="border-red-200 bg-red-50">
+                                        <CardHeader>
+                                            <CardTitle className="text-red-800 flex items-center gap-2">
+                                                <WarningIcon size={20} />
+                                                Medical Alerts
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="space-y-2">
+                                                {medicalAlerts.map((alert: any, index: number) => (
+                                                    <div key={index} className="flex items-center gap-2 p-2 bg-white rounded border border-red-200">
+                                                        <WarningIcon size={16} className="text-red-600" />
+                                                        <span className="text-sm font-medium text-red-800">{alert.message}</span>
+                                                        <Badge variant="destructive" className="text-xs">
+                                                            {alert.severity}
+                                                        </Badge>
+                                                    </div>
                                                 ))}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
 
-                                            {/* Show More Button */}
-                                            {patient.medicalRecords.length > 5 && (
-                                                <div className="text-center pt-4">
-                                                    <Button
-                                                        variant="outline"
-                                                        onClick={() => navigate('/medical-records', { state: { patientId: patient.id } })}
-                                                    >
-                                                        View All {patient.medicalRecords.length} Medical Records
-                                                        <ArrowRightIcon className="w-4 h-4 ml-2" />
-                                                    </Button>
-                                                </div>
-                                            )}
+                                {/* Vital Signs Trends */}
+                                {vitalsTrends && (vitalsTrends as any).latest && (
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <ActivityIcon size={20} />
+                                                Vital Signs Trends
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <VitalSignsDisplay
+                                                vitalSigns={(vitalsTrends as any).latest}
+                                                showTrends={true}
+                                                compactMode={false}
+                                            />
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {/* Medical Records Timeline */}
+                                {medicalTimeline && medicalTimeline.length > 0 ? (
+                                    <div className="space-y-4">
+                                        <h4 className="text-md font-semibold flex items-center gap-2">
+                                            <ClockIcon className="w-4 h-4" />
+                                            Medical Timeline
+                                        </h4>
+                                        <MedicalTimeline
+                                            records={medicalTimeline}
+                                            onViewRecord={(record) => navigate(`/medical-records/${record.id}`)}
+                                        />
+                                    </div>
+                                ) : medicalRecords && medicalRecords.length > 0 ? (
+                                    <div className="space-y-4">
+                                        <h4 className="text-md font-semibold flex items-center gap-2">
+                                            <ClockIcon className="w-4 h-4" />
+                                            Recent Medical Records
+                                        </h4>
+                                        <div className="space-y-4">
+                                            {medicalRecords.slice(0, 5).map((record: any) => (
+                                                <MedicalRecordCard
+                                                    key={record.id}
+                                                    record={record}
+                                                    viewMode="detailed"
+                                                    onView={(record) => navigate(`/medical-records/${record.id}`)}
+                                                    onEdit={(record) => navigate(`/medical-records/${record.id}/edit`)}
+                                                />
+                                            ))}
                                         </div>
+                                        {medicalRecords.length > 5 && (
+                                            <div className="text-center pt-4">
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => navigate('/medical-records', { state: { patientId: patient.id } })}
+                                                >
+                                                    View All {medicalRecords.length} Medical Records
+                                                    <ArrowRightIcon className="w-4 h-4 ml-2" />
+                                                </Button>
+                                            </div>
+                                        )}
                                     </div>
                                 ) : (
-                                    <div className="text-center py-12">
-                                        <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4">
-                                            <FileTextIcon className="w-12 h-12 text-muted-foreground" />
-                                        </div>
-                                        <h3 className="text-lg font-medium mb-2">No Medical Records</h3>
-                                        <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
-                                            This patient doesn't have any medical records yet. Create the first medical record to start tracking their medical history.
-                                        </p>
-                                        <Button onClick={() => navigate(`/medical-records/create?patientId=${patient.id}`)}>
-                                            <PlusIcon className="w-4 h-4 mr-2" />
-                                            Create First Medical Record
-                                        </Button>
-                                    </div>
+                                    <Card>
+                                        <CardContent className="flex flex-col items-center justify-center py-12">
+                                            <StethoscopeIcon size={48} className="text-muted-foreground mb-4" />
+                                            <h3 className="text-lg font-medium text-muted-foreground mb-2">No Medical Records</h3>
+                                            <p className="text-sm text-muted-foreground text-center mb-4">
+                                                This patient doesn't have any medical records yet. Create the first medical record to start tracking their medical history.
+                                            </p>
+                                            <Button onClick={() => navigate(`/medical-records/create?patientId=${patient.id}`)}>
+                                                <PlusIcon className="w-4 h-4 mr-2" />
+                                                Create First Medical Record
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {/* Loading State */}
+                                {analyticsLoading && (
+                                    <Card>
+                                        <CardContent className="flex items-center justify-center py-8">
+                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mr-3"></div>
+                                            <span>Loading medical analytics...</span>
+                                        </CardContent>
+                                    </Card>
                                 )}
                             </TabsContent>
 

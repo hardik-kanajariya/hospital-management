@@ -14,10 +14,14 @@ import {
     TestTubeIcon,
     FileTextIcon,
     PrinterIcon,
-    DownloadIcon
+    DownloadIcon,
+    ActivityIcon,
+    WarningIcon
 } from '@phosphor-icons/react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
+import { httpService } from '@/services/HttpService'
+import { API_ENDPOINTS } from '@/lib/api-endpoints'
 
 interface MedicalRecord {
     id: string
@@ -91,93 +95,23 @@ export default function ViewMedicalRecord() {
         try {
             setLoading(true)
 
-            // Mock data for demonstration
-            const mockRecord: MedicalRecord = {
-                id: id || '1',
-                record_id: 'MR000001',
-                patient_id: 'patient_1',
-                doctor_id: 'doctor_1',
-                visit_date: '2025-08-30',
-                diagnosis: 'Hypertension Stage 1, Type 2 Diabetes Mellitus',
-                treatment: 'Medication adjustment with Lisinopril and Metformin. Lifestyle modifications including diet and exercise counseling.',
-                medications: [
-                    {
-                        name: 'Lisinopril',
-                        dosage: '10mg',
-                        frequency: 'Once daily',
-                        duration: '90 days',
-                        instructions: 'Take with or without food, preferably at the same time each day'
-                    },
-                    {
-                        name: 'Metformin',
-                        dosage: '500mg',
-                        frequency: 'Twice daily',
-                        duration: '90 days',
-                        instructions: 'Take with meals to reduce stomach upset'
-                    }
-                ],
-                lab_results: [
-                    {
-                        test_name: 'HbA1c',
-                        result: '7.2%',
-                        normal_range: '<7.0%',
-                        status: 'completed'
-                    },
-                    {
-                        test_name: 'Blood Pressure',
-                        result: '140/85 mmHg',
-                        normal_range: '<120/80 mmHg',
-                        status: 'completed'
-                    },
-                    {
-                        test_name: 'Fasting Glucose',
-                        result: '145 mg/dL',
-                        normal_range: '70-100 mg/dL',
-                        status: 'completed'
-                    }
-                ],
-                follow_up_instructions: [
-                    'Monitor blood pressure daily at home',
-                    'Check blood glucose levels twice daily',
-                    'Follow low-sodium, diabetic diet',
-                    'Exercise 30 minutes daily',
-                    'Return for follow-up in 3 months'
-                ],
-                next_visit_date: '2025-11-30',
-                vital_signs: {
-                    temperature: '98.6°F',
-                    blood_pressure: '140/85',
-                    heart_rate: '72',
-                    respiratory_rate: '16',
-                    oxygen_saturation: '98%',
-                    weight: '78.5',
-                    height: '175'
-                },
-                notes: 'Patient is compliant with medications. Reports improved energy levels. Needs to work on diet compliance.',
-                attachments: [],
-                created_at: '2025-08-30T10:00:00Z',
-                updated_at: '2025-08-30T10:00:00Z',
-                patient: {
-                    id: 'patient_1',
-                    name: 'John Doe',
-                    patient_id: 'PAT001',
-                    phone: '+91-9876543210',
-                    date_of_birth: '1965-05-15',
-                    gender: 'male',
-                    blood_group: 'O+'
-                },
-                doctor: {
-                    id: 'doctor_1',
-                    name: 'Dr. Sarah Smith',
-                    specialization: 'Internal Medicine',
-                    license_number: 'MED12345'
-                }
+            if (!id) {
+                toast.error('Medical record ID is required')
+                return
             }
 
-            setMedicalRecord(mockRecord)
+            const response = await httpService.get(API_ENDPOINTS.MEDICAL_RECORDS.BY_ID(id))
+
+            if (response.success && response.data) {
+                setMedicalRecord(response.data)
+            } else {
+                throw new Error(response.error || 'Failed to fetch medical record')
+            }
         } catch (error) {
             console.error('Error fetching medical record:', error)
             toast.error('Failed to fetch medical record')
+            // Navigate back if record not found
+            setTimeout(() => navigate('/medical-records'), 2000)
         } finally {
             setLoading(false)
         }
@@ -209,8 +143,9 @@ export default function ViewMedicalRecord() {
     }
 
     const handleDownload = () => {
-        // TODO: Implement PDF download functionality
-        toast.info('Download functionality will be implemented soon')
+        // PDF export via browser print dialog for now
+        window.print();
+        toast.success('Use your browser\'s print dialog to save as PDF');
     }
 
     if (loading) {
