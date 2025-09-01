@@ -3,6 +3,7 @@ import vine from '@vinejs/vine'
 /**
  * Validator to validate the payload when creating
  * a new bed.
+ * Updated to use master data instead of enums
  */
 export const bedValidator = vine.compile(
     vine.object({
@@ -10,8 +11,8 @@ export const bedValidator = vine.compile(
         roomNumber: vine.string().minLength(1).maxLength(10),
         ward: vine.string().minLength(2).maxLength(50),
         floor: vine.string().minLength(1).maxLength(10),
-        type: vine.enum(['general', 'private', 'icu', 'emergency', 'pediatric', 'maternity']),
-        status: vine.enum(['available', 'occupied', 'maintenance', 'cleaning', 'reserved']).optional(),
+        type: vine.string().trim().minLength(1), // Changed from enum to string
+        status: vine.string().trim().minLength(1).optional(), // Changed from enum to string
         dailyRate: vine.number().positive(),
         features: vine.array(vine.string()).optional(),
         notes: vine.string().maxLength(500).optional()
@@ -21,6 +22,7 @@ export const bedValidator = vine.compile(
 /**
  * Validator to validate the payload when updating
  * an existing bed.
+ * Updated to use master data instead of enums
  */
 export const updateBedValidator = vine.compile(
     vine.object({
@@ -28,8 +30,8 @@ export const updateBedValidator = vine.compile(
         roomNumber: vine.string().minLength(1).maxLength(10).optional(),
         ward: vine.string().minLength(2).maxLength(50).optional(),
         floor: vine.string().minLength(1).maxLength(10).optional(),
-        type: vine.enum(['general', 'private', 'icu', 'emergency', 'pediatric', 'maternity']).optional(),
-        status: vine.enum(['available', 'occupied', 'maintenance', 'cleaning', 'reserved']).optional(),
+        type: vine.string().trim().minLength(1).optional(), // Changed from enum to string
+        status: vine.string().trim().minLength(1).optional(), // Changed from enum to string
         dailyRate: vine.number().positive().optional(),
         features: vine.array(vine.string()).optional(),
         notes: vine.string().maxLength(500).optional()

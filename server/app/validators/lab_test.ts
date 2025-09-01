@@ -3,6 +3,7 @@ import vine from '@vinejs/vine'
 /**
  * Validator to validate the payload when creating
  * a new lab test.
+ * Updated to use master data instead of enums
  */
 export const labTestValidator = vine.compile(
     vine.object({
@@ -14,8 +15,8 @@ export const labTestValidator = vine.compile(
         description: vine.string().maxLength(500).optional(),
         orderedDate: vine.date().optional(),
         sampleCollectedDate: vine.date().optional(),
-        status: vine.enum(['ordered', 'sample_collected', 'in_progress', 'completed', 'cancelled']).optional(),
-        priority: vine.enum(['normal', 'urgent', 'stat']).optional(),
+        status: vine.string().trim().minLength(1).optional(), // Changed from enum to string
+        priority: vine.string().trim().minLength(1).optional(), // Changed from enum to string
         results: vine.object({}).optional(),
         referenceRanges: vine.object({}).optional(),
         notes: vine.string().maxLength(1000).optional(),
@@ -26,6 +27,7 @@ export const labTestValidator = vine.compile(
 /**
  * Validator to validate the payload when updating
  * an existing lab test.
+ * Updated to use master data instead of enums
  */
 export const updateLabTestValidator = vine.compile(
     vine.object({
@@ -36,8 +38,8 @@ export const updateLabTestValidator = vine.compile(
         orderedDate: vine.date().optional(),
         sampleCollectedDate: vine.date().optional(),
         resultDate: vine.date().optional(),
-        status: vine.enum(['ordered', 'sample_collected', 'in_progress', 'completed', 'cancelled']).optional(),
-        priority: vine.enum(['normal', 'urgent', 'stat']).optional(),
+        status: vine.string().trim().minLength(1).optional(), // Changed from enum to string
+        priority: vine.string().trim().minLength(1).optional(), // Changed from enum to string
         results: vine.object({}).optional(),
         referenceRanges: vine.object({}).optional(),
         interpretation: vine.string().maxLength(1000).optional(),

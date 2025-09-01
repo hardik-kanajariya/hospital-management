@@ -3,6 +3,7 @@ import vine from '@vinejs/vine'
 /**
  * Validator to validate the payload when creating
  * a new bill.
+ * Updated to use master data instead of enums
  */
 export const billValidator = vine.compile(
     vine.object({
@@ -17,8 +18,8 @@ export const billValidator = vine.compile(
         discountAmount: vine.number().min(0).optional(),
         totalAmount: vine.number().positive(),
         paidAmount: vine.number().min(0).optional(),
-        status: vine.enum(['pending', 'partial', 'paid', 'overdue', 'cancelled']).optional(),
-        paymentMethod: vine.enum(['cash', 'card', 'insurance', 'bank_transfer', 'other']).optional(),
+        status: vine.string().trim().minLength(1).optional(), // Changed from enum to string
+        paymentMethod: vine.string().trim().minLength(1).optional(), // Changed from enum to string
         insuranceDetails: vine.object({}).optional(),
         notes: vine.string().maxLength(500).optional()
     })
@@ -27,6 +28,7 @@ export const billValidator = vine.compile(
 /**
  * Validator to validate the payload when updating
  * an existing bill.
+ * Updated to use master data instead of enums
  */
 export const updateBillValidator = vine.compile(
     vine.object({
@@ -38,8 +40,8 @@ export const updateBillValidator = vine.compile(
         discountAmount: vine.number().min(0).optional(),
         totalAmount: vine.number().positive().optional(),
         paidAmount: vine.number().min(0).optional(),
-        status: vine.enum(['pending', 'partial', 'paid', 'overdue', 'cancelled']).optional(),
-        paymentMethod: vine.enum(['cash', 'card', 'insurance', 'bank_transfer', 'other']).optional(),
+        status: vine.string().trim().minLength(1).optional(), // Changed from enum to string
+        paymentMethod: vine.string().trim().minLength(1).optional(), // Changed from enum to string
         insuranceDetails: vine.object({}).optional(),
         notes: vine.string().maxLength(500).optional()
     })

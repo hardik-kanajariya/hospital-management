@@ -27,13 +27,13 @@ export default class Appointment extends BaseModel {
     declare duration: number
 
     @column()
-    declare status: 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show'
+    declare status: string
 
     @column()
-    declare type: 'consultation' | 'follow_up' | 'emergency' | 'surgery' | 'checkup'
+    declare type: string
 
     @column()
-    declare priority: 'normal' | 'urgent' | 'emergency'
+    declare priority: string
 
     @column()
     declare reason: string

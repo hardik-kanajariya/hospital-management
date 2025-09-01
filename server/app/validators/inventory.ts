@@ -3,13 +3,14 @@ import vine from '@vinejs/vine'
 /**
  * Validator to validate the payload when creating
  * a new inventory item.
+ * Updated to use master data instead of enums
  */
 export const inventoryValidator = vine.compile(
     vine.object({
         itemId: vine.string().optional(),
         name: vine.string().minLength(2).maxLength(100),
         description: vine.string().maxLength(500).optional(),
-        category: vine.enum(['medication', 'equipment', 'supplies', 'other']),
+        category: vine.string().trim().minLength(1), // Changed from enum to string
         manufacturer: vine.string().maxLength(100).optional(),
         batchNumber: vine.string().maxLength(50).optional(),
         unitPrice: vine.number().positive(),
@@ -19,19 +20,20 @@ export const inventoryValidator = vine.compile(
         supplierInfo: vine.string().maxLength(500).optional(),
         expiryDate: vine.date().optional(),
         location: vine.string().maxLength(100).optional(),
-        status: vine.enum(['active', 'inactive', 'expired', 'out_of_stock']).optional()
+        status: vine.string().trim().minLength(1).optional() // Changed from enum to string
     })
 )
 
 /**
  * Validator to validate the payload when updating
  * an existing inventory item.
+ * Updated to use master data instead of enums
  */
 export const updateInventoryValidator = vine.compile(
     vine.object({
         name: vine.string().minLength(2).maxLength(100).optional(),
         description: vine.string().maxLength(500).optional(),
-        category: vine.enum(['medication', 'equipment', 'supplies', 'other']).optional(),
+        category: vine.string().trim().minLength(1).optional(), // Changed from enum to string
         manufacturer: vine.string().maxLength(100).optional(),
         batchNumber: vine.string().maxLength(50).optional(),
         unitPrice: vine.number().positive().optional(),
@@ -41,6 +43,6 @@ export const updateInventoryValidator = vine.compile(
         supplierInfo: vine.string().maxLength(500).optional(),
         expiryDate: vine.date().optional(),
         location: vine.string().maxLength(100).optional(),
-        status: vine.enum(['active', 'inactive', 'expired', 'out_of_stock']).optional()
+        status: vine.string().trim().minLength(1).optional() // Changed from enum to string
     })
 )

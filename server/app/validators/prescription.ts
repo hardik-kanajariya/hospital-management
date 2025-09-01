@@ -3,6 +3,7 @@ import vine from '@vinejs/vine'
 /**
  * Validator to validate the payload when creating
  * a new prescription.
+ * Updated to use master data instead of enums
  */
 export const prescriptionValidator = vine.compile(
     vine.object({
@@ -14,7 +15,7 @@ export const prescriptionValidator = vine.compile(
         diagnosis: vine.string().minLength(3).maxLength(500),
         instructions: vine.string().maxLength(1000).optional(),
         notes: vine.string().maxLength(500).optional(),
-        status: vine.enum(['active', 'dispensed', 'completed', 'cancelled']).optional(),
+        status: vine.string().trim().minLength(1).optional(), // Changed from enum to string
         validUntil: vine.date().optional()
     })
 )
@@ -22,6 +23,7 @@ export const prescriptionValidator = vine.compile(
 /**
  * Validator to validate the payload when updating
  * an existing prescription.
+ * Updated to use master data instead of enums
  */
 export const updatePrescriptionValidator = vine.compile(
     vine.object({
@@ -29,7 +31,7 @@ export const updatePrescriptionValidator = vine.compile(
         diagnosis: vine.string().minLength(3).maxLength(500).optional(),
         instructions: vine.string().maxLength(1000).optional(),
         notes: vine.string().maxLength(500).optional(),
-        status: vine.enum(['active', 'dispensed', 'completed', 'cancelled']).optional(),
+        status: vine.string().trim().minLength(1).optional(), // Changed from enum to string
         validUntil: vine.date().optional(),
         dispensedBy: vine.string().uuid().optional()
     })

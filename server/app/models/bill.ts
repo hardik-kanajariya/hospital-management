@@ -68,10 +68,10 @@ export default class Bill extends BaseModel {
     declare outstandingAmount: number
 
     @column()
-    declare status: 'pending' | 'partial' | 'paid' | 'overdue' | 'cancelled'
+    declare status: string
 
     @column({ columnName: 'payment_method' })
-    declare paymentMethod: 'cash' | 'card' | 'insurance' | 'bank_transfer' | 'other' | null
+    declare paymentMethod: string | null
 
     @column({
         columnName: 'insurance_details',

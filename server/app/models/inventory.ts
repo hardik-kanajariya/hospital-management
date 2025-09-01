@@ -15,7 +15,7 @@ export default class Inventory extends BaseModel {
     declare description: string | null
 
     @column()
-    declare category: 'medication' | 'equipment' | 'supplies' | 'other'
+    declare category: string
 
     @column()
     declare manufacturer: string | null
@@ -45,7 +45,7 @@ export default class Inventory extends BaseModel {
     declare supplierInfo: string | null
 
     @column()
-    declare status: 'active' | 'inactive' | 'expired' | 'out_of_stock'
+    declare status: string
 
     @column.dateTime({ autoCreate: true, columnName: 'created_at' })
     declare createdAt: DateTime

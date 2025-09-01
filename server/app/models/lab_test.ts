@@ -41,10 +41,10 @@ export default class LabTest extends BaseModel {
     declare resultDate: DateTime | null
 
     @column()
-    declare status: 'ordered' | 'sample_collected' | 'in_progress' | 'completed' | 'cancelled'
+    declare status: string
 
     @column()
-    declare priority: 'normal' | 'urgent' | 'stat'
+    declare priority: string
 
     @column({
         columnName: 'results',

@@ -47,7 +47,7 @@ export default class Prescription extends BaseModel {
     declare notes: string | null
 
     @column()
-    declare status: 'active' | 'dispensed' | 'completed' | 'cancelled'
+    declare status: string
 
     @column.date({ columnName: 'valid_until' })
     declare validUntil: DateTime | null

@@ -20,10 +20,10 @@ export default class Bed extends BaseModel {
     declare floor: string
 
     @column()
-    declare type: 'general' | 'private' | 'icu' | 'emergency' | 'pediatric' | 'maternity'
+    declare type: string
 
     @column()
-    declare status: 'available' | 'occupied' | 'maintenance' | 'cleaning' | 'reserved'
+    declare status: string
 
     @column({ columnName: 'patient_id' })
     declare patientId: string | null

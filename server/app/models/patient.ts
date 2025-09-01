@@ -31,7 +31,7 @@ export default class Patient extends BaseModel {
     declare dateOfBirth: DateTime
 
     @column()
-    declare gender: 'male' | 'female' | 'other'
+    declare gender: string
 
     @column()
     declare address: string
@@ -65,7 +65,7 @@ export default class Patient extends BaseModel {
     declare emergencyContact: Record<string, any>
 
     @column({ columnName: 'blood_group', serializeAs: 'blood_group' })
-    declare bloodGroup: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-' | null
+    declare bloodGroup: string | null
 
     @column({
         serializeAs: 'allergies',

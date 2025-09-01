@@ -17,10 +17,10 @@ export default class Notification extends BaseModel {
     declare message: string
 
     @column()
-    declare type: 'appointment' | 'emergency' | 'system' | 'reminder' | 'alert' | 'info'
+    declare type: string
 
     @column()
-    declare priority: 'low' | 'medium' | 'high' | 'critical'
+    declare priority: string
 
     @column({ columnName: 'is_read' })
     declare isRead: boolean
