@@ -67,6 +67,15 @@ export const API_ENDPOINTS = {
     BY_ID: (id: string) => `${API_BASE_URL}/medical-records/${id}`,
     BY_PATIENT: (patientId: string) => `${API_BASE_URL}/medical-records/patient/${patientId}`,
     SEARCH: `${API_BASE_URL}/medical-records/search`,
+    VALIDATE: `${API_BASE_URL}/medical-records/validate`,
+
+    // Patient-specific medical record endpoints
+    PATIENT_STATISTICS: (patientId: string) => `${API_BASE_URL}/medical-records/patient/${patientId}/statistics`,
+    PATIENT_TIMELINE: (patientId: string) => `${API_BASE_URL}/medical-records/patient/${patientId}/timeline`,
+    PATIENT_VITAL_SIGNS_TRENDS: (patientId: string) => `${API_BASE_URL}/medical-records/patient/${patientId}/vital-signs-trends`,
+    PATIENT_ALERTS: (patientId: string) => `${API_BASE_URL}/medical-records/patient/${patientId}/alerts`,
+
+    // Legacy endpoints for backward compatibility
     CONSULTATIONS: `${API_BASE_URL}/medical-records/consultations`,
     PRESCRIPTIONS: `${API_BASE_URL}/medical-records/prescriptions`,
     DIAGNOSES: `${API_BASE_URL}/medical-records/diagnoses`,

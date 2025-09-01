@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -31,13 +31,57 @@ import {
     ArrowRightIcon,
 } from '@phosphor-icons/react';
 import { usePatient } from '@/hooks/usePatientApi'
+import { useMedicalRecordApi, useMedicalRecordAnalytics } from '@/hooks/useMedicalRecordApi'
 
 export default function PatientProfile() {
     const navigate = useNavigate()
     const { id } = useParams<{ id: string }>()
     const { patient, loading, error, fetchPatient } = usePatient(id)
+    const { medicalRecords, fetchMedicalRecords } = useMedicalRecordApi()
+    const {
+        getPatientStatistics,
+        getPatientTimeline,
+        getVitalSignsTrends,
+        getPatientAlerts,
+        loading: analyticsLoading
+    } = useMedicalRecordAnalytics()
 
     const [activeTab, setActiveTab] = useState('overview')
+    const [medicalStats, setMedicalStats] = useState(null)
+    const [medicalTimeline, setMedicalTimeline] = useState([])
+    const [vitalsTrends, setVitalsTrends] = useState(null)
+    const [medicalAlerts, setMedicalAlerts] = useState([])
+
+    // Load medical analytics data when patient is loaded
+    useEffect(() => {
+        if (patient?.id) {
+            loadMedicalAnalytics()
+        }
+    }, [patient?.id])
+
+    const loadMedicalAnalytics = async () => {
+        if (!patient?.id) return
+
+        try {
+            // Load patient medical records
+            await fetchMedicalRecords({ patientId: patient.id })
+
+            // Load analytics data
+            const [stats, timeline, trends, alerts] = await Promise.all([
+                getPatientStatistics(patient.id),
+                getPatientTimeline(patient.id),
+                getVitalSignsTrends(patient.id, 30),
+                getPatientAlerts(patient.id)
+            ])
+
+            setMedicalStats(stats)
+            setMedicalTimeline(timeline)
+            setVitalsTrends(trends)
+            setMedicalAlerts(alerts)
+        } catch (error) {
+            console.error('Error loading medical analytics:', error)
+        }
+    }
 
     // Calculate age from date of birth with fallback for invalid values
     const calculateAge = (dateOfBirth: string | null | undefined) => {
