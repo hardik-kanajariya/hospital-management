@@ -32,13 +32,13 @@ interface MedicationListProps {
     onDiscontinue?: (medication: Medication) => void
 }
 
-export function MedicationList({ 
-    medications, 
-    className, 
-    compact = false, 
+export function MedicationList({
+    medications,
+    className,
+    compact = false,
     showActions = false,
     onEdit,
-    onDiscontinue 
+    onDiscontinue
 }: MedicationListProps) {
     if (!medications || medications.length === 0) {
         return (

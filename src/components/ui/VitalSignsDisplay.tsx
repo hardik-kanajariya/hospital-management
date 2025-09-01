@@ -34,9 +34,9 @@ export function VitalSignsDisplay({ vitalSigns, className, compact = false }: Vi
     // Helper function to determine if a value is normal
     const getVitalStatus = (type: string, value: number | string): 'normal' | 'warning' | 'critical' => {
         const numValue = typeof value === 'string' ? parseFloat(value) : value
-        
+
         if (isNaN(numValue)) return 'normal'
-        
+
         switch (type) {
             case 'temperature':
                 if (numValue < 36.1 || numValue > 37.2) return numValue < 35 || numValue > 39 ? 'critical' : 'warning'
@@ -81,7 +81,7 @@ export function VitalSignsDisplay({ vitalSigns, className, compact = false }: Vi
         {
             key: 'bloodPressure',
             label: 'Blood Pressure',
-            value: typeof vitalSigns.bloodPressure === 'object' 
+            value: typeof vitalSigns.bloodPressure === 'object'
                 ? `${vitalSigns.bloodPressure.systolic}/${vitalSigns.bloodPressure.diastolic}`
                 : vitalSigns.bloodPressure,
             unit: 'mmHg',
@@ -148,10 +148,10 @@ export function VitalSignsDisplay({ vitalSigns, className, compact = false }: Vi
             <div className={`grid grid-cols-2 md:grid-cols-4 gap-2 ${className}`}>
                 {availableVitals.map((vital) => {
                     const Icon = vital.icon
-                    const status = vital.key === 'bloodPressure' 
+                    const status = vital.key === 'bloodPressure'
                         ? 'normal' // Handle BP separately due to complex structure
                         : getVitalStatus(vital.key, vital.value || 0)
-                    
+
                     return (
                         <div key={vital.key} className={`p-2 rounded-lg border ${getStatusColor(status)}`}>
                             <div className="flex items-center gap-2">
@@ -182,10 +182,10 @@ export function VitalSignsDisplay({ vitalSigns, className, compact = false }: Vi
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {availableVitals.map((vital) => {
                         const Icon = vital.icon
-                        const status = vital.key === 'bloodPressure' 
+                        const status = vital.key === 'bloodPressure'
                             ? 'normal' // Handle BP separately due to complex structure
                             : getVitalStatus(vital.key, vital.value || 0)
-                        
+
                         return (
                             <div key={vital.key} className="space-y-2">
                                 <div className="flex items-center gap-2">
@@ -196,8 +196,8 @@ export function VitalSignsDisplay({ vitalSigns, className, compact = false }: Vi
                                     <span className="text-lg font-bold">
                                         {vital.value}{vital.unit}
                                     </span>
-                                    <Badge 
-                                        variant="outline" 
+                                    <Badge
+                                        variant="outline"
                                         className={getStatusColor(status)}
                                     >
                                         {status === 'normal' ? 'Normal' : status === 'warning' ? 'Abnormal' : 'Critical'}

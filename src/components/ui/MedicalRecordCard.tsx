@@ -80,8 +80,8 @@ export function MedicalRecordCard({
                             </div>
                         </div>
                         <div className="flex items-center gap-1">
-                            <Button 
-                                variant="ghost" 
+                            <Button
+                                variant="ghost"
                                 size="sm"
                                 onClick={() => navigate(`/medical-records/${record.id}`)}
                             >
@@ -100,14 +100,14 @@ export function MedicalRecordCard({
             {showTimeline && index < totalRecords - 1 && (
                 <div className="absolute left-6 top-12 bottom-0 w-0.5 bg-border"></div>
             )}
-            
+
             <CardContent className="p-6">
                 <div className="flex items-start gap-4">
                     {/* Timeline dot */}
                     {showTimeline && (
                         <div className="flex-shrink-0 w-3 h-3 bg-primary rounded-full mt-2"></div>
                     )}
-                    
+
                     <div className="flex-1 min-w-0">
                         {/* Header */}
                         <div className="flex items-start justify-between mb-4">
@@ -126,16 +126,16 @@ export function MedicalRecordCard({
                                 </p>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Button 
-                                    variant="ghost" 
+                                <Button
+                                    variant="ghost"
                                     size="sm"
                                     onClick={() => navigate(`/medical-records/${record.id}`)}
                                 >
                                     <EyeIcon className="w-4 h-4 mr-1" />
                                     View
                                 </Button>
-                                <Button 
-                                    variant="ghost" 
+                                <Button
+                                    variant="ghost"
                                     size="sm"
                                     onClick={() => navigate(`/medical-records/${record.id}/edit`)}
                                 >
