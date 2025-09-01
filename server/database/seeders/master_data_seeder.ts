@@ -57,7 +57,7 @@ export default class extends BaseSeeder {
       { category: 'blood_groups', name: 'O+', description: 'O Positive', value: 'o_positive', display_order: 7, is_system: true },
       { category: 'blood_groups', name: 'O-', description: 'O Negative', value: 'o_negative', display_order: 8, is_system: true },
 
-      // Gender Options
+      // Gender Options (corrected from 'gender' to 'genders' for consistency)
       { category: 'genders', name: 'Male', description: 'Male Gender', value: 'male', display_order: 1, is_system: true },
       { category: 'genders', name: 'Female', description: 'Female Gender', value: 'female', display_order: 2, is_system: true },
       { category: 'genders', name: 'Other', description: 'Other Gender', value: 'other', display_order: 3, is_system: true },
@@ -71,6 +71,92 @@ export default class extends BaseSeeder {
       { category: 'relationships', name: 'Guardian', description: 'Legal Guardian', value: 'guardian', display_order: 6, is_system: true },
       { category: 'relationships', name: 'Relative', description: 'Other Relative', value: 'relative', display_order: 7, is_system: true },
       { category: 'relationships', name: 'Colleague', description: 'Work Colleague', value: 'colleague', display_order: 8, is_system: true },
+
+      // Appointment Status
+      { category: 'appointment_status', name: 'Scheduled', description: 'Appointment is scheduled', value: 'scheduled', display_order: 1, is_system: true },
+      { category: 'appointment_status', name: 'Confirmed', description: 'Appointment is confirmed', value: 'confirmed', display_order: 2, is_system: true },
+      { category: 'appointment_status', name: 'In Progress', description: 'Appointment is in progress', value: 'in_progress', display_order: 3, is_system: true },
+      { category: 'appointment_status', name: 'Completed', description: 'Appointment is completed', value: 'completed', display_order: 4, is_system: true },
+      { category: 'appointment_status', name: 'Cancelled', description: 'Appointment is cancelled', value: 'cancelled', display_order: 5, is_system: true },
+      { category: 'appointment_status', name: 'No Show', description: 'Patient did not show up', value: 'no_show', display_order: 6, is_system: true },
+
+      // Appointment Priorities
+      { category: 'appointment_priorities', name: 'Normal', description: 'Normal priority appointment', value: 'normal', display_order: 1, is_system: true },
+      { category: 'appointment_priorities', name: 'Urgent', description: 'Urgent priority appointment', value: 'urgent', display_order: 2, is_system: true },
+      { category: 'appointment_priorities', name: 'Emergency', description: 'Emergency priority appointment', value: 'emergency', display_order: 3, is_system: true },
+
+      // Lab Test Status
+      { category: 'lab_test_status', name: 'Ordered', description: 'Lab test has been ordered', value: 'ordered', display_order: 1, is_system: true },
+      { category: 'lab_test_status', name: 'Sample Collected', description: 'Sample has been collected', value: 'sample_collected', display_order: 2, is_system: true },
+      { category: 'lab_test_status', name: 'In Progress', description: 'Lab test is in progress', value: 'in_progress', display_order: 3, is_system: true },
+      { category: 'lab_test_status', name: 'Completed', description: 'Lab test is completed', value: 'completed', display_order: 4, is_system: true },
+      { category: 'lab_test_status', name: 'Cancelled', description: 'Lab test is cancelled', value: 'cancelled', display_order: 5, is_system: true },
+
+      // Lab Test Priorities
+      { category: 'lab_test_priorities', name: 'Normal', description: 'Normal priority lab test', value: 'normal', display_order: 1, is_system: true },
+      { category: 'lab_test_priorities', name: 'Urgent', description: 'Urgent priority lab test', value: 'urgent', display_order: 2, is_system: true },
+      { category: 'lab_test_priorities', name: 'STAT', description: 'STAT priority lab test', value: 'stat', display_order: 3, is_system: true },
+
+      // Bed Types
+      { category: 'bed_types', name: 'General', description: 'General bed', value: 'general', display_order: 1, is_system: true },
+      { category: 'bed_types', name: 'Private', description: 'Private room bed', value: 'private', display_order: 2, is_system: true },
+      { category: 'bed_types', name: 'ICU', description: 'Intensive Care Unit bed', value: 'icu', display_order: 3, is_system: true },
+      { category: 'bed_types', name: 'Emergency', description: 'Emergency bed', value: 'emergency', display_order: 4, is_system: true },
+      { category: 'bed_types', name: 'Pediatric', description: 'Pediatric bed', value: 'pediatric', display_order: 5, is_system: true },
+      { category: 'bed_types', name: 'Maternity', description: 'Maternity bed', value: 'maternity', display_order: 6, is_system: true },
+
+      // Bed Status
+      { category: 'bed_status', name: 'Available', description: 'Bed is available', value: 'available', display_order: 1, is_system: true },
+      { category: 'bed_status', name: 'Occupied', description: 'Bed is occupied', value: 'occupied', display_order: 2, is_system: true },
+      { category: 'bed_status', name: 'Maintenance', description: 'Bed is under maintenance', value: 'maintenance', display_order: 3, is_system: true },
+      { category: 'bed_status', name: 'Cleaning', description: 'Bed is being cleaned', value: 'cleaning', display_order: 4, is_system: true },
+      { category: 'bed_status', name: 'Reserved', description: 'Bed is reserved', value: 'reserved', display_order: 5, is_system: true },
+
+      // Bill Status
+      { category: 'bill_status', name: 'Pending', description: 'Bill is pending payment', value: 'pending', display_order: 1, is_system: true },
+      { category: 'bill_status', name: 'Partial', description: 'Bill is partially paid', value: 'partial', display_order: 2, is_system: true },
+      { category: 'bill_status', name: 'Paid', description: 'Bill is fully paid', value: 'paid', display_order: 3, is_system: true },
+      { category: 'bill_status', name: 'Overdue', description: 'Bill is overdue', value: 'overdue', display_order: 4, is_system: true },
+      { category: 'bill_status', name: 'Cancelled', description: 'Bill is cancelled', value: 'cancelled', display_order: 5, is_system: true },
+
+      // Payment Methods
+      { category: 'payment_methods', name: 'Cash', description: 'Cash payment', value: 'cash', display_order: 1, is_system: true },
+      { category: 'payment_methods', name: 'Card', description: 'Card payment', value: 'card', display_order: 2, is_system: true },
+      { category: 'payment_methods', name: 'Insurance', description: 'Insurance payment', value: 'insurance', display_order: 3, is_system: true },
+      { category: 'payment_methods', name: 'Bank Transfer', description: 'Bank transfer payment', value: 'bank_transfer', display_order: 4, is_system: true },
+      { category: 'payment_methods', name: 'Other', description: 'Other payment method', value: 'other', display_order: 5, is_system: true },
+
+      // Inventory Categories
+      { category: 'inventory_categories', name: 'Medication', description: 'Medication inventory', value: 'medication', display_order: 1, is_system: true },
+      { category: 'inventory_categories', name: 'Equipment', description: 'Equipment inventory', value: 'equipment', display_order: 2, is_system: true },
+      { category: 'inventory_categories', name: 'Supplies', description: 'Supplies inventory', value: 'supplies', display_order: 3, is_system: true },
+      { category: 'inventory_categories', name: 'Other', description: 'Other inventory items', value: 'other', display_order: 4, is_system: true },
+
+      // Inventory Status
+      { category: 'inventory_status', name: 'Active', description: 'Inventory item is active', value: 'active', display_order: 1, is_system: true },
+      { category: 'inventory_status', name: 'Inactive', description: 'Inventory item is inactive', value: 'inactive', display_order: 2, is_system: true },
+      { category: 'inventory_status', name: 'Expired', description: 'Inventory item is expired', value: 'expired', display_order: 3, is_system: true },
+      { category: 'inventory_status', name: 'Out of Stock', description: 'Inventory item is out of stock', value: 'out_of_stock', display_order: 4, is_system: true },
+
+      // Prescription Status
+      { category: 'prescription_status', name: 'Active', description: 'Prescription is active', value: 'active', display_order: 1, is_system: true },
+      { category: 'prescription_status', name: 'Dispensed', description: 'Prescription is dispensed', value: 'dispensed', display_order: 2, is_system: true },
+      { category: 'prescription_status', name: 'Completed', description: 'Prescription is completed', value: 'completed', display_order: 3, is_system: true },
+      { category: 'prescription_status', name: 'Cancelled', description: 'Prescription is cancelled', value: 'cancelled', display_order: 4, is_system: true },
+
+      // Notification Types
+      { category: 'notification_types', name: 'Appointment', description: 'Appointment notification', value: 'appointment', display_order: 1, is_system: true },
+      { category: 'notification_types', name: 'Emergency', description: 'Emergency notification', value: 'emergency', display_order: 2, is_system: true },
+      { category: 'notification_types', name: 'System', description: 'System notification', value: 'system', display_order: 3, is_system: true },
+      { category: 'notification_types', name: 'Reminder', description: 'Reminder notification', value: 'reminder', display_order: 4, is_system: true },
+      { category: 'notification_types', name: 'Alert', description: 'Alert notification', value: 'alert', display_order: 5, is_system: true },
+      { category: 'notification_types', name: 'Info', description: 'Information notification', value: 'info', display_order: 6, is_system: true },
+
+      // Notification Priorities
+      { category: 'notification_priorities', name: 'Low', description: 'Low priority notification', value: 'low', display_order: 1, is_system: true },
+      { category: 'notification_priorities', name: 'Medium', description: 'Medium priority notification', value: 'medium', display_order: 2, is_system: true },
+      { category: 'notification_priorities', name: 'High', description: 'High priority notification', value: 'high', display_order: 3, is_system: true },
+      { category: 'notification_priorities', name: 'Critical', description: 'Critical priority notification', value: 'critical', display_order: 4, is_system: true },
 
       // Lab Sections
       { category: 'lab_sections', name: 'Hematology', description: 'Blood Tests and Analysis', value: 'hematology', display_order: 1, is_system: true },
@@ -116,25 +202,76 @@ export default class extends BaseSeeder {
       { category: 'languages', name: 'Chinese', description: 'Chinese Language', value: 'chinese', display_order: 6, is_system: true }
     ]
 
-    // Insert or update data
-    for (const item of defaultData) {
-      const existing = await Database
-        .from('master_data')
-        .where('category', item.category)
-        .where('value', item.value)
-        .first()
+    console.log('🔄 Starting master data seeding...')
 
-      if (!existing) {
-        await Database
-          .table('master_data')
-          .insert({
-            ...item,
-            is_active: true,
-            created_at: new Date(),
-            updated_at: new Date()
-          })
+    // Use transaction for better performance and data consistency
+    await Database.transaction(async (trx) => {
+      let createdCount = 0
+      let updatedCount = 0
+      let skippedCount = 0
+
+      for (const item of defaultData) {
+        try {
+          // Check if item exists based on category and value (unique identifier)
+          const existing = await trx
+            .from('master_data')
+            .where('category', item.category)
+            .where('value', item.value)
+            .first()
+
+          if (existing) {
+            // Update existing item only if it's a system item and data has changed
+            if (existing.is_system) {
+              const hasChanges =
+                existing.name !== item.name ||
+                existing.description !== item.description ||
+                existing.display_order !== item.display_order ||
+                existing.is_active !== true
+
+              if (hasChanges) {
+                await trx
+                  .from('master_data')
+                  .where('id', existing.id)
+                  .update({
+                    name: item.name,
+                    description: item.description,
+                    display_order: item.display_order,
+                    is_active: true,
+                    updated_at: new Date()
+                  })
+                updatedCount++
+                console.log(`  ✅ Updated: ${item.category} -> ${item.name}`)
+              } else {
+                skippedCount++
+              }
+            } else {
+              // Skip non-system items to preserve user data
+              skippedCount++
+            }
+          } else {
+            // Create new item
+            await trx
+              .table('master_data')
+              .insert({
+                ...item,
+                is_active: true,
+                created_at: new Date(),
+                updated_at: new Date()
+              })
+            createdCount++
+            console.log(`  ➕ Created: ${item.category} -> ${item.name}`)
+          }
+        } catch (error) {
+          console.error(`  ❌ Error processing ${item.category} -> ${item.name}:`, error.message)
+        }
       }
-    }
+
+      console.log('\n📊 Master data seeding summary:')
+      console.log(`  ➕ Created: ${createdCount} items`)
+      console.log(`  ✅ Updated: ${updatedCount} items`)
+      console.log(`  ⏭️  Skipped: ${skippedCount} items`)
+      console.log(`  🎯 Total processed: ${defaultData.length} items`)
+    })
 
     console.log('✅ Master data seeded successfully')
   }
