@@ -58,19 +58,36 @@ export interface InsuranceInfo {
 
 export interface Appointment {
   id: string;
+  appointmentId?: string;
   patientId: string;
   doctorId: string;
-  doctor_name?: string;
   appointmentDate: string;
   appointmentTime: string;
-  type: 'consultation' | 'follow_up' | 'emergency' | 'vaccination' | 'checkup' | 'surgery_consultation';
-  status: 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
+  duration?: number; // in minutes
+  type: string;
+  status: string;
+  priority?: string;
   reason?: string;
   notes?: string;
-  duration?: number; // in minutes
+  symptoms?: string[];
+  vitals?: any;
+  roomNumber?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  // Flattened patient data
+  patient_name?: string;
+  patient_id_display?: string;
+  patient_phone?: string;
+  patient_email?: string;
+  // Flattened doctor data  
+  doctor_name?: string;
+  doctor_department?: string;
+  doctor_phone?: string;
+  doctor_email?: string;
+  // Legacy fields for backward compatibility
   reminder_sent?: boolean;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Doctor {

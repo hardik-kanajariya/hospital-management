@@ -20,7 +20,15 @@ export function useApiRequest<T = any>(endpoint: string) {
             const response = await httpService.get<T[]>(endpoint);
 
             if (response.success && response.data) {
-                setData(Array.isArray(response.data) ? response.data : []);
+                // Handle paginated data structure
+                if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+                    // Paginated response: { data: { data: [...], meta: {...} } }
+                    const paginatedData = response.data as any;
+                    setData(Array.isArray(paginatedData.data) ? paginatedData.data : []);
+                } else {
+                    // Direct array response
+                    setData(Array.isArray(response.data) ? response.data : []);
+                }
             } else {
                 throw new Error(response.error || 'Failed to fetch data');
             }

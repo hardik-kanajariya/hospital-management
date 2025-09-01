@@ -38,6 +38,15 @@ const formatDate = (date: string | null | undefined): string => {
 const formatTime = (time: string | null | undefined): string => {
     if (!time) return 'Not specified'
     try {
+        // If it's already in HH:MM format, just format it for display
+        if (time.match(/^\d{2}:\d{2}$/)) {
+            const [hours, minutes] = time.split(':');
+            const hour24 = parseInt(hours);
+            const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+            const ampm = hour24 >= 12 ? 'PM' : 'AM';
+            return `${hour12}:${minutes} ${ampm}`;
+        }
+        // Fallback for other time formats
         return new Date(`2000-01-01T${time}`).toLocaleTimeString('en-IN', {
             hour: '2-digit',
             minute: '2-digit',
@@ -73,16 +82,22 @@ export default function AppointmentList() {
     const [statusFilter, setStatusFilter] = useState('all')
     const [dateFilter, setDateFilter] = useState('all')
 
-    // Get patient name by ID
-    const getPatientName = (patientId: string): string => {
-        const patient = patients.find(p => p.id === patientId)
+    // Get patient name from flattened data or fallback to patient lookup
+    const getPatientName = (appointment: Appointment): string => {
+        // Use flattened patient_name first
+        if (appointment.patient_name) {
+            return appointment.patient_name;
+        }
+
+        // Fallback to looking up in patients array
+        const patient = patients.find(p => p.id === appointment.patientId)
         if (!patient) return 'Unknown Patient'
         return patient.name || 'Unknown Patient'
     }
 
     // Filter appointments
     const filteredAppointments = appointments?.filter(appointment => {
-        const patientName = getPatientName(appointment.patientId || '')
+        const patientName = getPatientName(appointment)
         const matchesSearch =
             patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
             appointment.doctor_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -245,7 +260,7 @@ export default function AppointmentList() {
                                         <TableCell>
                                             <div className="flex items-center gap-2">
                                                 <UserIcon className="w-4 h-4 text-muted-foreground" />
-                                                <span className="font-medium">{getPatientName(appointment.patientId || '')}</span>
+                                                <span className="font-medium">{getPatientName(appointment)}</span>
                                             </div>
                                         </TableCell>
                                         <TableCell>{appointment.doctor_name || 'Not assigned'}</TableCell>

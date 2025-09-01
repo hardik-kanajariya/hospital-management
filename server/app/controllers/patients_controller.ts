@@ -14,7 +14,7 @@ export default class PatientsController {
             const limit = request.input('limit', 10)
             const search = request.input('search', '')
 
-            let query = Patient.query()
+            let query = Patient.query().whereNull('deleted_at')
 
             if (search) {
                 query = query.where((builder) => {
@@ -48,7 +48,10 @@ export default class PatientsController {
      */
     async show({ params, response }: HttpContext) {
         try {
-            const patient = await Patient.find(params.id)
+            const patient = await Patient.query()
+                .where('id', params.id)
+                .whereNull('deleted_at')
+                .first()
 
             if (!patient) {
                 return response.status(404).json({
@@ -79,9 +82,24 @@ export default class PatientsController {
         try {
             const payload = await request.validateUsing(patientValidator)
 
-            // Generate patient ID
-            const patientCount = await Patient.query().count('* as total')
-            const patientId = `PAT${String(Number(patientCount[0].$extras.total) + 1).padStart(6, '0')}`
+            // Generate patient ID - find next available ID to handle deleted patients
+            let patientId = ''
+            let patientNumber = 1
+            let isUnique = false
+
+            // Start from 1 and find the first available ID (excluding soft deleted)
+            while (!isUnique) {
+                patientId = `PAT${String(patientNumber).padStart(6, '0')}`
+                const existingPatient = await Patient.query()
+                    .where('patient_id', patientId)
+                    .whereNull('deleted_at')
+                    .first()
+                if (!existingPatient) {
+                    isUnique = true
+                } else {
+                    patientNumber++
+                }
+            }
 
             // Handle snake_case field names consistently
             if (!payload.date_of_birth) {
@@ -146,7 +164,10 @@ export default class PatientsController {
      */
     async update({ params, request, response }: HttpContext) {
         try {
-            const patient = await Patient.find(params.id)
+            const patient = await Patient.query()
+                .where('id', params.id)
+                .whereNull('deleted_at')
+                .first()
 
             if (!patient) {
                 return response.status(404).json({
@@ -205,11 +226,14 @@ export default class PatientsController {
     }
 
     /**
-     * Delete patient
+     * Delete patient (soft delete)
      */
     async destroy({ params, response }: HttpContext) {
         try {
-            const patient = await Patient.find(params.id)
+            const patient = await Patient.query()
+                .where('id', params.id)
+                .whereNull('deleted_at')
+                .first()
 
             if (!patient) {
                 return response.status(404).json({
@@ -218,7 +242,9 @@ export default class PatientsController {
                 })
             }
 
-            await patient.delete()
+            // Soft delete by setting deleted_at timestamp
+            patient.deletedAt = DateTime.now()
+            await patient.save()
 
             return response.status(200).json({
                 success: true,
@@ -250,6 +276,7 @@ export default class PatientsController {
             }
 
             const patients = await Patient.query()
+                .whereNull('deleted_at')
                 .where((builder) => {
                     builder
                         .where('name', 'like', `%${query}%`)
@@ -347,19 +374,23 @@ export default class PatientsController {
      */
     async stats({ response }: HttpContext) {
         try {
-            // Get total patient count
-            const totalPatients = await Patient.query().count('* as total')
+            // Get total patient count (excluding soft deleted)
+            const totalPatients = await Patient.query()
+                .whereNull('deleted_at')
+                .count('* as total')
             const total = parseInt(totalPatients[0]?.$extras.total || '0')
 
-            // Get new patients this month
+            // Get new patients this month (excluding soft deleted)
             const startOfMonth = DateTime.now().startOf('month')
             const newThisMonth = await Patient.query()
+                .whereNull('deleted_at')
                 .where('created_at', '>=', startOfMonth.toSQL())
                 .count('* as total')
             const newPatients = parseInt(newThisMonth[0]?.$extras.total || '0')
 
-            // Get patients by gender
+            // Get patients by gender (excluding soft deleted)
             const genderStats = await Patient.query()
+                .whereNull('deleted_at')
                 .select('gender')
                 .count('* as count')
                 .groupBy('gender')
@@ -369,8 +400,10 @@ export default class PatientsController {
                 return acc
             }, {} as Record<string, number>)
 
-            // Get patients by age groups
-            const patients = await Patient.query().select('date_of_birth')
+            // Get patients by age groups (excluding soft deleted)
+            const patients = await Patient.query()
+                .whereNull('deleted_at')
+                .select('date_of_birth')
             const ageGroups = {
                 '0-18': 0,
                 '19-30': 0,
@@ -390,9 +423,10 @@ export default class PatientsController {
                 }
             })
 
-            // Get recent registrations (last 7 days)
+            // Get recent registrations (last 7 days, excluding soft deleted)
             const weekAgo = DateTime.now().minus({ days: 7 })
             const recentRegistrations = await Patient.query()
+                .whereNull('deleted_at')
                 .where('created_at', '>=', weekAgo.toSQL())
                 .count('* as total')
             const recentCount = parseInt(recentRegistrations[0]?.$extras.total || '0')

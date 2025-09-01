@@ -20,8 +20,12 @@ export default class AppointmentsController {
             const date = request.input('date', '')
 
             let query = Appointment.query()
-                .preload('patient')
-                .preload('doctor')
+                .preload('patient', (patientQuery) => {
+                    patientQuery.select(['id', 'patient_id', 'name', 'phone', 'email'])
+                })
+                .preload('doctor', (doctorQuery) => {
+                    doctorQuery.select(['id', 'name', 'department', 'phone', 'email'])
+                })
 
             if (status) {
                 query = query.where('status', status)
@@ -43,9 +47,43 @@ export default class AppointmentsController {
 
             const appointments = await query.paginate(page, limit)
 
+            // Transform the response to include flattened data and formatted dates/times
+            const transformedData = appointments.serialize().data.map((appointment: any) => ({
+                id: appointment.id,
+                appointmentId: appointment.appointmentId,
+                patientId: appointment.patientId,
+                doctorId: appointment.doctorId,
+                appointmentDate: appointment.appointmentDate ? appointment.appointmentDate.split('T')[0] : null, // Extract date part
+                appointmentTime: appointment.appointmentTime ? appointment.appointmentTime.split('T')[1].substring(0, 5) : null, // Extract time part (HH:MM)
+                duration: appointment.duration,
+                status: appointment.status,
+                type: appointment.type,
+                priority: appointment.priority,
+                reason: appointment.reason,
+                notes: appointment.notes,
+                symptoms: appointment.symptoms,
+                vitals: appointment.vitals,
+                roomNumber: appointment.roomNumber,
+                createdAt: appointment.createdAt,
+                updatedAt: appointment.updatedAt,
+                // Flattened patient data
+                patient_name: appointment.patient?.name || null,
+                patient_id_display: appointment.patient?.patientId || null,
+                patient_phone: appointment.patient?.phone || null,
+                patient_email: appointment.patient?.email || null,
+                // Flattened doctor data
+                doctor_name: appointment.doctor?.name || null,
+                doctor_department: appointment.doctor?.department || null,
+                doctor_phone: appointment.doctor?.phone || null,
+                doctor_email: appointment.doctor?.email || null
+            }))
+
             return response.status(200).json({
                 success: true,
-                data: appointments,
+                data: {
+                    data: transformedData,
+                    meta: appointments.serialize().meta
+                },
                 message: 'Appointments retrieved successfully'
             })
 
@@ -148,13 +186,48 @@ export default class AppointmentsController {
 
             await appointment.save()
 
-            // Load relationships
-            await appointment.load('patient')
-            await appointment.load('doctor')
+            // Load relationships with selected fields
+            await appointment.load('patient', (patientQuery) => {
+                patientQuery.select(['id', 'patient_id', 'name', 'phone', 'email'])
+            })
+            await appointment.load('doctor', (doctorQuery) => {
+                doctorQuery.select(['id', 'name', 'department', 'phone', 'email'])
+            })
+
+            // Return flattened response format
+            const transformedAppointment = {
+                id: appointment.id,
+                appointmentId: appointment.appointmentId,
+                patientId: appointment.patientId,
+                doctorId: appointment.doctorId,
+                appointmentDate: appointment.appointmentDate ? appointment.appointmentDate.toISODate() : null,
+                appointmentTime: appointment.appointmentTime ? appointment.appointmentTime.toFormat('HH:mm') : null,
+                duration: appointment.duration,
+                status: appointment.status,
+                type: appointment.type,
+                priority: appointment.priority,
+                reason: appointment.reason,
+                notes: appointment.notes,
+                symptoms: appointment.symptoms,
+                vitals: appointment.vitals,
+                roomNumber: appointment.roomNumber,
+                createdAt: appointment.createdAt,
+                updatedAt: appointment.updatedAt,
+                // Flattened patient data
+                patient_name: appointment.patient?.name || null,
+                patient_id_display: appointment.patient?.patientId || null,
+                patient_phone: appointment.patient?.phone || null,
+                patient_email: appointment.patient?.email || null,
+                // Flattened doctor data
+                doctor_name: appointment.doctor?.name || null,
+                doctor_department: appointment.doctor?.department || null,
+                doctor_phone: appointment.doctor?.phone || null,
+                doctor_email: appointment.doctor?.email || null
+            }
 
             return response.status(201).json({
                 success: true,
-                data: appointment,
+                data: transformedAppointment,
                 message: 'Appointment created successfully'
             })
 

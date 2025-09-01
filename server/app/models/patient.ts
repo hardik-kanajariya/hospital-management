@@ -6,6 +6,8 @@ import Bill from './bill.js'
 import MedicalRecord from './medical_record.js'
 
 export default class Patient extends BaseModel {
+    public static readonly deletedAtColumn = 'deleted_at'
+
     @column({ isPrimary: true })
     declare id: string
 
@@ -142,6 +144,15 @@ export default class Patient extends BaseModel {
         }
     })
     declare updatedAt: DateTime
+
+    @column.dateTime({
+        columnName: 'deleted_at',
+        serializeAs: 'deleted_at',
+        serialize: (value: DateTime | null) => {
+            return value ? value.toISO() : null
+        }
+    })
+    declare deletedAt: DateTime | null
 
     // Relationships
     @hasMany(() => Appointment)
