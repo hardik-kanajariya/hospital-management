@@ -9,7 +9,7 @@ export const patientValidator = vine.compile(
     vine.object({
         name: vine.string().trim().minLength(1),
         phone: vine.string().minLength(10),
-        email: vine.string().email().normalizeEmail().optional(),
+        email: vine.string().email().optional(),
         date_of_birth: vine.date({
             formats: ['YYYY-MM-DD', 'MM-DD-YYYY', 'DD-MM-YYYY']
         }),
@@ -20,7 +20,7 @@ export const patientValidator = vine.compile(
             name: vine.string().optional(),
             relationship: vine.string().optional(),
             phone: vine.string().optional(),
-            email: vine.string().email().normalizeEmail().optional(),
+            email: vine.string().email().optional(),
             address: vine.string().optional()
         }).optional(),
         blood_group: vine.string().trim().optional(), // Changed from enum to string
@@ -53,7 +53,7 @@ export const updatePatientValidator = vine.compile(
     vine.object({
         name: vine.string().trim().minLength(1).optional(),
         phone: vine.string().minLength(10).optional(),
-        email: vine.string().email().normalizeEmail().optional(),
+        email: vine.string().email().optional(),
         date_of_birth: vine.date({
             formats: ['YYYY-MM-DD', 'MM-DD-YYYY', 'DD-MM-YYYY']
         }).optional(),
@@ -63,7 +63,7 @@ export const updatePatientValidator = vine.compile(
             name: vine.string().optional(),
             relationship: vine.string().optional(),
             phone: vine.string().optional(),
-            email: vine.string().email().normalizeEmail().optional(),
+            email: vine.string().email().optional(),
             address: vine.string().optional()
         }).optional(),
         blood_group: vine.string().trim().optional(), // Changed from enum to string
