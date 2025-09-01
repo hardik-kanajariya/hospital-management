@@ -446,7 +446,7 @@ export default function EditPatient() {
                                                     value={formData.gender || ''}
                                                     onValueChange={(value) => setFormData(prev => ({
                                                         ...prev,
-                                                        gender: value as 'male' | 'female' | 'other'
+                                                        gender: value
                                                     }))}
                                                     placeholder="Select gender"
                                                     allowEmpty={false}
@@ -508,20 +508,22 @@ export default function EditPatient() {
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <Label htmlFor="emergency_relationship">Relationship</Label>
-                                                <Input
-                                                    id="emergency_relationship"
+                                                <MasterDropdown
+                                                    category="relationships"
                                                     value={formData.emergency_contact?.relationship || ''}
-                                                    onChange={(e) => setFormData(prev => ({
+                                                    onValueChange={(value) => setFormData(prev => ({
                                                         ...prev,
                                                         emergency_contact: {
                                                             name: prev.emergency_contact?.name || '',
-                                                            relationship: e.target.value,
+                                                            relationship: value,
                                                             phone: prev.emergency_contact?.phone || '',
                                                             email: prev.emergency_contact?.email || '',
                                                             address: prev.emergency_contact?.address || ''
                                                         }
                                                     }))}
-                                                    placeholder="e.g., Spouse, Parent (optional)"
+                                                    placeholder="Select relationship"
+                                                    allowEmpty={true}
+                                                    emptyLabel="Not specified"
                                                 />
                                             </div>
 

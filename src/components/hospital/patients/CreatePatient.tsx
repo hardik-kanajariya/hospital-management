@@ -257,48 +257,29 @@ export default function CreatePatient() {
 
                                             <div>
                                                 <Label htmlFor="gender">Gender *</Label>
-                                                <Select
+                                                <MasterDropdown
+                                                    category="genders"
                                                     value={formData.gender}
-                                                    onValueChange={(value: 'male' | 'female' | 'other') =>
+                                                    onValueChange={(value) =>
                                                         setFormData(prev => ({ ...prev, gender: value }))
                                                     }
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="male">Male</SelectItem>
-                                                        <SelectItem value="female">Female</SelectItem>
-                                                        <SelectItem value="other">Other</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
+                                                    placeholder="Select gender"
+                                                    allowEmpty={false}
+                                                />
                                             </div>
                                         </div>
 
                                         <div>
                                             <Label htmlFor="blood_group">Blood Group</Label>
-                                            <Select
-                                                value={formData.blood_group || 'not_specified'}
-                                                onValueChange={(value) => setFormData(prev => ({
-                                                    ...prev,
-                                                    blood_group: value === 'not_specified' ? '' : value
-                                                }))}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select blood group" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="not_specified">Not specified</SelectItem>
-                                                    <SelectItem value="A+">A+</SelectItem>
-                                                    <SelectItem value="A-">A-</SelectItem>
-                                                    <SelectItem value="B+">B+</SelectItem>
-                                                    <SelectItem value="B-">B-</SelectItem>
-                                                    <SelectItem value="AB+">AB+</SelectItem>
-                                                    <SelectItem value="AB-">AB-</SelectItem>
-                                                    <SelectItem value="O+">O+</SelectItem>
-                                                    <SelectItem value="O-">O-</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                            <MasterDropdown
+                                                category="blood_groups"
+                                                value={formData.blood_group}
+                                                onValueChange={(value) =>
+                                                    setFormData(prev => ({ ...prev, blood_group: value }))
+                                                }
+                                                placeholder="Select blood group"
+                                                allowEmpty={false}
+                                            />
                                         </div>
 
                                         <div>
@@ -333,14 +314,22 @@ export default function CreatePatient() {
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <Label htmlFor="emergency_relationship">Relationship</Label>
-                                                <Input
-                                                    id="emergency_relationship"
-                                                    value={formData.emergency_contact.relationship}
-                                                    onChange={(e) => setFormData(prev => ({
+                                                <MasterDropdown
+                                                    category="relationships"
+                                                    value={formData.emergency_contact?.relationship || ''}
+                                                    onValueChange={(value) => setFormData(prev => ({
                                                         ...prev,
-                                                        emergency_contact: { ...prev.emergency_contact, relationship: e.target.value }
+                                                        emergency_contact: {
+                                                            name: prev.emergency_contact?.name || '',
+                                                            relationship: value,
+                                                            phone: prev.emergency_contact?.phone || '',
+                                                            email: prev.emergency_contact?.email || '',
+                                                            address: prev.emergency_contact?.address || ''
+                                                        }
                                                     }))}
-                                                    placeholder="e.g., Spouse, Parent (optional)"
+                                                    placeholder="Select relationship"
+                                                    allowEmpty={true}
+                                                    emptyLabel="Not specified"
                                                 />
                                             </div>
 

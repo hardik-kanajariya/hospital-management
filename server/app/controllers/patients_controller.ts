@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
 import Patient from '#models/patient'
+import MasterData from '#models/master_data'
 import { v4 as uuid } from 'uuid'
 import { patientValidator, updatePatientValidator } from '#validators/patient'
 
@@ -14,7 +15,8 @@ export default class PatientsController {
             const page = request.input('page', 1)
             const limit = Math.min(request.input('limit', 20), 100) // Limit max to 100 for performance
             const search = request.input('search', '')
-            const include = request.input('include', '')
+            const include = request.input('include', '') || ''
+            const includeString = Array.isArray(include) ? include.join(',') : String(include)
             const sortBy = request.input('sort_by', 'created_at')
             const sortOrder = request.input('sort_order', 'desc')
             const bloodGroup = request.input('blood_group', '')
@@ -63,8 +65,8 @@ export default class PatientsController {
             }
 
             // Include relationships if requested (for detailed views)
-            if (include) {
-                const relations = include.split(',').filter((rel: string) =>
+            if (includeString && includeString.trim()) {
+                const relations = includeString.split(',').filter((rel: string) =>
                     ['appointments', 'medicalRecords', 'bills'].includes(rel.trim())
                 )
                 relations.forEach((relation: string) => {
@@ -106,15 +108,16 @@ export default class PatientsController {
      */
     async show({ params, request, response }: HttpContext) {
         try {
-            const include = request.input('include', '')
+            const include = request.input('include', '') || ''
+            const includeString = Array.isArray(include) ? include.join(',') : String(include)
 
             let query = Patient.query()
                 .where('id', params.id)
                 .whereNull('deleted_at')
 
             // Include relationships if requested
-            if (include) {
-                const relations = include.split(',').filter((rel: string) =>
+            if (includeString && includeString.trim()) {
+                const relations = includeString.split(',').filter((rel: string) =>
                     ['appointments', 'medicalRecords', 'bills'].includes(rel.trim())
                 )
                 relations.forEach((relation: string) => {
@@ -216,7 +219,7 @@ export default class PatientsController {
                 })
             }
 
-            // Process optional fields with proper defaults
+            // Process optional fields with proper defaults and validation
             const emergencyContact = payload.emergency_contact || {
                 name: '',
                 relationship: '',
@@ -225,17 +228,31 @@ export default class PatientsController {
                 address: ''
             }
 
-            // Validate and process blood group
-            let bloodGroup: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-' | null = null
-            if (payload.blood_group && payload.blood_group.trim() !== '') {
-                const validBloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
-                const trimmedBloodGroup = payload.blood_group.trim()
-                if (validBloodGroups.includes(trimmedBloodGroup)) {
-                    bloodGroup = trimmedBloodGroup as 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-'
-                } else {
+            // Validate emergency contact relationship if provided
+            if (emergencyContact.relationship && emergencyContact.relationship.trim() !== '') {
+                const isValidRelationship = await MasterData.isValidValue('relationships', emergencyContact.relationship.trim())
+                if (!isValidRelationship) {
+                    const validRelationships = await MasterData.getValidValues('relationships')
                     return response.status(400).json({
                         success: false,
-                        message: 'Invalid blood group. Valid values are: A+, A-, B+, B-, AB+, AB-, O+, O-'
+                        message: `Invalid emergency contact relationship. Valid values are: ${validRelationships.join(', ')}`
+                    })
+                }
+            }
+
+            // Validate and process blood group using master data
+            let bloodGroup: string | null = null
+            if (payload.blood_group && payload.blood_group.trim() !== '') {
+                const trimmedBloodGroup = payload.blood_group.trim()
+                const isValidBloodGroup = await MasterData.isValidValue('blood_groups', trimmedBloodGroup)
+
+                if (isValidBloodGroup) {
+                    bloodGroup = trimmedBloodGroup
+                } else {
+                    const validBloodGroups = await MasterData.getValidValues('blood_groups')
+                    return response.status(400).json({
+                        success: false,
+                        message: `Invalid blood group. Valid values are: ${validBloodGroups.join(', ')}`
                     })
                 }
             }
@@ -253,6 +270,16 @@ export default class PatientsController {
             const insuranceInfo = payload.insurance_info && Object.keys(payload.insurance_info).length > 0
                 ? payload.insurance_info
                 : {}
+
+            // Validate gender using master data
+            const isValidGender = await MasterData.isValidValue('genders', payload.gender)
+            if (!isValidGender) {
+                const validGenders = await MasterData.getValidValues('genders')
+                return response.status(400).json({
+                    success: false,
+                    message: `Invalid gender. Valid values are: ${validGenders.join(', ')}`
+                })
+            }
 
             // Create patient record
             const patient = new Patient()
@@ -324,7 +351,6 @@ export default class PatientsController {
             if (payload.email !== undefined) patient.email = payload.email?.trim() || null
             if (payload.phone !== undefined) patient.phone = payload.phone.trim()
             if (payload.address !== undefined) patient.address = payload.address.trim()
-            if (payload.gender !== undefined) patient.gender = payload.gender
 
             // Update date of birth
             if (payload.date_of_birth !== undefined) {
@@ -354,33 +380,62 @@ export default class PatientsController {
                 }
             }
 
-            // Update emergency contact
+            // Update emergency contact with relationship validation
             if (payload.emergency_contact !== undefined) {
-                patient.emergencyContact = payload.emergency_contact || {
+                const emergencyContact = payload.emergency_contact || {
                     name: '',
                     relationship: '',
                     phone: '',
                     email: '',
                     address: ''
                 }
-            }
 
-            // Update blood group with validation
-            if (payload.blood_group !== undefined) {
-                if (payload.blood_group && payload.blood_group.trim() !== '') {
-                    const validBloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
-                    const trimmedBloodGroup = payload.blood_group.trim()
-                    if (validBloodGroups.includes(trimmedBloodGroup)) {
-                        patient.bloodGroup = trimmedBloodGroup as 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-'
-                    } else {
+                // Validate relationship if provided
+                if (emergencyContact.relationship && emergencyContact.relationship.trim() !== '') {
+                    const isValidRelationship = await MasterData.isValidValue('relationships', emergencyContact.relationship.trim())
+                    if (!isValidRelationship) {
+                        const validRelationships = await MasterData.getValidValues('relationships')
                         return response.status(400).json({
                             success: false,
-                            message: 'Invalid blood group. Valid values are: A+, A-, B+, B-, AB+, AB-, O+, O-'
+                            message: `Invalid emergency contact relationship. Valid values are: ${validRelationships.join(', ')}`
+                        })
+                    }
+                }
+
+                patient.emergencyContact = emergencyContact
+            }
+
+            // Update blood group with validation using master data
+            if (payload.blood_group !== undefined) {
+                if (payload.blood_group && payload.blood_group.trim() !== '') {
+                    const trimmedBloodGroup = payload.blood_group.trim()
+                    const isValidBloodGroup = await MasterData.isValidValue('blood_groups', trimmedBloodGroup)
+
+                    if (isValidBloodGroup) {
+                        patient.bloodGroup = trimmedBloodGroup
+                    } else {
+                        const validBloodGroups = await MasterData.getValidValues('blood_groups')
+                        return response.status(400).json({
+                            success: false,
+                            message: `Invalid blood group. Valid values are: ${validBloodGroups.join(', ')}`
                         })
                     }
                 } else {
                     patient.bloodGroup = null
                 }
+            }
+
+            // Validate gender if provided using master data
+            if (payload.gender !== undefined) {
+                const isValidGender = await MasterData.isValidValue('genders', payload.gender)
+                if (!isValidGender) {
+                    const validGenders = await MasterData.getValidValues('genders')
+                    return response.status(400).json({
+                        success: false,
+                        message: `Invalid gender. Valid values are: ${validGenders.join(', ')}`
+                    })
+                }
+                patient.gender = payload.gender
             }
 
             // Update arrays with cleaning

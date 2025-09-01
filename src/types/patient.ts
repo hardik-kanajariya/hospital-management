@@ -7,10 +7,10 @@ export interface Patient {
     phone: string;
     email?: string;
     date_of_birth: string;
-    gender: 'male' | 'female' | 'other';
+    gender: string;
     address: string;
     emergency_contact: EmergencyContact;
-    blood_group?: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
+    blood_group?: string;
     allergies: string[];
     chronic_conditions: string[];
     vaccination_records: VaccinationRecord[];
@@ -62,8 +62,8 @@ export interface Appointment {
     appointment_date: string;
     appointment_time: string;
     duration: number;
-    type: 'consultation' | 'follow_up' | 'procedure' | 'emergency';
-    status: 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
+    type: string;
+    status: string;
     reason: string;
     notes?: string;
     created_at: string;
@@ -107,7 +107,7 @@ export interface LabTest {
     id: string;
     test_name: string;
     test_type: string;
-    status: 'ordered' | 'in_progress' | 'completed' | 'cancelled';
+    status: string;
     ordered_date: string;
     sample_collected_date?: string;
     result_date?: string;
@@ -120,7 +120,7 @@ export interface LabTestResult {
     value: string;
     unit: string;
     reference_range: string;
-    status: 'normal' | 'abnormal' | 'critical';
+    status: string;
 }
 
 export interface Bill {
@@ -135,7 +135,7 @@ export interface Bill {
     total_amount: number;
     paid_amount: number;
     balance_amount: number;
-    status: 'draft' | 'pending' | 'paid' | 'partially_paid' | 'overdue' | 'cancelled';
+    status: string;
     payment_method?: string;
     insurance_claim_amount?: number;
     created_at: string;
@@ -148,7 +148,7 @@ export interface BillItem {
     quantity: number;
     unit_price: number;
     total_price: number;
-    type: 'consultation' | 'procedure' | 'medication' | 'lab_test' | 'room_charge' | 'other';
+    type: string;
 }
 
 export interface Doctor {
@@ -172,7 +172,7 @@ export interface PatientCreateRequest {
     phone: string;
     email?: string;
     date_of_birth: string;
-    gender: 'male' | 'female' | 'other';
+    gender: string;
     address: string;
     emergency_contact: EmergencyContact;
     blood_group?: string;

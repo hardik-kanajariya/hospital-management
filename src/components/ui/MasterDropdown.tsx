@@ -127,7 +127,7 @@ export function MasterDropdown({
                     <SelectItem value="0">{emptyLabel}</SelectItem>
                 )}
                 {items.map((item) => (
-                    <SelectItem key={item.id} value={item.value}>
+                    <SelectItem key={item.id} value={item.name}>
                         {item.name}
                     </SelectItem>
                 ))}
