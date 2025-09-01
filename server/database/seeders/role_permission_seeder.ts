@@ -230,6 +230,9 @@ export default class extends BaseSeeder {
                 }
             )
 
+            // Detach existing permissions first to avoid duplicates
+            await role.related('permissions').detach()
+
             // Attach permissions
             for (const permissionInfo of roleInfo.permissions) {
                 await role.related('permissions').attach({
