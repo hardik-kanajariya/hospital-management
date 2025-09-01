@@ -73,6 +73,7 @@ router.group(() => {
       router.delete('/:id', '#controllers/patients_controller.destroy')
       router.get('/:id/medical-history', '#controllers/patients_controller.medicalHistory')
       router.get('/:id/appointments', '#controllers/patients_controller.appointments')
+      router.get('/:id/bills', '#controllers/patients_controller.bills')
     }).prefix('/patients')
 
     // Doctor management routes (now handled through users with doctor role)

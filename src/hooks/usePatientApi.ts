@@ -36,7 +36,7 @@ export function usePatientApi() {
             const queryParams = new URLSearchParams();
             if (params) {
                 Object.entries(params).forEach(([key, value]) => {
-                    if (value !== undefined && value !== null) {
+                    if (value !== undefined && value !== null && value !== '') {
                         queryParams.append(key, String(value));
                     }
                 });
@@ -47,12 +47,21 @@ export function usePatientApi() {
 
             const response = await httpService.get<{
                 data: Patient[];
-                meta: typeof pagination;
+                meta: typeof pagination; 32
             }>(endpoint);
 
             if (response.success && response.data) {
-                setPatients(response.data.data || []);
-                setPagination(response.data.meta || pagination);
+                // Handle both flat data and nested data structure
+                const patientsData = Array.isArray(response.data) ? response.data : response.data.data;
+                const metaData = response.data.meta || {
+                    current_page: 1,
+                    per_page: 20,
+                    total: patientsData?.length || 0,
+                    last_page: 1
+                };
+
+                setPatients(patientsData || []);
+                setPagination(metaData);
             } else {
                 throw new Error(response.error || 'Failed to fetch patients');
             }
@@ -313,7 +322,7 @@ export function usePatient(patientId?: string) {
 
     useEffect(() => {
         if (patientId) {
-            fetchPatient(patientId, ['appointments', 'medical_records', 'bills']);
+            fetchPatient(patientId, ['appointments', 'medicalRecords', 'bills']);
         }
     }, [patientId, fetchPatient]);
 
@@ -323,7 +332,7 @@ export function usePatient(patientId?: string) {
         error,
         fetchPatient,
         updatePatient,
-        refetch: () => patientId && fetchPatient(patientId, ['appointments', 'medical_records', 'bills'])
+        refetch: () => patientId && fetchPatient(patientId, ['appointments', 'medicalRecords', 'bills'])
     };
 }
 

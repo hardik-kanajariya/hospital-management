@@ -78,7 +78,7 @@ export default class PatientsController {
             return response.status(200).json({
                 success: true,
                 data: {
-                    data: patients.all(),
+                    data: patients.data,
                     meta: {
                         current_page: patients.currentPage,
                         per_page: patients.perPage,
@@ -192,30 +192,6 @@ export default class PatientsController {
                 })
             }
 
-            // Convert date_of_birth to DateTime
-            let dateOfBirth: DateTime
-            try {
-                if (payload.date_of_birth instanceof Date) {
-                    dateOfBirth = DateTime.fromJSDate(payload.date_of_birth)
-                } else if (typeof payload.date_of_birth === 'string') {
-                    dateOfBirth = DateTime.fromISO(payload.date_of_birth)
-                } else {
-                    dateOfBirth = DateTime.fromJSDate(payload.date_of_birth)
-                }
-
-                if (!dateOfBirth.isValid) {
-                    return response.status(400).json({
-                        success: false,
-                        message: 'Invalid date of birth format'
-                    })
-                }
-            } catch (error) {
-                return response.status(400).json({
-                    success: false,
-                    message: 'Invalid date of birth format'
-                })
-            }
-
             // Process optional fields with proper defaults
             const emergencyContact = payload.emergency_contact || {
                 name: '',
@@ -261,7 +237,7 @@ export default class PatientsController {
             patient.name = payload.name.trim()
             patient.phone = payload.phone.trim()
             patient.email = payload.email?.trim() || null
-            patient.dateOfBirth = dateOfBirth
+            patient.dateOfBirth = DateTime.fromJSDate(new Date(payload.date_of_birth))
             patient.gender = payload.gender
             patient.address = payload.address.trim()
             patient.emergencyContact = emergencyContact
@@ -328,30 +304,7 @@ export default class PatientsController {
 
             // Update date of birth
             if (payload.date_of_birth !== undefined) {
-                try {
-                    let dateOfBirth: DateTime
-                    if (payload.date_of_birth instanceof Date) {
-                        dateOfBirth = DateTime.fromJSDate(payload.date_of_birth)
-                    } else if (typeof payload.date_of_birth === 'string') {
-                        dateOfBirth = DateTime.fromISO(payload.date_of_birth)
-                    } else {
-                        dateOfBirth = DateTime.fromJSDate(payload.date_of_birth)
-                    }
-
-                    if (!dateOfBirth.isValid) {
-                        return response.status(400).json({
-                            success: false,
-                            message: 'Invalid date of birth format'
-                        })
-                    }
-
-                    patient.dateOfBirth = dateOfBirth
-                } catch (error) {
-                    return response.status(400).json({
-                        success: false,
-                        message: 'Invalid date of birth format'
-                    })
-                }
+                patient.dateOfBirth = DateTime.fromJSDate(new Date(payload.date_of_birth))
             }
 
             // Update emergency contact
