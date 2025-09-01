@@ -34,12 +34,12 @@ import { httpService } from '@/services/HttpService'
 interface MasterDataItem {
     id: string
     name: string
-    code: string
     description?: string
     category: string
-    isActive: boolean
-    isSystemGenerated: boolean
-    sortOrder: number
+    value?: string
+    display_order: number
+    is_system: boolean
+    is_active: boolean
     metadata?: Record<string, any>
     created_at: string
     updated_at: string
@@ -47,77 +47,22 @@ interface MasterDataItem {
 
 interface MasterDataFormData {
     name: string
-    code: string
     description: string
     category: string
-    isActive: boolean
-    sortOrder: number
+    value?: string
+    is_active: boolean
+    display_order: number
     metadata: Record<string, any>
 }
 
+interface CategoryInfo {
+    name: string
+    count: number
+    is_system: boolean
+}
+
 // Master Data Categories - defines what types of master data we manage
-const MASTER_DATA_CATEGORIES = [
-    {
-        key: 'departments',
-        label: 'Departments',
-        description: 'Hospital departments and units',
-        icon: DatabaseIcon
-    },
-    {
-        key: 'specializations',
-        label: 'Medical Specializations',
-        description: 'Doctor specializations and medical fields',
-        icon: TagIcon
-    },
-    {
-        key: 'lab_test_categories',
-        label: 'Lab Test Categories',
-        description: 'Laboratory test categories and types',
-        icon: ListIcon
-    },
-    {
-        key: 'lab_test_types',
-        label: 'Lab Test Types',
-        description: 'Specific laboratory test types',
-        icon: ListIcon
-    },
-    {
-        key: 'appointment_types',
-        label: 'Appointment Types',
-        description: 'Types of medical appointments',
-        icon: TagIcon
-    },
-    {
-        key: 'room_types',
-        label: 'Room Types',
-        description: 'Hospital room and facility types',
-        icon: DatabaseIcon
-    },
-    {
-        key: 'bed_types',
-        label: 'Bed Types',
-        description: 'Types of beds and their classifications',
-        icon: TagIcon
-    },
-    {
-        key: 'insurance_providers',
-        label: 'Insurance Providers',
-        description: 'Health insurance companies and providers',
-        icon: DatabaseIcon
-    },
-    {
-        key: 'medication_categories',
-        label: 'Medication Categories',
-        description: 'Drug and medication categories',
-        icon: TagIcon
-    },
-    {
-        key: 'discharge_types',
-        label: 'Discharge Types',
-        description: 'Patient discharge classifications',
-        icon: ListIcon
-    }
-]
+// Remove this hardcoded array - we'll fetch categories dynamically
 
 export default function MastersManagement() {
     const {
@@ -129,60 +74,137 @@ export default function MastersManagement() {
         toggleMasterDataStatus
     } = useMasterDataApi()
 
-    const [selectedCategory, setSelectedCategory] = useState<string>('departments')
+    const [categories, setCategories] = useState<CategoryInfo[]>([])
+    const [selectedCategory, setSelectedCategory] = useState<string>('')
     const [isDialogOpen, setIsDialogOpen] = useState(false)
+    const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false)
     const [editingItem, setEditingItem] = useState<MasterDataItem | null>(null)
     const [searchTerm, setSearchTerm] = useState('')
     const [isExporting, setIsExporting] = useState(false)
     const [isImporting, setIsImporting] = useState(false)
+    const [newCategoryName, setNewCategoryName] = useState('')
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const [formData, setFormData] = useState<MasterDataFormData>({
         name: '',
-        code: '',
         description: '',
-        category: 'departments',
-        isActive: true,
-        sortOrder: 0,
+        category: '',
+        value: '',
+        is_active: true,
+        display_order: 0,
         metadata: {}
     })
 
+    // Fetch all master data and extract unique categories
     useEffect(() => {
-        fetchMasterData({ category: selectedCategory })
-    }, [selectedCategory, fetchMasterData])
+        const loadData = async () => {
+            await fetchMasterData({}) // Fetch all data
+        }
+        loadData()
+    }, [fetchMasterData])
 
+    // Extract categories from master data
     useEffect(() => {
-        setFormData(prev => ({ ...prev, category: selectedCategory }))
-    }, [selectedCategory])
+        const categoryMap = new Map<string, CategoryInfo>()
+
+        masterData.forEach(item => {
+            if (!categoryMap.has(item.category)) {
+                categoryMap.set(item.category, {
+                    name: item.category,
+                    count: 0,
+                    is_system: false
+                })
+            }
+            const categoryInfo = categoryMap.get(item.category)!
+            categoryInfo.count++
+            // If any item in the category is system generated, mark the category as system
+            if (item.is_system) {
+                categoryInfo.is_system = true
+            }
+        })
+
+        const sortedCategories = Array.from(categoryMap.values()).sort((a, b) => {
+            // System categories first, then alphabetical
+            if (a.is_system && !b.is_system) return -1
+            if (!a.is_system && b.is_system) return 1
+            return a.name.localeCompare(b.name)
+        })
+
+        setCategories(sortedCategories)
+
+        // Set first category as selected if none selected
+        if (!selectedCategory && sortedCategories.length > 0) {
+            setSelectedCategory(sortedCategories[0].name)
+        }
+    }, [masterData, selectedCategory])
 
     const handleCategoryChange = (category: string) => {
         setSelectedCategory(category)
         setSearchTerm('')
+        setFormData(prev => ({ ...prev, category }))
+    }
+
+    const handleCreateCategory = async () => {
+        if (!newCategoryName.trim()) {
+            toast.error('Category name is required')
+            return
+        }
+
+        const categoryExists = categories.some(cat =>
+            cat.name.toLowerCase() === newCategoryName.toLowerCase()
+        )
+
+        if (categoryExists) {
+            toast.error('Category already exists')
+            return
+        }
+
+        try {
+            // Create a sample item in the new category to establish it
+            await createMasterDataItem({
+                name: `${newCategoryName} Sample`,
+                description: `Sample item for ${newCategoryName} category`,
+                category: newCategoryName.toLowerCase().replace(/\s+/g, '_'),
+                value: 'sample',
+                is_active: true,
+                display_order: 0
+            })
+
+            setNewCategoryName('')
+            setIsCategoryDialogOpen(false)
+            toast.success('Category created successfully')
+
+            // Refresh data to show new category
+            await fetchMasterData({})
+        } catch (error) {
+            console.error('Failed to create category:', error)
+            toast.error('Failed to create category')
+        }
     }
 
     const handleAddItem = async () => {
-        if (!formData.name.trim() || !formData.code.trim()) {
-            toast.error('Name and code are required')
+        if (!formData.name.trim()) {
+            toast.error('Name is required')
             return
         }
 
         try {
             await createMasterDataItem({
                 name: formData.name.trim(),
-                code: formData.code.trim().toUpperCase(),
                 description: formData.description.trim(),
                 category: formData.category,
-                isActive: formData.isActive,
-                sortOrder: formData.sortOrder
+                value: formData.value?.trim() || formData.name.toLowerCase().replace(/\s+/g, '_'),
+                is_active: formData.is_active,
+                display_order: formData.display_order
             })
 
             setFormData({
                 name: '',
-                code: '',
                 description: '',
                 category: selectedCategory,
-                isActive: true,
-                sortOrder: 0,
+                value: '',
+                is_active: true,
+                display_order: 0,
                 metadata: {}
             })
             setIsDialogOpen(false)
@@ -193,28 +215,28 @@ export default function MastersManagement() {
     }
 
     const handleEditItem = async () => {
-        if (!editingItem || !formData.name.trim() || !formData.code.trim()) {
-            toast.error('Name and code are required')
+        if (!editingItem || !formData.name.trim()) {
+            toast.error('Name is required')
             return
         }
 
         try {
             await updateMasterDataItem(editingItem.id, {
                 name: formData.name.trim(),
-                code: formData.code.trim().toUpperCase(),
                 description: formData.description.trim(),
-                isActive: formData.isActive,
-                sortOrder: formData.sortOrder
+                value: formData.value?.trim() || formData.name.toLowerCase().replace(/\s+/g, '_'),
+                is_active: formData.is_active,
+                display_order: formData.display_order
             })
 
             setEditingItem(null)
             setFormData({
                 name: '',
-                code: '',
                 description: '',
                 category: selectedCategory,
-                isActive: true,
-                sortOrder: 0,
+                value: '',
+                is_active: true,
+                display_order: 0,
                 metadata: {}
             })
             setIsDialogOpen(false)
@@ -225,7 +247,7 @@ export default function MastersManagement() {
     }
 
     const handleToggleStatus = async (item: MasterDataItem) => {
-        if (item.isSystemGenerated) {
+        if (item.is_system) {
             toast.error('System generated items cannot be deleted, only disabled')
             return
         }
@@ -238,7 +260,7 @@ export default function MastersManagement() {
     }
 
     const openEditDialog = (item: MasterDataItem) => {
-        if (item.isSystemGenerated) {
+        if (item.is_system) {
             toast.error('System generated items cannot be edited')
             return
         }
@@ -246,11 +268,11 @@ export default function MastersManagement() {
         setEditingItem(item)
         setFormData({
             name: item.name,
-            code: item.code,
             description: item.description || '',
             category: item.category,
-            isActive: item.isActive,
-            sortOrder: item.sortOrder,
+            value: item.value || '',
+            is_active: item.is_active,
+            display_order: item.display_order,
             metadata: item.metadata || {}
         })
         setIsDialogOpen(true)
@@ -260,11 +282,11 @@ export default function MastersManagement() {
         setEditingItem(null)
         setFormData({
             name: '',
-            code: '',
             description: '',
             category: selectedCategory,
-            isActive: true,
-            sortOrder: 0,
+            value: '',
+            is_active: true,
+            display_order: 0,
             metadata: {}
         })
         setIsDialogOpen(true)
@@ -357,7 +379,7 @@ export default function MastersManagement() {
 
     // Helper function to convert data to CSV
     const convertToCSV = (data: MasterDataItem[]): string => {
-        const headers = ['name', 'code', 'description', 'category', 'isActive', 'isSystemGenerated', 'sortOrder']
+        const headers = ['name', 'value', 'description', 'category', 'is_active', 'is_system', 'display_order']
         const csvRows = [
             headers.join(','),
             ...data.map(item =>
@@ -405,23 +427,23 @@ export default function MastersManagement() {
         for (const item of data) {
             try {
                 // Validate required fields
-                if (!item.name || !item.code || !item.category) {
+                if (!item.name || !item.category) {
                     errorCount++
                     continue
                 }
 
                 // Skip system generated items
-                if (item.isSystemGenerated) {
+                if (item.is_system) {
                     continue
                 }
 
                 await createMasterDataItem({
                     name: item.name,
-                    code: item.code.toUpperCase(),
                     description: item.description || '',
                     category: item.category,
-                    isActive: item.isActive !== false,
-                    sortOrder: item.sortOrder || 0
+                    value: item.value || item.name.toLowerCase().replace(/\s+/g, '_'),
+                    is_active: item.is_active !== false,
+                    display_order: item.display_order || 0
                 })
                 successCount++
             } catch (error) {
@@ -443,10 +465,10 @@ export default function MastersManagement() {
     const filteredData = masterData.filter(item =>
         item.category === selectedCategory &&
         (item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.code.toLowerCase().includes(searchTerm.toLowerCase()))
+            (item.value && item.value.toLowerCase().includes(searchTerm.toLowerCase())))
     )
 
-    const activeCategory = MASTER_DATA_CATEGORIES.find(cat => cat.key === selectedCategory)
+    const selectedCategoryInfo = categories.find(cat => cat.name === selectedCategory)
 
     return (
         <div className="space-y-6">
@@ -496,7 +518,7 @@ export default function MastersManagement() {
                         <DatabaseIcon className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{MASTER_DATA_CATEGORIES.length}</div>
+                        <div className="text-2xl font-bold">{categories.length}</div>
                     </CardContent>
                 </Card>
 
@@ -517,7 +539,7 @@ export default function MastersManagement() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">
-                            {masterData.filter(item => item.isActive).length}
+                            {masterData.filter(item => item.is_active).length}
                         </div>
                     </CardContent>
                 </Card>
@@ -529,7 +551,7 @@ export default function MastersManagement() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">
-                            {masterData.filter(item => item.isSystemGenerated).length}
+                            {masterData.filter(item => item.is_system).length}
                         </div>
                     </CardContent>
                 </Card>
@@ -539,33 +561,45 @@ export default function MastersManagement() {
                 {/* Categories Sidebar */}
                 <Card className="lg:col-span-1">
                     <CardHeader>
-                        <CardTitle className="text-base">Categories</CardTitle>
-                        <CardDescription>Select a category to manage</CardDescription>
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <CardTitle className="text-base">Categories</CardTitle>
+                                <CardDescription>Select a category to manage</CardDescription>
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setIsCategoryDialogOpen(true)}
+                                title="Add New Category"
+                            >
+                                <PlusIcon className="h-4 w-4" />
+                            </Button>
+                        </div>
                     </CardHeader>
                     <CardContent className="space-y-2">
-                        {MASTER_DATA_CATEGORIES.map((category) => {
-                            const Icon = category.icon
-                            const categoryCount = masterData.filter(item => item.category === category.key).length
-
-                            return (
-                                <Button
-                                    key={category.key}
-                                    variant={selectedCategory === category.key ? "default" : "ghost"}
-                                    className="w-full justify-start h-auto p-3"
-                                    onClick={() => handleCategoryChange(category.key)}
-                                >
-                                    <div className="flex items-center gap-3 w-full">
-                                        <Icon className="h-4 w-4 flex-shrink-0" />
-                                        <div className="flex-1 text-left">
-                                            <div className="font-medium text-sm">{category.label}</div>
-                                            <div className="text-xs text-muted-foreground">
-                                                {categoryCount} items
-                                            </div>
+                        {categories.map((category) => (
+                            <Button
+                                key={category.name}
+                                variant={selectedCategory === category.name ? "default" : "ghost"}
+                                className="w-full justify-start h-auto p-3"
+                                onClick={() => handleCategoryChange(category.name)}
+                            >
+                                <div className="flex items-center gap-3 w-full">
+                                    <TagIcon className="h-4 w-4 flex-shrink-0" />
+                                    <div className="flex-1 text-left">
+                                        <div className="font-medium text-sm flex items-center gap-2">
+                                            {category.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                            {category.is_system && (
+                                                <Badge variant="secondary" className="text-xs">System</Badge>
+                                            )}
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">
+                                            {category.count} items
                                         </div>
                                     </div>
-                                </Button>
-                            )
-                        })}
+                                </div>
+                            </Button>
+                        ))}
                     </CardContent>
                 </Card>
 
@@ -575,10 +609,15 @@ export default function MastersManagement() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <CardTitle className="flex items-center gap-2">
-                                    {activeCategory && <activeCategory.icon className="h-5 w-5" />}
-                                    {activeCategory?.label}
+                                    <TagIcon className="h-5 w-5" />
+                                    {selectedCategoryInfo?.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Master Data'}
+                                    {selectedCategoryInfo?.is_system && (
+                                        <Badge variant="secondary" className="text-xs">System</Badge>
+                                    )}
                                 </CardTitle>
-                                <CardDescription>{activeCategory?.description}</CardDescription>
+                                <CardDescription>
+                                    Manage {selectedCategoryInfo?.name.replace(/_/g, ' ')} master data
+                                </CardDescription>
                             </div>
                             <Button onClick={openAddDialog} className="flex items-center gap-2">
                                 <PlusIcon className="h-4 w-4" />
@@ -614,7 +653,7 @@ export default function MastersManagement() {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Name</TableHead>
-                                        <TableHead>Code</TableHead>
+                                        <TableHead>Value</TableHead>
                                         <TableHead>Description</TableHead>
                                         <TableHead>Status</TableHead>
                                         <TableHead>Type</TableHead>
@@ -627,27 +666,27 @@ export default function MastersManagement() {
                                         <TableRow key={item.id}>
                                             <TableCell className="font-medium">{item.name}</TableCell>
                                             <TableCell>
-                                                <Badge variant="outline">{item.code}</Badge>
+                                                <Badge variant="outline">{item.value || '-'}</Badge>
                                             </TableCell>
                                             <TableCell>{item.description || '-'}</TableCell>
                                             <TableCell>
-                                                <Badge variant={item.isActive ? "default" : "secondary"}>
-                                                    {item.isActive ? 'Active' : 'Inactive'}
+                                                <Badge variant={item.is_active ? "default" : "secondary"}>
+                                                    {item.is_active ? 'Active' : 'Inactive'}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>
-                                                <Badge variant={item.isSystemGenerated ? "destructive" : "outline"}>
-                                                    {item.isSystemGenerated ? 'System' : 'Custom'}
+                                                <Badge variant={item.is_system ? "destructive" : "outline"}>
+                                                    {item.is_system ? 'System' : 'Custom'}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell>{item.sortOrder}</TableCell>
+                                            <TableCell>{item.display_order}</TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-2">
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() => openEditDialog(item)}
-                                                        disabled={item.isSystemGenerated}
+                                                        disabled={item.is_system}
                                                     >
                                                         <PencilSimpleIcon className="h-4 w-4" />
                                                     </Button>
@@ -655,9 +694,9 @@ export default function MastersManagement() {
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() => handleToggleStatus(item)}
-                                                        disabled={item.isSystemGenerated}
+                                                        disabled={item.is_system}
                                                     >
-                                                        {item.isActive ? (
+                                                        {item.is_active ? (
                                                             <XCircleIcon className="h-4 w-4 text-red-500" />
                                                         ) : (
                                                             <CheckCircleIcon className="h-4 w-4 text-green-500" />
@@ -698,12 +737,12 @@ export default function MastersManagement() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="code">Code *</Label>
+                            <Label htmlFor="value">Value</Label>
                             <Input
-                                id="code"
-                                value={formData.code}
-                                onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                                placeholder="Enter code (uppercase)"
+                                id="value"
+                                value={formData.value || ''}
+                                onChange={(e) => setFormData({ ...formData, value: e.target.value })}
+                                placeholder="Enter value (auto-generated if empty)"
                             />
                         </div>
 
@@ -720,25 +759,25 @@ export default function MastersManagement() {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="sortOrder">Sort Order</Label>
+                                <Label htmlFor="display_order">Sort Order</Label>
                                 <Input
-                                    id="sortOrder"
+                                    id="display_order"
                                     type="number"
-                                    value={formData.sortOrder}
-                                    onChange={(e) => setFormData({ ...formData, sortOrder: Number(e.target.value) })}
+                                    value={formData.display_order}
+                                    onChange={(e) => setFormData({ ...formData, display_order: Number(e.target.value) })}
                                     placeholder="0"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="isActive">Status</Label>
+                                <Label htmlFor="is_active">Status</Label>
                                 <div className="flex items-center space-x-2 pt-2">
                                     <Switch
-                                        id="isActive"
-                                        checked={formData.isActive}
-                                        onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                                        id="is_active"
+                                        checked={formData.is_active}
+                                        onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
                                     />
-                                    <Label htmlFor="isActive" className="text-sm">
-                                        {formData.isActive ? 'Active' : 'Inactive'}
+                                    <Label htmlFor="is_active" className="text-sm">
+                                        {formData.is_active ? 'Active' : 'Inactive'}
                                     </Label>
                                 </div>
                             </div>
@@ -751,6 +790,39 @@ export default function MastersManagement() {
                         </Button>
                         <Button onClick={editingItem ? handleEditItem : handleAddItem}>
                             {editingItem ? 'Update' : 'Create'}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Add Category Dialog */}
+            <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Add New Category</DialogTitle>
+                        <DialogDescription>
+                            Create a new master data category
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="grid gap-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="categoryName">Category Name *</Label>
+                            <Input
+                                id="categoryName"
+                                value={newCategoryName}
+                                onChange={(e) => setNewCategoryName(e.target.value)}
+                                placeholder="Enter category name"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end gap-3">
+                        <Button variant="outline" onClick={() => setIsCategoryDialogOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleCreateCategory}>
+                            Create Category
                         </Button>
                     </div>
                 </DialogContent>
