@@ -120,13 +120,23 @@ export default class AppointmentsController {
             const appointmentCount = await Appointment.query().count('* as total')
             const appointmentId = `APT${String(Number(appointmentCount[0].$extras.total) + 1).padStart(6, '0')}`
 
+            // Combine date and time strings into DateTime objects
+            const appointmentDateTime = DateTime.fromISO(`${payload.appointmentDate}T${payload.appointmentTime}:00`)
+
+            if (!appointmentDateTime.isValid) {
+                return response.status(400).json({
+                    success: false,
+                    message: 'Invalid date or time format'
+                })
+            }
+
             const appointment = new Appointment()
             appointment.id = uuid()
             appointment.appointmentId = appointmentId
             appointment.patientId = payload.patientId
             appointment.doctorId = payload.doctorId
-            appointment.appointmentDate = DateTime.fromJSDate(payload.appointmentDate)
-            appointment.appointmentTime = DateTime.fromJSDate(payload.appointmentTime)
+            appointment.appointmentDate = DateTime.fromISO(payload.appointmentDate)
+            appointment.appointmentTime = appointmentDateTime
             appointment.duration = payload.duration || 30
             appointment.type = payload.type
             appointment.status = payload.status || 'scheduled'
@@ -173,8 +183,21 @@ export default class AppointmentsController {
 
             const payload = await request.validateUsing(updateAppointmentValidator)
 
-            if (payload.appointmentDate !== undefined) appointment.appointmentDate = DateTime.fromJSDate(payload.appointmentDate)
-            if (payload.appointmentTime !== undefined) appointment.appointmentTime = DateTime.fromJSDate(payload.appointmentTime)
+            if (payload.appointmentDate !== undefined) appointment.appointmentDate = DateTime.fromISO(payload.appointmentDate)
+            if (payload.appointmentTime !== undefined) {
+                // Combine with existing date or use the date being updated
+                const dateToUse = payload.appointmentDate || appointment.appointmentDate.toISODate()
+                const appointmentDateTime = DateTime.fromISO(`${dateToUse}T${payload.appointmentTime}:00`)
+
+                if (!appointmentDateTime.isValid) {
+                    return response.status(400).json({
+                        success: false,
+                        message: 'Invalid time format'
+                    })
+                }
+
+                appointment.appointmentTime = appointmentDateTime
+            }
             if (payload.duration !== undefined) appointment.duration = payload.duration
             if (payload.type !== undefined) appointment.type = payload.type
             if (payload.status !== undefined) appointment.status = payload.status
