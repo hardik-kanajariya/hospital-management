@@ -20,15 +20,7 @@ import { Appointment } from '@/types/hospital'
 import { useAppointmentApi } from '@/hooks/useAppointmentApi'
 import { useDoctorApi } from '@/hooks/useDoctorApi'
 import { usePatientApi } from '@/hooks/usePatientApi'
-
-const appointmentTypes = [
-    { value: 'consultation', label: 'Consultation' },
-    { value: 'follow_up', label: 'Follow-up' },
-    { value: 'emergency', label: 'Emergency' },
-    { value: 'vaccination', label: 'Vaccination' },
-    { value: 'checkup', label: 'Health Checkup' },
-    { value: 'surgery_consultation', label: 'Surgery Consultation' }
-]
+import { useMasterDataApi } from '@/hooks/useMasterDataApi'
 
 const timeSlots = [
     '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
@@ -42,7 +34,19 @@ export default function EditAppointment() {
     const { appointments, updateAppointment, loading } = useAppointmentApi()
     const { patients } = usePatientApi()
     const { doctors } = useDoctorApi()
+    const { masterData, getMasterDataByCategory, getActiveMasterData } = useMasterDataApi()
     const [appointment, setAppointment] = useState<Appointment | null>(null)
+
+    useEffect(() => {
+        // Fetch appointment types from master data
+        getMasterDataByCategory('appointment_types')
+    }, [getMasterDataByCategory])
+
+    // Get appointment types from master data
+    const appointmentTypes = getActiveMasterData('appointment_types').map(type => ({
+        value: type.value || type.name.toLowerCase().replace(/\s+/g, '_'),
+        label: type.name
+    }))
 
     useEffect(() => {
         if (appointments && id) {
@@ -52,11 +56,11 @@ export default function EditAppointment() {
     }, [appointments, id])
 
     const [formData, setFormData] = useState<Partial<Appointment>>({
-        patient_id: '',
-        doctor_id: '',
-        appointment_date: '',
-        appointment_time: '',
-        appointment_type: 'consultation',
+        patientId: '',
+        doctorId: '',
+        appointmentDate: '',
+        appointmentTime: '',
+        type: 'consultation',
         status: 'scheduled',
         reason: '',
         notes: ''
@@ -66,11 +70,11 @@ export default function EditAppointment() {
     useEffect(() => {
         if (appointment) {
             setFormData({
-                patient_id: appointment.patient_id || '',
-                doctor_id: appointment.doctor_id || '',
-                appointment_date: appointment.appointment_date || '',
-                appointment_time: appointment.appointment_time || '',
-                appointment_type: appointment.appointment_type || 'consultation',
+                patientId: appointment.patientId || '',
+                doctorId: appointment.doctorId || '',
+                appointmentDate: appointment.appointmentDate || '',
+                appointmentTime: appointment.appointmentTime || '',
+                type: appointment.type || 'consultation',
                 status: appointment.status || 'scheduled',
                 reason: appointment.reason || '',
                 notes: appointment.notes || ''
@@ -92,13 +96,13 @@ export default function EditAppointment() {
             return
         }
 
-        if (!formData.patient_id || !formData.doctor_id || !formData.appointment_date || !formData.appointment_time) {
+        if (!formData.patientId || !formData.doctorId || !formData.appointmentDate || !formData.appointmentTime) {
             toast.error('Please fill in all required fields')
             return
         }
 
         try {
-            const selectedDoctor = doctors.find(d => d.id === formData.doctor_id)
+            const selectedDoctor = doctors.find(d => d.id === formData.doctorId)
 
             const updateData = {
                 ...formData,
@@ -175,13 +179,13 @@ export default function EditAppointment() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Patient Selection */}
                     <div className="space-y-2">
-                        <Label htmlFor="patient_id" className="flex items-center gap-2">
+                        <Label htmlFor="patientId" className="flex items-center gap-2">
                             <UserIcon className="w-4 h-4" />
                             Patient *
                         </Label>
                         <Select
-                            value={formData.patient_id}
-                            onValueChange={(value) => setFormData(prev => ({ ...prev, patient_id: value }))}
+                            value={formData.patientId}
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, patientId: value }))}
                             required
                         >
                             <SelectTrigger>
@@ -199,13 +203,13 @@ export default function EditAppointment() {
 
                     {/* Doctor Selection */}
                     <div className="space-y-2">
-                        <Label htmlFor="doctor_id" className="flex items-center gap-2">
+                        <Label htmlFor="doctorId" className="flex items-center gap-2">
                             <StethoscopeIcon className="w-4 h-4" />
                             Doctor *
                         </Label>
                         <Select
-                            value={formData.doctor_id}
-                            onValueChange={(value) => setFormData(prev => ({ ...prev, doctor_id: value }))}
+                            value={formData.doctorId}
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, doctorId: value }))}
                             required
                         >
                             <SelectTrigger>
@@ -223,14 +227,14 @@ export default function EditAppointment() {
 
                     {/* Appointment Date */}
                     <div className="space-y-2">
-                        <Label htmlFor="appointment_date" className="flex items-center gap-2">
+                        <Label htmlFor="appointmentDate" className="flex items-center gap-2">
                             <CalendarIcon className="w-4 h-4" />
                             Appointment Date *
                         </Label>
                         <Input
                             type="date"
-                            value={formData.appointment_date}
-                            onChange={(e) => setFormData(prev => ({ ...prev, appointment_date: e.target.value }))}
+                            value={formData.appointmentDate}
+                            onChange={(e) => setFormData(prev => ({ ...prev, appointmentDate: e.target.value }))}
                             min={new Date().toISOString().split('T')[0]}
                             required
                         />
@@ -238,13 +242,13 @@ export default function EditAppointment() {
 
                     {/* Appointment Time */}
                     <div className="space-y-2">
-                        <Label htmlFor="appointment_time" className="flex items-center gap-2">
+                        <Label htmlFor="appointmentTime" className="flex items-center gap-2">
                             <ClockIcon className="w-4 h-4" />
                             Appointment Time *
                         </Label>
                         <Select
-                            value={formData.appointment_time}
-                            onValueChange={(value) => setFormData(prev => ({ ...prev, appointment_time: value }))}
+                            value={formData.appointmentTime}
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, appointmentTime: value }))}
                             required
                         >
                             <SelectTrigger>
@@ -266,10 +270,10 @@ export default function EditAppointment() {
 
                     {/* Appointment Type */}
                     <div className="space-y-2">
-                        <Label htmlFor="appointment_type">Appointment Type *</Label>
+                        <Label htmlFor="type">Appointment Type *</Label>
                         <Select
-                            value={formData.appointment_type}
-                            onValueChange={(value) => setFormData(prev => ({ ...prev, appointment_type: value as any }))}
+                            value={formData.type}
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, type: value as any }))}
                             required
                         >
                             <SelectTrigger>

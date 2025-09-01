@@ -6,12 +6,12 @@ import { toast } from 'sonner';
 interface MasterDataItem {
     id: string;
     name: string;
-    code: string;
     description?: string;
     category: string;
-    isActive: boolean;
-    isSystemGenerated: boolean;
-    sortOrder: number;
+    value?: string;
+    display_order: number;
+    is_system: boolean;
+    is_active: boolean;
     metadata?: Record<string, any>;
     created_at: string;
     updated_at: string;
@@ -19,18 +19,18 @@ interface MasterDataItem {
 
 interface MasterDataCreateRequest {
     name: string;
-    code: string;
     description?: string;
     category: string;
-    isActive?: boolean;
-    sortOrder?: number;
+    value?: string;
+    display_order?: number;
+    is_active?: boolean;
     metadata?: Record<string, any>;
 }
 
 interface MasterDataSearchParams {
     category?: string;
-    isActive?: boolean;
-    isSystemGenerated?: boolean;
+    is_active?: boolean;
+    is_system?: boolean;
     search?: string;
     page?: number;
     limit?: number;
@@ -150,7 +150,7 @@ export function useMasterDataApi() {
 
             if (response.success && response.data) {
                 setMasterData(prev => prev.map(item =>
-                    item.id === id ? { ...item, isActive: !item.isActive } : item
+                    item.id === id ? { ...item, is_active: !item.is_active } : item
                 ));
                 toast.success('Status updated successfully');
                 return response.data;
@@ -168,43 +168,42 @@ export function useMasterDataApi() {
 
     // Get master data by category
     const getMasterDataByCategory = useCallback(async (category: string) => {
-        return fetchMasterData({ category, isActive: true });
-    }, [fetchMasterData]);
-
-    // Get active master data items for dropdowns
-    const getActiveMasterData = useCallback((category: string) => {
-        return masterData.filter(item => item.category === category && item.isActive);
-    }, [masterData]);
-
-    // Seed default master data
-    const seedMasterData = useCallback(async () => {
         setLoading(true);
         setError(null);
 
         try {
-            const response = await httpService.post(API_ENDPOINTS.MASTER_DATA.SEED_DATA, {});
+            const endpoint = API_ENDPOINTS.MASTER_DATA.BY_CATEGORY(category);
+            const response = await httpService.get<{
+                data: MasterDataItem[];
+            }>(endpoint);
 
-            if (response.success) {
-                toast.success('Default master data seeded successfully');
-                // Refresh the data after seeding
-                await fetchMasterData({});
-                return { success: true };
+            if (response.success && response.data) {
+                const categoryData = Array.isArray(response.data) ? response.data : response.data.data || [];
+                // Update the masterData state with new category data
+                setMasterData(prev => {
+                    // Remove existing items of this category and add new ones
+                    const filtered = prev.filter(item => item.category !== category);
+                    return [...filtered, ...categoryData];
+                });
+                return categoryData;
             } else {
-                const errorMessage = response.message || 'Failed to seed master data';
-                setError(errorMessage);
-                toast.error(errorMessage);
-                return { success: false, error: errorMessage };
+                throw new Error(response.error || 'Failed to fetch master data');
             }
-        } catch (error: any) {
-            const errorMessage = error?.message || 'Failed to seed master data';
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to fetch master data';
             setError(errorMessage);
-            toast.error(errorMessage);
-            console.error('Error seeding master data:', error);
-            return { success: false, error: errorMessage };
+            console.error('Error fetching master data by category:', err);
+            toast.error(`Error: ${errorMessage}`);
+            return [];
         } finally {
             setLoading(false);
         }
-    }, [fetchMasterData]);
+    }, []);
+
+    // Get active master data items for dropdowns
+    const getActiveMasterData = useCallback((category: string) => {
+        return masterData.filter(item => item.category === category && item.is_active);
+    }, [masterData]);
 
     return {
         masterData,
@@ -217,7 +216,6 @@ export function useMasterDataApi() {
         toggleMasterDataStatus,
         getMasterDataByCategory,
         getActiveMasterData,
-        seedMasterData,
         refreshMasterData: fetchMasterData
     };
 }

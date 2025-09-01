@@ -82,17 +82,17 @@ export default function AppointmentList() {
 
     // Filter appointments
     const filteredAppointments = appointments?.filter(appointment => {
-        const patientName = getPatientName(appointment.patient_id || '')
+        const patientName = getPatientName(appointment.patientId || '')
         const matchesSearch =
             patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
             appointment.doctor_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            appointment.appointment_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            appointment.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             appointment.reason?.toLowerCase().includes(searchTerm.toLowerCase())
 
         const matchesStatus = statusFilter === 'all' || appointment.status === statusFilter
 
         const today = new Date()
-        const appointmentDate = new Date(appointment.appointment_date || '')
+        const appointmentDate = new Date(appointment.appointmentDate || '')
         let matchesDate = true
 
         if (dateFilter === 'today') {
@@ -245,7 +245,7 @@ export default function AppointmentList() {
                                         <TableCell>
                                             <div className="flex items-center gap-2">
                                                 <UserIcon className="w-4 h-4 text-muted-foreground" />
-                                                <span className="font-medium">{getPatientName(appointment.patient_id || '')}</span>
+                                                <span className="font-medium">{getPatientName(appointment.patientId || '')}</span>
                                             </div>
                                         </TableCell>
                                         <TableCell>{appointment.doctor_name || 'Not assigned'}</TableCell>
@@ -253,17 +253,17 @@ export default function AppointmentList() {
                                             <div className="space-y-1">
                                                 <div className="flex items-center gap-1">
                                                     <CalendarIcon className="w-3 h-3 text-muted-foreground" />
-                                                    <span className="text-sm">{formatDate(appointment.appointment_date)}</span>
+                                                    <span className="text-sm">{formatDate(appointment.appointmentDate)}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <ClockIcon className="w-3 h-3 text-muted-foreground" />
-                                                    <span className="text-sm">{formatTime(appointment.appointment_time)}</span>
+                                                    <span className="text-sm">{formatTime(appointment.appointmentTime)}</span>
                                                 </div>
                                             </div>
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant="outline">
-                                                {appointment.appointment_type || 'Consultation'}
+                                                {appointment.type || 'Consultation'}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>

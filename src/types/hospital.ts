@@ -58,12 +58,12 @@ export interface InsuranceInfo {
 
 export interface Appointment {
   id: string;
-  patient_id: string;
-  doctor_id: string;
+  patientId: string;
+  doctorId: string;
   doctor_name?: string;
-  appointment_date: string;
-  appointment_time: string;
-  appointment_type: 'consultation' | 'follow_up' | 'emergency' | 'vaccination' | 'checkup' | 'surgery_consultation';
+  appointmentDate: string;
+  appointmentTime: string;
+  type: 'consultation' | 'follow_up' | 'emergency' | 'vaccination' | 'checkup' | 'surgery_consultation';
   status: 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
   reason?: string;
   notes?: string;

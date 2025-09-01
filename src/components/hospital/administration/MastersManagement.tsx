@@ -25,7 +25,6 @@ import {
     XCircleIcon,
     DownloadIcon,
     UploadIcon,
-    PlantIcon,
     ListIcon,
 } from '@phosphor-icons/react';
 import { toast } from 'sonner'
@@ -127,15 +126,13 @@ export default function MastersManagement() {
         fetchMasterData,
         createMasterDataItem,
         updateMasterDataItem,
-        toggleMasterDataStatus,
-        seedMasterData
+        toggleMasterDataStatus
     } = useMasterDataApi()
 
     const [selectedCategory, setSelectedCategory] = useState<string>('departments')
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [editingItem, setEditingItem] = useState<MasterDataItem | null>(null)
     const [searchTerm, setSearchTerm] = useState('')
-    const [isSeeding, setIsSeeding] = useState(false)
     const [isExporting, setIsExporting] = useState(false)
     const [isImporting, setIsImporting] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)

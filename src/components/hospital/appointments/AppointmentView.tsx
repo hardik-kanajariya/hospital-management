@@ -123,10 +123,10 @@ export default function AppointmentView() {
     }
 
     // Get patient details
-    const patient = patients.find(p => p.id === appointment.patient_id)
+    const patient = patients.find(p => p.id === appointment.patientId)
 
     // Get doctor details
-    const doctor = doctors.find(d => d.id === appointment.doctor_id)
+    const doctor = doctors.find(d => d.id === appointment.doctorId)
 
     return (
         <div className="space-y-6">
@@ -156,8 +156,8 @@ export default function AppointmentView() {
                         <Badge className={getStatusColor(appointment.status || '')}>
                             {appointment.status || 'Scheduled'}
                         </Badge>
-                        <Badge className={getTypeColor(appointment.appointment_type || '')} variant="outline">
-                            {appointment.appointment_type || 'Consultation'}
+                        <Badge className={getTypeColor(appointment.type || '')} variant="outline">
+                            {appointment.type || 'Consultation'}
                         </Badge>
                     </div>
                 </div>
@@ -269,14 +269,14 @@ export default function AppointmentView() {
                             <p className="text-sm font-medium text-muted-foreground mb-1">Date</p>
                             <p className="flex items-center gap-2">
                                 <CalendarIcon className="w-4 h-4 text-muted-foreground" />
-                                {formatDate(appointment.appointment_date)}
+                                {formatDate(appointment.appointmentDate)}
                             </p>
                         </div>
                         <div>
                             <p className="text-sm font-medium text-muted-foreground mb-1">Time</p>
                             <p className="flex items-center gap-2">
                                 <ClockIcon className="w-4 h-4 text-muted-foreground" />
-                                {formatTime(appointment.appointment_time)}
+                                {formatTime(appointment.appointmentTime)}
                             </p>
                         </div>
                         {appointment.duration && (

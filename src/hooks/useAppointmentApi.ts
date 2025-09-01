@@ -19,16 +19,16 @@ export function useAppointmentApi() {
 
     const createAppointment = useCallback(async (appointmentData: Partial<Appointment>) => {
         // Validate required fields
-        if (!appointmentData.patient_id || !appointmentData.doctor_id) {
+        if (!appointmentData.patientId || !appointmentData.doctorId) {
             throw new Error('Patient and doctor are required');
         }
 
         const appointment: Omit<Appointment, 'id'> = {
-            patient_id: appointmentData.patient_id,
-            doctor_id: appointmentData.doctor_id,
-            appointment_date: appointmentData.appointment_date || '',
-            appointment_time: appointmentData.appointment_time || '',
-            appointment_type: appointmentData.appointment_type || 'consultation',
+            patientId: appointmentData.patientId,
+            doctorId: appointmentData.doctorId,
+            appointmentDate: appointmentData.appointmentDate || '',
+            appointmentTime: appointmentData.appointmentTime || '',
+            type: appointmentData.type || 'consultation',
             status: appointmentData.status || 'scheduled',
             reason: appointmentData.reason || '',
             notes: appointmentData.notes || '',
@@ -58,15 +58,15 @@ export function useAppointmentApi() {
     }, [appointments]);
 
     const getAppointmentsByPatient = useCallback((patientId: string) => {
-        return appointments.filter(appointment => appointment.patient_id === patientId);
+        return appointments.filter(appointment => appointment.patientId === patientId);
     }, [appointments]);
 
     const getAppointmentsByDoctor = useCallback((doctorId: string) => {
-        return appointments.filter(appointment => appointment.doctor_id === doctorId);
+        return appointments.filter(appointment => appointment.doctorId === doctorId);
     }, [appointments]);
 
     const getAppointmentsByDate = useCallback((date: string) => {
-        return appointments.filter(appointment => appointment.appointment_date === date);
+        return appointments.filter(appointment => appointment.appointmentDate === date);
     }, [appointments]);
 
     const getAppointmentsByStatus = useCallback((status: string) => {
