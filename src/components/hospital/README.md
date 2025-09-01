@@ -9,7 +9,6 @@ This directory contains all hospital management components organized into logica
 - `EditPatient.tsx` - Patient information editing
 - `PatientList.tsx` - Patient listing and search
 - `PatientProfile.tsx` - Individual patient profile view
-- `PatientSearch.tsx` - Advanced patient search functionality
 - `PatientManagement.tsx` - Main patient management hub
 
 ### 📅 **appointments/** - Appointment Management
