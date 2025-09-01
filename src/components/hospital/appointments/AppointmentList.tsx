@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import {
     CalendarIcon,
     PlusIcon,
@@ -19,10 +18,6 @@ import {
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { Appointment } from '@/types/hospital'
-import { Patient } from '@/types/patient'
-import CreateAppointment from './CreateAppointment'
-import EditAppointment from './EditAppointment'
-import AppointmentView from './AppointmentView'
 import { useAppointmentApi } from '@/hooks/useAppointmentApi'
 import { usePatientApi } from '@/hooks/usePatientApi'
 
@@ -77,11 +72,6 @@ export default function AppointmentList() {
     const [searchTerm, setSearchTerm] = useState('')
     const [statusFilter, setStatusFilter] = useState('all')
     const [dateFilter, setDateFilter] = useState('all')
-    const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
-    const [showCreateDialog, setShowCreateDialog] = useState(false)
-    const [showEditDialog, setShowEditDialog] = useState(false)
-    const [showViewDialog, setShowViewDialog] = useState(false)
-    const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
     // Get patient name by ID
     const getPatientName = (patientId: string): string => {
@@ -118,27 +108,29 @@ export default function AppointmentList() {
         return matchesSearch && matchesStatus && matchesDate
     }) || []
 
-    const handleDeleteAppointment = async () => {
-        if (!selectedAppointment?.id) return
+    const handleDeleteAppointment = async (appointmentId: string) => {
+        if (!appointmentId) return
 
-        try {
-            await deleteAppointment(selectedAppointment.id)
-            toast.success('Appointment deleted successfully')
-            setShowDeleteDialog(false)
-            setSelectedAppointment(null)
-        } catch (error) {
-            toast.error('Failed to delete appointment')
+        if (window.confirm('Are you sure you want to delete this appointment? This action cannot be undone.')) {
+            try {
+                await deleteAppointment(appointmentId)
+                toast.success('Appointment deleted successfully')
+            } catch (error) {
+                toast.error('Failed to delete appointment')
+            }
         }
     }
 
-    const handleViewAppointment = (appointment) => {
-        setSelectedAppointment(appointment)
-        setShowViewDialog(true)
+    const handleViewAppointment = (appointment: Appointment) => {
+        navigate(`/appointments/${appointment.id}`)
     }
 
-    const handleEditAppointment = (appointment) => {
-        setSelectedAppointment(appointment)
-        setShowEditDialog(true)
+    const handleEditAppointment = (appointment: Appointment) => {
+        navigate(`/appointments/${appointment.id}/edit`)
+    }
+
+    const handleCreateAppointment = () => {
+        navigate('/appointments/create')
     }
 
     if (loading) {
@@ -160,7 +152,7 @@ export default function AppointmentList() {
                     <h1 className="text-2xl font-bold">Appointments</h1>
                     <p className="text-muted-foreground">Manage patient appointments and schedules</p>
                 </div>
-                <Button onClick={() => setShowCreateDialog(true)} className="flex items-center gap-2">
+                <Button onClick={handleCreateAppointment} className="flex items-center gap-2">
                     <PlusIcon className="w-4 h-4" />
                     Schedule Appointment
                 </Button>
@@ -229,7 +221,7 @@ export default function AppointmentList() {
                                     : 'Schedule your first appointment to get started'
                                 }
                             </p>
-                            <Button onClick={() => setShowCreateDialog(true)}>
+                            <Button onClick={handleCreateAppointment}>
                                 <PlusIcon className="w-4 h-4 mr-2" />
                                 Schedule Appointment
                             </Button>
@@ -301,10 +293,7 @@ export default function AppointmentList() {
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => {
-                                                        setSelectedAppointment(appointment)
-                                                        setShowDeleteDialog(true)
-                                                    }}
+                                                    onClick={() => handleDeleteAppointment(appointment.id)}
                                                     className="text-red-600 hover:text-red-700"
                                                 >
                                                     <TrashIcon className="w-4 h-4" />
@@ -318,72 +307,6 @@ export default function AppointmentList() {
                     )}
                 </CardContent>
             </Card>
-
-            {/* Create Appointment Dialog */}
-            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>Schedule New Appointment</DialogTitle>
-                        <DialogDescription>
-                            Create a new appointment for a patient with available doctors
-                        </DialogDescription>
-                    </DialogHeader>
-                    <CreateAppointment
-                        onSuccess={() => setShowCreateDialog(false)}
-                        onCancel={() => setShowCreateDialog(false)}
-                    />
-                </DialogContent>
-            </Dialog>
-
-            {/* Edit Appointment Dialog */}
-            <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>Edit Appointment</DialogTitle>
-                        <DialogDescription>
-                            Update appointment details and scheduling information
-                        </DialogDescription>
-                    </DialogHeader>
-                    <EditAppointment
-                        appointment={selectedAppointment}
-                        onSuccess={() => setShowEditDialog(false)}
-                        onCancel={() => setShowEditDialog(false)}
-                    />
-                </DialogContent>
-            </Dialog>
-
-            {/* View Appointment Dialog */}
-            <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>Appointment Details</DialogTitle>
-                        <DialogDescription>
-                            View complete appointment information
-                        </DialogDescription>
-                    </DialogHeader>
-                    <AppointmentView appointment={selectedAppointment} />
-                </DialogContent>
-            </Dialog>
-
-            {/* Delete Confirmation Dialog */}
-            <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Delete Appointment</DialogTitle>
-                        <DialogDescription>
-                            Are you sure you want to delete this appointment? This action cannot be undone.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="flex justify-end gap-2 mt-4">
-                        <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
-                            Cancel
-                        </Button>
-                        <Button variant="destructive" onClick={handleDeleteAppointment}>
-                            Delete Appointment
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
         </div>
     )
 }

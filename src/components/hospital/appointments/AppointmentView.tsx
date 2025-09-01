@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -9,15 +11,14 @@ import {
     PhoneIcon,
     MapPinIcon,
     FileTextIcon,
-    HeartIcon
+    HeartIcon,
+    ArrowLeftIcon,
+    PencilIcon
 } from '@phosphor-icons/react'
 import { Appointment } from '@/types/hospital'
 import { useDoctorApi } from '@/hooks/useDoctorApi'
 import { usePatientApi } from '@/hooks/usePatientApi'
-
-interface AppointmentViewProps {
-    appointment: Appointment | null;
-}
+import { useAppointmentApi } from '@/hooks/useAppointmentApi'
 
 // Utility functions for formatting
 const formatDate = (date: string | null | undefined): string => {
@@ -81,15 +82,42 @@ const getTypeColor = (type: string) => {
     }
 }
 
-export default function AppointmentView({ appointment }: AppointmentViewProps) {
+export default function AppointmentView() {
+    const { id } = useParams<{ id: string }>()
+    const navigate = useNavigate()
     const { patients } = usePatientApi()
     const { doctors } = useDoctorApi()
+    const { appointments, loading } = useAppointmentApi()
+    const [appointment, setAppointment] = useState<Appointment | null>(null)
+
+    useEffect(() => {
+        if (appointments && id) {
+            const foundAppointment = appointments.find(a => a.id === id)
+            setAppointment(foundAppointment || null)
+        }
+    }, [appointments, id])
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="mt-2 text-sm text-muted-foreground">Loading appointment...</p>
+                </div>
+            </div>
+        )
+    }
 
     if (!appointment) {
         return (
-            <div className="text-center py-8 text-muted-foreground">
-                <CalendarIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>No appointment selected</p>
+            <div className="text-center py-8">
+                <CalendarIcon className="w-12 h-12 mx-auto mb-4 opacity-50 text-muted-foreground" />
+                <h3 className="text-lg font-medium mb-2">Appointment not found</h3>
+                <p className="text-muted-foreground mb-4">The requested appointment could not be found.</p>
+                <Button onClick={() => navigate('/appointments')}>
+                    <ArrowLeftIcon className="w-4 h-4 mr-2" />
+                    Back to Appointments
+                </Button>
             </div>
         )
     }
@@ -102,10 +130,28 @@ export default function AppointmentView({ appointment }: AppointmentViewProps) {
 
     return (
         <div className="space-y-6">
+            {/* Page Header with Navigation */}
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <Button variant="outline" onClick={() => navigate('/appointments')}>
+                        <ArrowLeftIcon className="w-4 h-4 mr-2" />
+                        Back to Appointments
+                    </Button>
+                    <div>
+                        <h1 className="text-2xl font-bold">Appointment Details</h1>
+                        <p className="text-muted-foreground">View complete appointment information</p>
+                    </div>
+                </div>
+                <Button onClick={() => navigate(`/appointments/${appointment.id}/edit`)}>
+                    <PencilIcon className="w-4 h-4 mr-2" />
+                    Edit Appointment
+                </Button>
+            </div>
+
             {/* Appointment Header */}
             <div className="border-b pb-4">
                 <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-semibold">Appointment Details</h3>
+                    <h3 className="text-lg font-semibold">Appointment Information</h3>
                     <div className="flex gap-2">
                         <Badge className={getStatusColor(appointment.status || '')}>
                             {appointment.status || 'Scheduled'}

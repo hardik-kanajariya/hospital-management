@@ -35,7 +35,8 @@ import ViewMedicalRecord from '../components/hospital/medical/records/ViewMedica
 import EditMedicalRecord from '../components/hospital/medical/records/EditMedicalRecord';
 import AppointmentList from '@/components/hospital/appointments/AppointmentList';
 import CreateAppointment from '@/components/hospital/appointments/CreateAppointment';
-import { EditAppointment } from '@/components/hospital';
+import AppointmentView from '@/components/hospital/appointments/AppointmentView';
+import EditAppointment from '@/components/hospital/appointments/EditAppointment';
 
 export const router = createBrowserRouter([
     {
@@ -173,7 +174,7 @@ export const router = createBrowserRouter([
                 )
             },
             {
-                path: 'appointment/create',
+                path: 'appointments/create',
                 element: (
                     <ProtectedRoute>
                         <RoleBasedAccess requiredModule="appointments">
@@ -183,11 +184,21 @@ export const router = createBrowserRouter([
                 )
             },
             {
-                path: 'appointment/:id',
+                path: 'appointments/:id',
                 element: (
                     <ProtectedRoute>
                         <RoleBasedAccess requiredModule="appointments">
-                            <EditAppointment appointment={null} />
+                            <AppointmentView />
+                        </RoleBasedAccess>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'appointments/:id/edit',
+                element: (
+                    <ProtectedRoute>
+                        <RoleBasedAccess requiredModule="appointments">
+                            <EditAppointment />
                         </RoleBasedAccess>
                     </ProtectedRoute>
                 )

@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -9,19 +11,15 @@ import {
     ClockIcon,
     UserIcon,
     StethoscopeIcon,
-    XIcon
+    XIcon,
+    ArrowLeftIcon,
+    PlusIcon
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { Appointment } from '@/types/hospital'
 import { useAppointmentApi } from '@/hooks/useAppointmentApi'
 import { useDoctorApi } from '@/hooks/useDoctorApi'
 import { usePatientApi } from '@/hooks/usePatientApi'
-
-interface CreateAppointmentProps {
-    onSuccess?: () => void;
-    onCancel?: () => void;
-    preSelectedPatientId?: string;
-}
 
 const appointmentTypes = [
     { value: 'consultation', label: 'Consultation' },
@@ -38,7 +36,11 @@ const timeSlots = [
     '16:00', '16:30', '17:00', '17:30', '18:00', '18:30'
 ]
 
-export default function CreateAppointment({ onSuccess, onCancel, preSelectedPatientId }: CreateAppointmentProps) {
+export default function CreateAppointment() {
+    const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
+    const preSelectedPatientId = searchParams.get('patientId')
+
     const { createAppointment, loading } = useAppointmentApi()
     const { patients } = usePatientApi()
     const { doctors } = useDoctorApi()
@@ -80,205 +82,221 @@ export default function CreateAppointment({ onSuccess, onCancel, preSelectedPati
 
             await createAppointment(appointmentData)
             toast.success('Appointment scheduled successfully')
-            onSuccess?.()
+            navigate('/appointments')
         } catch (error) {
             toast.error('Failed to schedule appointment')
         }
     }
 
     const handleCancel = () => {
-        setFormData({
-            patient_id: preSelectedPatientId || '',
-            doctor_id: '',
-            appointment_date: '',
-            appointment_time: '',
-            appointment_type: 'consultation',
-            status: 'scheduled',
-            reason: '',
-            notes: ''
-        })
-        onCancel?.()
+        navigate('/appointments')
     }
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Patient Selection */}
-                <div className="space-y-2">
-                    <Label htmlFor="patient_id" className="flex items-center gap-2">
-                        <UserIcon className="w-4 h-4" />
-                        Patient *
-                    </Label>
-                    <Select
-                        value={formData.patient_id}
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, patient_id: value }))}
-                        required
-                    >
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a patient" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {patients.map((patient) => (
-                                <SelectItem key={patient.id} value={patient.id}>
-                                    {patient.name} ({patient.patient_id})
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                {/* Doctor Selection */}
-                <div className="space-y-2">
-                    <Label htmlFor="doctor_id" className="flex items-center gap-2">
-                        <StethoscopeIcon className="w-4 h-4" />
-                        Doctor *
-                    </Label>
-                    <Select
-                        value={formData.doctor_id}
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, doctor_id: value }))}
-                        required
-                    >
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a doctor" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {doctors.map((doctor) => (
-                                <SelectItem key={doctor.id} value={doctor.id}>
-                                    Dr. {doctor.name} - {doctor.specialization}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                {/* Appointment Date */}
-                <div className="space-y-2">
-                    <Label htmlFor="appointment_date" className="flex items-center gap-2">
-                        <CalendarIcon className="w-4 h-4" />
-                        Appointment Date *
-                    </Label>
-                    <Input
-                        type="date"
-                        value={formData.appointment_date}
-                        onChange={(e) => setFormData(prev => ({ ...prev, appointment_date: e.target.value }))}
-                        min={new Date().toISOString().split('T')[0]}
-                        required
-                    />
-                </div>
-
-                {/* Appointment Time */}
-                <div className="space-y-2">
-                    <Label htmlFor="appointment_time" className="flex items-center gap-2">
-                        <ClockIcon className="w-4 h-4" />
-                        Appointment Time *
-                    </Label>
-                    <Select
-                        value={formData.appointment_time}
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, appointment_time: value }))}
-                        required
-                    >
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select time slot" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {getAvailableSlots().map((slot) => (
-                                <SelectItem key={slot} value={slot}>
-                                    {new Date(`2000-01-01T${slot}`).toLocaleTimeString('en-IN', {
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        hour12: true
-                                    })}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                {/* Appointment Type */}
-                <div className="space-y-2">
-                    <Label htmlFor="appointment_type">Appointment Type *</Label>
-                    <Select
-                        value={formData.appointment_type}
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, appointment_type: value as any }))}
-                        required
-                    >
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select appointment type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {appointmentTypes.map((type) => (
-                                <SelectItem key={type.value} value={type.value}>
-                                    {type.label}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                {/* Status */}
-                <div className="space-y-2">
-                    <Label htmlFor="status">Status</Label>
-                    <Select
-                        value={formData.status}
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as any }))}
-                    >
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="scheduled">Scheduled</SelectItem>
-                            <SelectItem value="confirmed">Confirmed</SelectItem>
-                            <SelectItem value="in_progress">In Progress</SelectItem>
-                            <SelectItem value="completed">Completed</SelectItem>
-                            <SelectItem value="cancelled">Cancelled</SelectItem>
-                            <SelectItem value="no_show">No Show</SelectItem>
-                        </SelectContent>
-                    </Select>
+        <div className="space-y-6">
+            {/* Page Header */}
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <Button variant="outline" onClick={() => navigate('/appointments')}>
+                        <ArrowLeftIcon className="w-4 h-4 mr-2" />
+                        Back to Appointments
+                    </Button>
+                    <div>
+                        <h1 className="text-2xl font-bold">Schedule New Appointment</h1>
+                        <p className="text-muted-foreground">Create a new appointment for a patient with available doctors</p>
+                    </div>
                 </div>
             </div>
 
-            {/* Reason */}
-            <div className="space-y-2">
-                <Label htmlFor="reason">Reason for Visit</Label>
-                <Textarea
-                    value={formData.reason}
-                    onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
-                    placeholder="Brief description of the reason for this appointment"
-                    rows={3}
-                />
-            </div>
+            <form onSubmit={handleSubmit} className="space-y-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <CalendarIcon className="w-5 h-5" />
+                            Appointment Details
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Patient Selection */}
+                            <div className="space-y-2">
+                                <Label htmlFor="patient_id" className="flex items-center gap-2">
+                                    <UserIcon className="w-4 h-4" />
+                                    Patient *
+                                </Label>
+                                <Select
+                                    value={formData.patient_id}
+                                    onValueChange={(value) => setFormData(prev => ({ ...prev, patient_id: value }))}
+                                    required
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a patient" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {patients.map((patient) => (
+                                            <SelectItem key={patient.id} value={patient.id}>
+                                                {patient.name} ({patient.patient_id})
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
 
-            {/* Notes */}
-            <div className="space-y-2">
-                <Label htmlFor="notes">Additional Notes</Label>
-                <Textarea
-                    value={formData.notes}
-                    onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                    placeholder="Any additional notes or special instructions"
-                    rows={3}
-                />
-            </div>
+                            {/* Doctor Selection */}
+                            <div className="space-y-2">
+                                <Label htmlFor="doctor_id" className="flex items-center gap-2">
+                                    <StethoscopeIcon className="w-4 h-4" />
+                                    Doctor *
+                                </Label>
+                                <Select
+                                    value={formData.doctor_id}
+                                    onValueChange={(value) => setFormData(prev => ({ ...prev, doctor_id: value }))}
+                                    required
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a doctor" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {doctors.map((doctor) => (
+                                            <SelectItem key={doctor.id} value={doctor.id}>
+                                                Dr. {doctor.name} - {doctor.specialization}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
 
-            {/* Action Buttons */}
-            <div className="flex justify-end gap-3 pt-4 border-t">
-                <Button type="button" variant="outline" onClick={handleCancel}>
-                    <XIcon className="w-4 h-4 mr-2" />
-                    Cancel
-                </Button>
-                <Button type="submit" disabled={loading}>
-                    {loading ? (
-                        <div className="flex items-center gap-2">
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                            Scheduling...
+                            {/* Appointment Date */}
+                            <div className="space-y-2">
+                                <Label htmlFor="appointment_date" className="flex items-center gap-2">
+                                    <CalendarIcon className="w-4 h-4" />
+                                    Appointment Date *
+                                </Label>
+                                <Input
+                                    type="date"
+                                    value={formData.appointment_date}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, appointment_date: e.target.value }))}
+                                    min={new Date().toISOString().split('T')[0]}
+                                    required
+                                />
+                            </div>
+
+                            {/* Appointment Time */}
+                            <div className="space-y-2">
+                                <Label htmlFor="appointment_time" className="flex items-center gap-2">
+                                    <ClockIcon className="w-4 h-4" />
+                                    Appointment Time *
+                                </Label>
+                                <Select
+                                    value={formData.appointment_time}
+                                    onValueChange={(value) => setFormData(prev => ({ ...prev, appointment_time: value }))}
+                                    required
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select time slot" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {getAvailableSlots().map((slot) => (
+                                            <SelectItem key={slot} value={slot}>
+                                                {new Date(`2000-01-01T${slot}`).toLocaleTimeString('en-IN', {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    hour12: true
+                                                })}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Appointment Type */}
+                            <div className="space-y-2">
+                                <Label htmlFor="appointment_type">Appointment Type *</Label>
+                                <Select
+                                    value={formData.appointment_type}
+                                    onValueChange={(value) => setFormData(prev => ({ ...prev, appointment_type: value as any }))}
+                                    required
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select appointment type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {appointmentTypes.map((type) => (
+                                            <SelectItem key={type.value} value={type.value}>
+                                                {type.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Status */}
+                            <div className="space-y-2">
+                                <Label htmlFor="status">Status</Label>
+                                <Select
+                                    value={formData.status}
+                                    onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as any }))}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="scheduled">Scheduled</SelectItem>
+                                        <SelectItem value="confirmed">Confirmed</SelectItem>
+                                        <SelectItem value="in_progress">In Progress</SelectItem>
+                                        <SelectItem value="completed">Completed</SelectItem>
+                                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                                        <SelectItem value="no_show">No Show</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
-                    ) : (
-                        <div className="flex items-center gap-2">
-                            <CalendarIcon className="w-4 h-4" />
-                            Schedule Appointment
+
+                        {/* Reason */}
+                        <div className="space-y-2">
+                            <Label htmlFor="reason">Reason for Visit</Label>
+                            <Textarea
+                                value={formData.reason}
+                                onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
+                                placeholder="Brief description of the reason for this appointment"
+                                rows={3}
+                            />
                         </div>
-                    )}
-                </Button>
-            </div>
-        </form>
+
+                        {/* Notes */}
+                        <div className="space-y-2">
+                            <Label htmlFor="notes">Additional Notes</Label>
+                            <Textarea
+                                value={formData.notes}
+                                onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                                placeholder="Any additional notes or special instructions"
+                                rows={3}
+                            />
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex justify-end gap-3 pt-4 border-t">
+                            <Button type="button" variant="outline" onClick={handleCancel}>
+                                <XIcon className="w-4 h-4 mr-2" />
+                                Cancel
+                            </Button>
+                            <Button type="submit" disabled={loading}>
+                                {loading ? (
+                                    <div className="flex items-center gap-2">
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                        Scheduling...
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-2">
+                                        <CalendarIcon className="w-4 h-4" />
+                                        Schedule Appointment
+                                    </div>
+                                )}
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </form>
+        </div>
     )
 }
