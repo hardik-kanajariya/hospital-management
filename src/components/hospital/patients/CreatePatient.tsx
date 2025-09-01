@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { MasterDropdown } from '@/components/ui/MasterDropdown'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -238,7 +239,18 @@ export default function CreatePatient() {
                                                     id="dob"
                                                     type="date"
                                                     value={formData.date_of_birth}
-                                                    onChange={(e) => setFormData(prev => ({ ...prev, date_of_birth: e.target.value }))}
+                                                    onChange={(e) => {
+                                                        const selectedDate = e.target.value;
+                                                        const today = new Date().toISOString().split('T')[0];
+
+                                                        if (selectedDate > today) {
+                                                            toast.error('Date of birth cannot be in the future');
+                                                            return;
+                                                        }
+
+                                                        setFormData(prev => ({ ...prev, date_of_birth: selectedDate }));
+                                                    }}
+                                                    max={new Date().toISOString().split('T')[0]}
                                                     required
                                                 />
                                             </div>

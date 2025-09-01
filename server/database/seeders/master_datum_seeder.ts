@@ -57,6 +57,21 @@ export default class extends BaseSeeder {
       { category: 'blood_groups', name: 'O+', description: 'O Positive', value: 'o_positive', display_order: 7, is_system: true },
       { category: 'blood_groups', name: 'O-', description: 'O Negative', value: 'o_negative', display_order: 8, is_system: true },
 
+      // Gender Options
+      { category: 'genders', name: 'Male', description: 'Male Gender', value: 'male', display_order: 1, is_system: true },
+      { category: 'genders', name: 'Female', description: 'Female Gender', value: 'female', display_order: 2, is_system: true },
+      { category: 'genders', name: 'Other', description: 'Other Gender', value: 'other', display_order: 3, is_system: true },
+
+      // Emergency Contact Relationships
+      { category: 'relationships', name: 'Spouse', description: 'Husband/Wife', value: 'spouse', display_order: 1, is_system: true },
+      { category: 'relationships', name: 'Parent', description: 'Father/Mother', value: 'parent', display_order: 2, is_system: true },
+      { category: 'relationships', name: 'Child', description: 'Son/Daughter', value: 'child', display_order: 3, is_system: true },
+      { category: 'relationships', name: 'Sibling', description: 'Brother/Sister', value: 'sibling', display_order: 4, is_system: true },
+      { category: 'relationships', name: 'Friend', description: 'Friend', value: 'friend', display_order: 5, is_system: true },
+      { category: 'relationships', name: 'Guardian', description: 'Legal Guardian', value: 'guardian', display_order: 6, is_system: true },
+      { category: 'relationships', name: 'Relative', description: 'Other Relative', value: 'relative', display_order: 7, is_system: true },
+      { category: 'relationships', name: 'Colleague', description: 'Work Colleague', value: 'colleague', display_order: 8, is_system: true },
+
       // Lab Sections
       { category: 'lab_sections', name: 'Hematology', description: 'Blood Tests and Analysis', value: 'hematology', display_order: 1, is_system: true },
       { category: 'lab_sections', name: 'Biochemistry', description: 'Chemical Analysis', value: 'biochemistry', display_order: 2, is_system: true },

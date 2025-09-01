@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { MasterDropdown } from '@/components/ui/MasterDropdown'
 import { toast } from 'sonner'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
@@ -422,55 +423,51 @@ export default function EditPatient() {
                                                     id="dob"
                                                     type="date"
                                                     value={formData.date_of_birth || ''}
-                                                    onChange={(e) => setFormData(prev => ({ ...prev, date_of_birth: e.target.value }))}
+                                                    onChange={(e) => {
+                                                        const selectedDate = e.target.value;
+                                                        const today = new Date().toISOString().split('T')[0];
+
+                                                        if (selectedDate > today) {
+                                                            toast.error('Date of birth cannot be in the future');
+                                                            return;
+                                                        }
+
+                                                        setFormData(prev => ({ ...prev, date_of_birth: selectedDate }));
+                                                    }}
+                                                    max={new Date().toISOString().split('T')[0]}
                                                     required
                                                 />
                                             </div>
 
                                             <div>
                                                 <Label htmlFor="gender">Gender *</Label>
-                                                <Select
-                                                    value={formData.gender || 'male'}
-                                                    onValueChange={(value: 'male' | 'female' | 'other') =>
-                                                        setFormData(prev => ({ ...prev, gender: value }))
-                                                    }
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="male">Male</SelectItem>
-                                                        <SelectItem value="female">Female</SelectItem>
-                                                        <SelectItem value="other">Other</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
+                                                <MasterDropdown
+                                                    category="genders"
+                                                    value={formData.gender || ''}
+                                                    onValueChange={(value) => setFormData(prev => ({
+                                                        ...prev,
+                                                        gender: value as 'male' | 'female' | 'other'
+                                                    }))}
+                                                    placeholder="Select gender"
+                                                    allowEmpty={false}
+                                                    required={true}
+                                                />
                                             </div>
                                         </div>
 
                                         <div>
                                             <Label htmlFor="blood_group">Blood Group</Label>
-                                            <Select
-                                                value={formData.blood_group || 'not_specified'}
+                                            <MasterDropdown
+                                                category="blood_groups"
+                                                value={formData.blood_group || ''}
                                                 onValueChange={(value) => setFormData(prev => ({
                                                     ...prev,
-                                                    blood_group: value === 'not_specified' ? '' : value
+                                                    blood_group: value
                                                 }))}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select blood group" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="not_specified">Not specified</SelectItem>
-                                                    <SelectItem value="A+">A+</SelectItem>
-                                                    <SelectItem value="A-">A-</SelectItem>
-                                                    <SelectItem value="B+">B+</SelectItem>
-                                                    <SelectItem value="B-">B-</SelectItem>
-                                                    <SelectItem value="AB+">AB+</SelectItem>
-                                                    <SelectItem value="AB-">AB-</SelectItem>
-                                                    <SelectItem value="O+">O+</SelectItem>
-                                                    <SelectItem value="O-">O-</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                                placeholder="Select blood group"
+                                                allowEmpty={true}
+                                                emptyLabel="Not specified"
+                                            />
                                         </div>
 
                                         <div>
