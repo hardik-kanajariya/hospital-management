@@ -167,25 +167,27 @@ export default class PatientsController {
         try {
             const payload = await request.validateUsing(patientValidator)
 
-            // Generate unique patient ID
+            // Generate unique patient ID - optimized approach
             let patientId = ''
             let patientNumber = 1
-            let isUnique = false
 
-            // Find next available patient ID (excluding soft deleted)
-            while (!isUnique) {
-                patientId = `PAT${String(patientNumber).padStart(6, '0')}`
-                const existingPatient = await Patient.query()
-                    .where('patient_id', patientId)
-                    .whereNull('deleted_at')
-                    .first()
+            // Get the latest patient ID with a single query (much more efficient)
+            const latestPatient = await Patient.query()
+                .select('patient_id')
+                .whereNotNull('patient_id')
+                .where('patient_id', 'like', 'PAT%')
+                .orderBy('patient_id', 'desc')
+                .first()
 
-                if (!existingPatient) {
-                    isUnique = true
-                } else {
-                    patientNumber++
+            if (latestPatient && latestPatient.patientId) {
+                // Extract the number from the latest patient ID (e.g., "PAT000123" -> 123)
+                const latestNumber = parseInt(latestPatient.patientId.substring(3))
+                if (!isNaN(latestNumber)) {
+                    patientNumber = latestNumber + 1
                 }
             }
+
+            patientId = `PAT${String(patientNumber).padStart(6, '0')}`
 
             // Validate required fields
             if (!payload.date_of_birth) {
