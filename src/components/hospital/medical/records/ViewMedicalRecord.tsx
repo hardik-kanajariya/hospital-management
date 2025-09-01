@@ -278,7 +278,7 @@ export default function ViewMedicalRecord() {
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-                            {Object.entries(medicalRecord.vital_signs).map(([key, value]) => {
+                            {medicalRecord.vital_signs && Object.entries(medicalRecord.vital_signs).map(([key, value]) => {
                                 if (!value) return null
                                 return (
                                     <div key={key} className="text-center">
@@ -315,7 +315,7 @@ export default function ViewMedicalRecord() {
                 </div>
 
                 {/* Medications */}
-                {medicalRecord.medications.length > 0 && (
+                {medicalRecord.medications && medicalRecord.medications.length > 0 && (
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
@@ -353,7 +353,7 @@ export default function ViewMedicalRecord() {
                 )}
 
                 {/* Lab Results */}
-                {medicalRecord.lab_results.length > 0 && (
+                {medicalRecord.lab_results && medicalRecord.lab_results.length > 0 && (
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
@@ -388,7 +388,7 @@ export default function ViewMedicalRecord() {
                 )}
 
                 {/* Follow-up Instructions */}
-                {medicalRecord.follow_up_instructions.length > 0 && (
+                {medicalRecord.follow_up_instructions && medicalRecord.follow_up_instructions.length > 0 && (
                     <Card>
                         <CardHeader>
                             <CardTitle>Follow-up Instructions</CardTitle>
