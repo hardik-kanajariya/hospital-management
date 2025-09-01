@@ -42,10 +42,21 @@ export default class Patient extends BaseModel {
         columnName: 'emergency_contact',
         serializeAs: 'emergency_contact',
         prepare: (value: any) => JSON.stringify(value || {}),
-        consume: (value: string) => {
+        consume: (value: string | object) => {
             try {
-                const parsed = JSON.parse(value || '{}')
-                // Ensure emergency contact always has proper structure
+                // If value is already an object (from database), return it
+                if (typeof value === 'object' && value !== null) {
+                    const parsed = value as any
+                    return {
+                        name: parsed.name || '',
+                        relationship: parsed.relationship || '',
+                        phone: parsed.phone || '',
+                        email: parsed.email || '',
+                        address: parsed.address || ''
+                    }
+                }
+                // If value is a string, parse it
+                const parsed = JSON.parse(value as string || '{}')
                 return {
                     name: parsed.name || '',
                     relationship: parsed.relationship || '',
@@ -70,11 +81,17 @@ export default class Patient extends BaseModel {
     declare bloodGroup: string | null
 
     @column({
+        columnName: 'allergies',
         serializeAs: 'allergies',
         prepare: (value: any) => JSON.stringify(value || []),
-        consume: (value: string) => {
+        consume: (value: string | any[]) => {
             try {
-                return JSON.parse(value)
+                // If value is already an array (from database), return it
+                if (Array.isArray(value)) {
+                    return value
+                }
+                // If value is a string, parse it
+                return JSON.parse(value as string)
             } catch {
                 return []
             }
@@ -86,9 +103,14 @@ export default class Patient extends BaseModel {
         columnName: 'chronic_conditions',
         serializeAs: 'chronic_conditions',
         prepare: (value: any) => JSON.stringify(value || []),
-        consume: (value: string) => {
+        consume: (value: string | any[]) => {
             try {
-                return JSON.parse(value)
+                // If value is already an array (from database), return it
+                if (Array.isArray(value)) {
+                    return value
+                }
+                // If value is a string, parse it
+                return JSON.parse(value as string)
             } catch {
                 return []
             }
@@ -100,9 +122,14 @@ export default class Patient extends BaseModel {
         columnName: 'vaccination_records',
         serializeAs: 'vaccination_records',
         prepare: (value: any) => JSON.stringify(value || []),
-        consume: (value: string) => {
+        consume: (value: string | any[]) => {
             try {
-                return JSON.parse(value)
+                // If value is already an array (from database), return it
+                if (Array.isArray(value)) {
+                    return value
+                }
+                // If value is a string, parse it
+                return JSON.parse(value as string)
             } catch {
                 return []
             }
@@ -114,9 +141,14 @@ export default class Patient extends BaseModel {
         columnName: 'insurance_info',
         serializeAs: 'insurance_info',
         prepare: (value: any) => JSON.stringify(value || {}),
-        consume: (value: string) => {
+        consume: (value: string | object) => {
             try {
-                return JSON.parse(value)
+                // If value is already an object (from database), return it
+                if (typeof value === 'object' && value !== null) {
+                    return value
+                }
+                // If value is a string, parse it
+                return JSON.parse(value as string)
             } catch {
                 return {}
             }
