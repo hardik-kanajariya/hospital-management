@@ -144,6 +144,26 @@ router.group(() => {
       // NOTE: Schedule and availability can be managed through role fields
     }).prefix('/doctors')
 
+    // Doctor Schedule Management Routes
+    router.group(() => {
+      router.get('/', '#controllers/doctor_schedules_controller.index')
+      router.get('/:id', '#controllers/doctor_schedules_controller.show')
+      router.post('/', '#controllers/doctor_schedules_controller.store')
+      router.put('/:id', '#controllers/doctor_schedules_controller.update')
+      router.delete('/:id', '#controllers/doctor_schedules_controller.destroy')
+    }).prefix('/doctor-schedules')
+
+    // Doctor Availability Management Routes
+    router.group(() => {
+      router.get('/', '#controllers/doctor_availability_controller.index')
+      router.get('/:id', '#controllers/doctor_availability_controller.show')
+      router.post('/', '#controllers/doctor_availability_controller.store')
+      router.put('/:id', '#controllers/doctor_availability_controller.update')
+      router.delete('/:id', '#controllers/doctor_availability_controller.destroy')
+      router.get('/date-range/check', '#controllers/doctor_availability_controller.getAvailabilityByDateRange')
+      router.get('/check/status', '#controllers/doctor_availability_controller.checkAvailability')
+    }).prefix('/doctor-availability')
+
     // Appointment management routes
     router.group(() => {
       router.get('/', '#controllers/appointments_controller.index')
