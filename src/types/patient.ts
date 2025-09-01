@@ -20,7 +20,7 @@ export interface Patient {
 
     // Related data (populated when needed)
     appointments?: Appointment[];
-    medical_records?: MedicalRecord[];
+    medicalRecords?: MedicalRecord[];
     bills?: Bill[];
 
     // UI specific fields

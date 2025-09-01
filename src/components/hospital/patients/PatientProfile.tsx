@@ -237,7 +237,7 @@ export default function PatientProfile() {
                                                         <MapPinIcon className="w-4 h-4 mt-0.5" />
                                                         {patient.address}
                                                     </p>
-                                                </div>
+                                                </div>``
                                             </div>
 
                                             {patient.blood_group && (
@@ -413,9 +413,9 @@ export default function PatientProfile() {
                                     </Button>
                                 </div>
 
-                                {patient.medical_records && patient.medical_records.length > 0 ? (
+                                {patient.medicalRecords && patient.medicalRecords.length > 0 ? (
                                     <div className="space-y-4">
-                                        {patient.medical_records.map((record) => (
+                                        {patient.medicalRecords.map((record) => (
                                             <Card key={record.id}>
                                                 <CardContent className="p-4">
                                                     <div className="flex items-start justify-between">
