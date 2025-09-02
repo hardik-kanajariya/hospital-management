@@ -186,16 +186,38 @@ export function useAuth() {
 
   // Permission checking
   const hasPermission = (permission: string, action: string = 'read'): boolean => {
-    if (!authState.user) return false;
+    if (!authState.user) {
+      console.log('hasPermission: No user found');
+      return false;
+    }
+
+    console.log('hasPermission check:', { permission, action, userPermissions: authState.user.permissions });
 
     // Check if user has the specific permission
-    return authState.user.permissions.some(p => {
+    const result = authState.user.permissions.some(p => {
       // Check for wildcard permission (super admin)
-      if (p.module === '*') return true;
+      if (p.module === '*') {
+        console.log('hasPermission: Found wildcard permission (super admin)');
+        return true;
+      }
 
       // Check for specific module permission with required action
-      return p.module === permission && p.actions?.includes(action as any);
+      const hasModule = p.module === permission;
+      const hasAction = p.actions?.includes(action as any);
+      console.log('hasPermission check detail:', {
+        permissionModule: p.module,
+        requestedPermission: permission,
+        hasModule,
+        permissionActions: p.actions,
+        requestedAction: action,
+        hasAction
+      });
+
+      return hasModule && hasAction;
     });
+
+    console.log('hasPermission result:', result);
+    return result;
   };
 
   // Role checking - works with both old string roles and new Role objects

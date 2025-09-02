@@ -40,6 +40,12 @@ export default class extends BaseSeeder {
             { name: 'appointments_edit', displayName: 'Edit Appointments', module: 'appointments' },
             { name: 'appointments_delete', displayName: 'Delete Appointments', module: 'appointments' },
 
+            // Doctor Management
+            { name: 'doctors_create', displayName: 'Create Doctors', module: 'doctors' },
+            { name: 'doctors_view', displayName: 'View Doctors', module: 'doctors' },
+            { name: 'doctors_edit', displayName: 'Edit Doctors', module: 'doctors' },
+            { name: 'doctors_delete', displayName: 'Delete Doctors', module: 'doctors' },
+
             // Medical Records
             { name: 'medical_records_create', displayName: 'Create Medical Records', module: 'medical_records' },
             { name: 'medical_records_view', displayName: 'View Medical Records', module: 'medical_records' },
@@ -81,6 +87,11 @@ export default class extends BaseSeeder {
             { name: 'notifications_view', displayName: 'View Notifications', module: 'notifications' },
             { name: 'notifications_edit', displayName: 'Edit Notifications', module: 'notifications' },
             { name: 'notifications_delete', displayName: 'Delete Notifications', module: 'notifications' },
+
+            // Administration
+            { name: 'admin_view', displayName: 'View Admin Panel', module: 'admin' },
+            { name: 'user_management_view', displayName: 'View User Management', module: 'user_management' },
+            { name: 'masters_view', displayName: 'View Master Data', module: 'masters' },
 
             // Super Admin Permission (wildcard)
             { name: 'super_admin', displayName: 'Super Admin Access', module: '*' },
@@ -124,6 +135,7 @@ export default class extends BaseSeeder {
                     { permission: permissions.dashboard_view, actions: ['read'] },
                     { permission: permissions.patients_create, actions: ['create', 'read', 'update'] },
                     { permission: permissions.appointments_create, actions: ['create', 'read', 'update'] },
+                    { permission: permissions.doctors_view, actions: ['read'] },
                     { permission: permissions.medical_records_create, actions: ['create', 'read', 'update'] },
                     { permission: permissions.prescriptions_create, actions: ['create', 'read', 'update'] },
                     { permission: permissions.lab_tests_create, actions: ['create', 'read'] },
@@ -143,6 +155,7 @@ export default class extends BaseSeeder {
                     { permission: permissions.billing_create, actions: ['create', 'read', 'update', 'delete'] },
                     { permission: permissions.patients_view, actions: ['read', 'update'] },
                     { permission: permissions.appointments_view, actions: ['read'] },
+                    { permission: permissions.doctors_view, actions: ['read'] },
                     { permission: permissions.notifications_create, actions: ['create', 'read'] }
                 ]
             },
@@ -156,6 +169,7 @@ export default class extends BaseSeeder {
                     { permission: permissions.dashboard_view, actions: ['read'] },
                     { permission: permissions.patients_create, actions: ['create', 'read', 'update'] },
                     { permission: permissions.appointments_view, actions: ['read', 'update'] },
+                    { permission: permissions.doctors_view, actions: ['read'] },
                     { permission: permissions.medical_records_view, actions: ['read', 'update'] },
                     { permission: permissions.beds_view, actions: ['read', 'update'] },
                     { permission: permissions.notifications_view, actions: ['read'] }
@@ -210,6 +224,7 @@ export default class extends BaseSeeder {
                     { permission: permissions.dashboard_view, actions: ['read'] },
                     { permission: permissions.patients_create, actions: ['create', 'read', 'update'] },
                     { permission: permissions.appointments_create, actions: ['create', 'read', 'update'] },
+                    { permission: permissions.doctors_view, actions: ['read'] },
                     { permission: permissions.billing_view, actions: ['read'] },
                     { permission: permissions.notifications_create, actions: ['create', 'read'] }
                 ]

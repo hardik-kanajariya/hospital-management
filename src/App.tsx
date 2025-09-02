@@ -98,8 +98,12 @@ function App() {
       // Always show landing and dashboard
       if (['landing', 'dashboard'].includes(tab.id)) return true;
 
-      // Check module permission
-      if (!hasPermission(tab.module)) return false;
+      // Check module permission with 'read' action
+      console.log('Filtering tab:', tab.id, 'module:', tab.module);
+      const hasAccess = hasPermission(tab.module, 'read');
+      console.log('Tab access result:', { tabId: tab.id, module: tab.module, hasAccess });
+
+      if (!hasAccess) return false;
 
       // Check role requirement if specified
       if (tab.requiresRole && !isSuperAdmin) return false;
