@@ -25,22 +25,22 @@ export default class RolesController {
             if (organizationId && includeGlobal) {
                 query.where((builder) => {
                     builder.where('organization_id', organizationId)
-                           .orWhereNull('organization_id')
+                        .orWhereNull('organization_id')
                 })
             } else if (organizationId) {
                 query.where('organization_id', organizationId)
             } else if (!await this.isSuperAdmin(user)) {
-                            // Apply organization filtering based on user type
-            if (!(await this.isSuperAdmin(user))) {
-                if (user.organizationId) {
-                    query.where('organization_id', user.organizationId)
-                } else {
-                    return response.badRequest({
-                        success: false,
-                        message: 'User organization not found'
-                    })
+                // Apply organization filtering based on user type
+                if (!(await this.isSuperAdmin(user))) {
+                    if (user.organizationId) {
+                        query.where('organization_id', user.organizationId)
+                    } else {
+                        return response.badRequest({
+                            success: false,
+                            message: 'User organization not found'
+                        })
+                    }
                 }
-            }
             }
 
             const roles = await query
@@ -262,7 +262,7 @@ export default class RolesController {
                 },
                 {
                     id: 'nurse',
-                    name: 'Nurse', 
+                    name: 'Nurse',
                     displayName: 'Nurse',
                     description: 'Nursing staff with patient care support',
                     accessLevel: 70,
@@ -353,10 +353,10 @@ export default class RolesController {
                     const permission = await Permission.query()
                         .where('name', 'like', permissionName.replace('*', '%'))
                         .first()
-                    
+
                     if (permission) {
                         await role.related('permissions').attach({
-                            [permission.id]: { 
+                            [permission.id]: {
                                 actions: JSON.stringify(this.parsePermissionActions(permissionName))
                             }
                         })
@@ -409,7 +409,7 @@ export default class RolesController {
                     for (const roleId of roleIds) {
                         try {
                             const role = await Role.findOrFail(roleId)
-                            
+
                             // Check permissions and constraints
                             if (role.isSystemRole) {
                                 results.push({ roleId, success: false, message: 'System role cannot be deleted' })
@@ -449,11 +449,11 @@ export default class RolesController {
                     for (const roleId of roleIds) {
                         try {
                             const role = await Role.findOrFail(roleId)
-                            
+
                             if (data.permissions) {
                                 // Clear existing permissions and add new ones
                                 await role.related('permissions').detach()
-                                
+
                                 for (const permissionData of data.permissions) {
                                     await role.related('permissions').attach({
                                         [permissionData.permissionId]: {
@@ -462,7 +462,7 @@ export default class RolesController {
                                     })
                                 }
                             }
-                            
+
                             results.push({ roleId, success: true, message: 'Permissions updated' })
                         } catch (error) {
                             results.push({ roleId, success: false, message: error.message })
@@ -508,7 +508,7 @@ export default class RolesController {
         if (role.isSystemRole) {
             return false // This would need super admin check
         }
-        
+
         // Organization roles can be edited by org admins
         return role.organizationId === user.organizationId
     }
@@ -518,7 +518,7 @@ export default class RolesController {
         if (role.isSystemRole) {
             return false
         }
-        
+
         // Organization roles can be deleted by org admins
         return role.organizationId === user.organizationId
     }
@@ -580,12 +580,12 @@ export default class RolesController {
         if (permissionName.includes('*')) {
             return ['read', 'create', 'update', 'delete']
         }
-        
+
         const parts = permissionName.split('.')
         if (parts.length === 2) {
             return [parts[1]]
         }
-        
+
         return ['read']
     }
 

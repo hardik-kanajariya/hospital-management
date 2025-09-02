@@ -20,12 +20,12 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { httpService } from '@/services/HttpService';
 import { Role, Permission, RolePermission } from '@/types/auth';
-import { 
-    PlusIcon, 
-    PencilIcon, 
-    TrashIcon, 
-    UsersIcon, 
-    ShieldIcon, 
+import {
+    PlusIcon,
+    PencilIcon,
+    TrashIcon,
+    UsersIcon,
+    ShieldIcon,
     GearIcon,
     CopyIcon,
     CheckIcon,
@@ -67,7 +67,7 @@ export default function EnhancedRoleManagement() {
     const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
     const [selectedTemplate, setSelectedTemplate] = useState<string>('');
     const [bulkOperation, setBulkOperation] = useState<'delete' | 'activate' | 'deactivate' | ''>('');
-    
+
     const [formData, setFormData] = useState<RoleFormData>({
         name: '',
         displayName: '',
@@ -154,7 +154,7 @@ export default function EnhancedRoleManagement() {
             const response = await httpService.post('/roles/from-template', {
                 templateId: selectedTemplate
             });
-            
+
             if (response.success) {
                 toast.success('Role created from template successfully');
                 setTemplateDialogOpen(false);
@@ -312,17 +312,17 @@ export default function EnhancedRoleManagement() {
     // Filter roles based on search and filters
     const filteredRoles = roles.filter(role => {
         const matchesSearch = role.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-                            role.displayName.toLowerCase().includes(filters.search.toLowerCase());
-        
-        const matchesStatus = filters.status === 'all' || 
-                            (filters.status === 'active' && role.isActive) ||
-                            (filters.status === 'inactive' && !role.isActive);
-        
+            role.displayName.toLowerCase().includes(filters.search.toLowerCase());
+
+        const matchesStatus = filters.status === 'all' ||
+            (filters.status === 'active' && role.isActive) ||
+            (filters.status === 'inactive' && !role.isActive);
+
         const matchesAccessLevel = filters.accessLevel === 'all' ||
-                                 (filters.accessLevel === 'high' && role.accessLevel >= 80) ||
-                                 (filters.accessLevel === 'medium' && role.accessLevel >= 40 && role.accessLevel < 80) ||
-                                 (filters.accessLevel === 'low' && role.accessLevel < 40);
-        
+            (filters.accessLevel === 'high' && role.accessLevel >= 80) ||
+            (filters.accessLevel === 'medium' && role.accessLevel >= 40 && role.accessLevel < 80) ||
+            (filters.accessLevel === 'low' && role.accessLevel < 40);
+
         return matchesSearch && matchesStatus && matchesAccessLevel;
     });
 
@@ -346,8 +346,8 @@ export default function EnhancedRoleManagement() {
                 </div>
                 <div className="flex gap-2">
                     {selectedRoles.length > 0 && (
-                        <Button 
-                            variant="outline" 
+                        <Button
+                            variant="outline"
                             onClick={() => setBulkDialogOpen(true)}
                             className="flex items-center gap-2"
                         >
@@ -417,8 +417,8 @@ export default function EnhancedRoleManagement() {
                                 onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
                             />
                         </div>
-                        <Select 
-                            value={filters.status} 
+                        <Select
+                            value={filters.status}
                             onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))}
                         >
                             <SelectTrigger className="w-32">
@@ -430,8 +430,8 @@ export default function EnhancedRoleManagement() {
                                 <SelectItem value="inactive">Inactive</SelectItem>
                             </SelectContent>
                         </Select>
-                        <Select 
-                            value={filters.accessLevel} 
+                        <Select
+                            value={filters.accessLevel}
                             onValueChange={(value) => setFilters(prev => ({ ...prev, accessLevel: value }))}
                         >
                             <SelectTrigger className="w-36">
@@ -572,7 +572,7 @@ export default function EnhancedRoleManagement() {
                                 />
                             </div>
                         </div>
-                        
+
                         <div>
                             <Label htmlFor="description">Description</Label>
                             <Textarea
