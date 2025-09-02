@@ -1,10 +1,8 @@
 // Administration Module - Centralized exports
 export { default as RoleManagement } from './RoleManagement'
-export { default as EnhancedRoleManagement } from './EnhancedRoleManagement'
 export { default as PermissionManagement } from './PermissionManagement'
 export { default as RoleBasedProfileFields } from './RoleBasedProfileFields'
 export { default as SuperAdminDashboard } from './SuperAdminDashboard'
-export { default as EnhancedAdminDashboard } from './EnhancedAdminDashboard'
 export { default as SuperAdminUserManagement } from './SuperAdminUserManagement'
 export { default as SystemSettings } from './SystemSettingsPage'
 export { DynamicRoleForm } from './DynamicRoleForm'

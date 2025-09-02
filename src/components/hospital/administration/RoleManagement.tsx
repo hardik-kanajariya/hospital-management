@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
     Table,
     TableBody,
@@ -19,8 +20,30 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { httpService } from '@/services/HttpService';
 import { Role, Permission, RolePermission } from '@/types/auth';
-import { PlusIcon, PencilIcon, TrashIcon, UsersIcon, ShieldIcon, GearIcon } from '@phosphor-icons/react';
+import {
+    PlusIcon,
+    PencilIcon,
+    TrashIcon,
+    UsersIcon,
+    ShieldIcon,
+    GearIcon,
+    CopyIcon,
+    CheckIcon,
+    XIcon,
+    DotsThreeVerticalIcon,
+    ArchiveIcon,
+    ArchiveBoxIcon
+} from '@phosphor-icons/react';
 import { toast } from 'sonner';
+
+interface RoleTemplate {
+    id: string;
+    name: string;
+    displayName: string;
+    description: string;
+    accessLevel: number;
+    permissions: string[];
+}
 
 interface RoleFormData {
     name: string;
@@ -35,9 +58,16 @@ export default function RoleManagement() {
     const navigate = useNavigate();
     const [roles, setRoles] = useState<Role[]>([]);
     const [permissions, setPermissions] = useState<Permission[]>([]);
+    const [roleTemplates, setRoleTemplates] = useState<RoleTemplate[]>([]);
     const [loading, setLoading] = useState(true);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+    const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
     const [editingRole, setEditingRole] = useState<Role | null>(null);
+    const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+    const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+    const [bulkOperation, setBulkOperation] = useState<'delete' | 'activate' | 'deactivate' | ''>('');
+
     const [formData, setFormData] = useState<RoleFormData>({
         name: '',
         displayName: '',
@@ -47,12 +77,26 @@ export default function RoleManagement() {
         permissions: []
     });
 
+    const [filters, setFilters] = useState({
+        search: '',
+        status: 'all', // all, active, inactive
+        accessLevel: 'all' // all, high, medium, low
+    });
+
     const availableActions = ['create', 'read', 'update', 'delete'] as const;
 
     useEffect(() => {
-        loadRoles();
-        loadPermissions();
+        loadData();
     }, []);
+
+    const loadData = async () => {
+        await Promise.all([
+            loadRoles(),
+            loadPermissions(),
+            loadRoleTemplates()
+        ]);
+        setLoading(false);
+    };
 
     const loadRoles = async () => {
         try {
@@ -67,14 +111,23 @@ export default function RoleManagement() {
 
     const loadPermissions = async () => {
         try {
-            const response = await httpService.get('/permissions');
+            const response = await httpService.get('/roles/permissions');
             if (response.success) {
                 setPermissions(response.data);
             }
         } catch (error) {
             toast.error('Failed to load permissions');
-        } finally {
-            setLoading(false);
+        }
+    };
+
+    const loadRoleTemplates = async () => {
+        try {
+            const response = await httpService.get('/roles/templates');
+            if (response.success) {
+                setRoleTemplates(response.data);
+            }
+        } catch (error) {
+            console.error('Failed to load role templates');
         }
     };
 
@@ -89,6 +142,28 @@ export default function RoleManagement() {
             permissions: []
         });
         setDialogOpen(true);
+    };
+
+    const handleCreateFromTemplate = async () => {
+        if (!selectedTemplate) {
+            toast.error('Please select a template');
+            return;
+        }
+
+        try {
+            const response = await httpService.post('/roles/from-template', {
+                templateId: selectedTemplate
+            });
+
+            if (response.success) {
+                toast.success('Role created from template successfully');
+                setTemplateDialogOpen(false);
+                setSelectedTemplate('');
+                loadRoles();
+            }
+        } catch (error) {
+            toast.error('Failed to create role from template');
+        }
     };
 
     const handleEditRole = (role: Role) => {
@@ -132,6 +207,51 @@ export default function RoleManagement() {
         }
     };
 
+    const handleBulkOperation = async () => {
+        if (selectedRoles.length === 0) {
+            toast.error('Please select roles to perform bulk operation');
+            return;
+        }
+
+        if (!bulkOperation) {
+            toast.error('Please select an operation');
+            return;
+        }
+
+        try {
+            const response = await httpService.post('/roles/bulk-operation', {
+                operation: bulkOperation,
+                roleIds: selectedRoles
+            });
+
+            if (response.success) {
+                toast.success(`Bulk ${bulkOperation} completed successfully`);
+                setBulkDialogOpen(false);
+                setSelectedRoles([]);
+                setBulkOperation('');
+                loadRoles();
+            }
+        } catch (error) {
+            toast.error(`Failed to perform bulk ${bulkOperation}`);
+        }
+    };
+
+    const handleRoleSelection = (roleId: string, checked: boolean) => {
+        if (checked) {
+            setSelectedRoles([...selectedRoles, roleId]);
+        } else {
+            setSelectedRoles(selectedRoles.filter(id => id !== roleId));
+        }
+    };
+
+    const handleSelectAllRoles = (checked: boolean) => {
+        if (checked) {
+            setSelectedRoles(filteredRoles.map(role => role.id));
+        } else {
+            setSelectedRoles([]);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -169,56 +289,183 @@ export default function RoleManagement() {
                 ...(actions.length > 0 ? [{
                     roleId: editingRole?.id || '',
                     permissionId,
-                    actions: actions as ('create' | 'read' | 'update' | 'delete')[]
+                    actions
                 }] : [])
             ]
         }));
     };
 
-    const getPermissionActions = (permissionId: string): string[] => {
-        const permission = formData.permissions.find(p => p.permissionId === permissionId);
-        return permission?.actions || [];
+    const getAccessLevelColor = (level: number) => {
+        if (level >= 80) return 'bg-red-100 text-red-800';
+        if (level >= 60) return 'bg-orange-100 text-orange-800';
+        if (level >= 40) return 'bg-yellow-100 text-yellow-800';
+        return 'bg-green-100 text-green-800';
     };
 
-    const groupedPermissions = permissions.reduce((acc, permission) => {
-        if (!acc[permission.module]) {
-            acc[permission.module] = [];
-        }
-        acc[permission.module].push(permission);
-        return acc;
-    }, {} as Record<string, Permission[]>);
+    const getAccessLevelText = (level: number) => {
+        if (level >= 80) return 'Critical';
+        if (level >= 60) return 'High';
+        if (level >= 40) return 'Medium';
+        return 'Low';
+    };
+
+    // Filter roles based on search and filters
+    const filteredRoles = roles.filter(role => {
+        const matchesSearch = role.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+            role.displayName.toLowerCase().includes(filters.search.toLowerCase());
+
+        const matchesStatus = filters.status === 'all' ||
+            (filters.status === 'active' && role.isActive) ||
+            (filters.status === 'inactive' && !role.isActive);
+
+        const matchesAccessLevel = filters.accessLevel === 'all' ||
+            (filters.accessLevel === 'high' && role.accessLevel >= 80) ||
+            (filters.accessLevel === 'medium' && role.accessLevel >= 40 && role.accessLevel < 80) ||
+            (filters.accessLevel === 'low' && role.accessLevel < 40);
+
+        return matchesSearch && matchesStatus && matchesAccessLevel;
+    });
 
     if (loading) {
         return (
-            <Card>
-                <CardContent className="p-6">
-                    <div className="text-center">Loading roles...</div>
-                </CardContent>
-            </Card>
+            <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+            </div>
         );
     }
 
     return (
         <div className="space-y-6">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Role Management</h1>
+                    <p className="text-muted-foreground">
+                        Manage roles, permissions, and access levels across your organization
+                    </p>
+                </div>
+                <div className="flex gap-2">
+                    {selectedRoles.length > 0 && (
+                        <Button
+                            variant="outline"
+                            onClick={() => setBulkDialogOpen(true)}
+                            className="flex items-center gap-2"
+                        >
+                            <GearIcon className="h-4 w-4" />
+                            Bulk Actions ({selectedRoles.length})
+                        </Button>
+                    )}
+                    <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" className="flex items-center gap-2">
+                                <CopyIcon className="h-4 w-4" />
+                                From Template
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Create Role from Template</DialogTitle>
+                                <DialogDescription>
+                                    Choose a pre-defined role template to quickly create a new role
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                                <div>
+                                    <Label htmlFor="template">Role Template</Label>
+                                    <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a template" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {roleTemplates.map(template => (
+                                                <SelectItem key={template.id} value={template.id}>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-medium">{template.displayName}</span>
+                                                        <span className="text-sm text-muted-foreground">{template.description}</span>
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="flex justify-end gap-2">
+                                    <Button variant="outline" onClick={() => setTemplateDialogOpen(false)}>
+                                        Cancel
+                                    </Button>
+                                    <Button onClick={handleCreateFromTemplate}>
+                                        Create Role
+                                    </Button>
+                                </div>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                    <Button onClick={handleCreateRole} className="flex items-center gap-2">
+                        <PlusIcon className="h-4 w-4" />
+                        Create Role
+                    </Button>
+                </div>
+            </div>
+
+            {/* Filters */}
+            <Card>
+                <CardContent className="pt-6">
+                    <div className="flex flex-wrap gap-4">
+                        <div className="flex-1 min-w-64">
+                            <Input
+                                placeholder="Search roles..."
+                                value={filters.search}
+                                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                            />
+                        </div>
+                        <Select
+                            value={filters.status}
+                            onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))}
+                        >
+                            <SelectTrigger className="w-32">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Status</SelectItem>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="inactive">Inactive</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Select
+                            value={filters.accessLevel}
+                            onValueChange={(value) => setFilters(prev => ({ ...prev, accessLevel: value }))}
+                        >
+                            <SelectTrigger className="w-36">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Levels</SelectItem>
+                                <SelectItem value="high">High (80+)</SelectItem>
+                                <SelectItem value="medium">Medium (40-79)</SelectItem>
+                                <SelectItem value="low">Low (&lt;40)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Roles Table */}
             <Card>
                 <CardHeader>
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <CardTitle>System Roles</CardTitle>
-                            <CardDescription>
-                                Manage roles and their associated permissions. Click the gear icon to configure role-specific fields.
-                            </CardDescription>
-                        </div>
-                        <Button onClick={handleCreateRole}>
-                            <PlusIcon className="h-4 w-4 mr-2" />
-                            Create Role
-                        </Button>
-                    </div>
+                    <CardTitle>Roles ({filteredRoles.length})</CardTitle>
+                    <CardDescription>
+                        Manage user roles and their associated permissions
+                    </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                <TableHead className="w-12">
+                                    <Checkbox
+                                        checked={selectedRoles.length === filteredRoles.length && filteredRoles.length > 0}
+                                        onCheckedChange={handleSelectAllRoles}
+                                    />
+                                </TableHead>
                                 <TableHead>Role</TableHead>
                                 <TableHead>Access Level</TableHead>
                                 <TableHead>Users</TableHead>
@@ -228,63 +475,60 @@ export default function RoleManagement() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {roles.map((role) => (
+                            {filteredRoles.map((role) => (
                                 <TableRow key={role.id}>
                                     <TableCell>
-                                        <div>
+                                        <Checkbox
+                                            checked={selectedRoles.includes(role.id)}
+                                            onCheckedChange={(checked) => handleRoleSelection(role.id, checked as boolean)}
+                                        />
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="space-y-1">
                                             <div className="font-medium">{role.displayName}</div>
-                                            <div className="text-sm text-muted-foreground">
-                                                {role.description}
-                                            </div>
+                                            <div className="text-sm text-muted-foreground">{role.description}</div>
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant="secondary">
-                                            Level {role.accessLevel}
+                                        <Badge className={getAccessLevelColor(role.accessLevel)}>
+                                            {getAccessLevelText(role.accessLevel)} ({role.accessLevel})
                                         </Badge>
                                     </TableCell>
                                     <TableCell>
-                                        <div className="flex items-center">
-                                            <UsersIcon className="h-4 w-4 mr-1" />
+                                        <div className="flex items-center gap-1">
+                                            <UsersIcon className="h-4 w-4 text-muted-foreground" />
                                             {role.userCount || 0}
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant={role.isActive ? "default" : "secondary"}>
-                                            {role.isActive ? "Active" : "Inactive"}
+                                        <Badge variant={role.isActive ? 'default' : 'secondary'}>
+                                            {role.isActive ? 'Active' : 'Inactive'}
                                         </Badge>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant={role.isSystemRole ? "destructive" : "outline"}>
-                                            {role.isSystemRole ? "System" : "Custom"}
+                                        <Badge variant={role.isSystemRole ? 'destructive' : 'outline'}>
+                                            {role.isSystemRole ? 'System' : 'Custom'}
                                         </Badge>
                                     </TableCell>
                                     <TableCell>
-                                        <div className="flex space-x-2">
+                                        <div className="flex items-center gap-2">
                                             <Button
-                                                variant="outline"
+                                                variant="ghost"
                                                 size="sm"
                                                 onClick={() => handleEditRole(role)}
-                                                disabled={role.isSystemRole}
                                             >
                                                 <PencilIcon className="h-4 w-4" />
                                             </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => navigate(`/admin/roles/${role.id}/fields`)}
-                                                title="Configure Role Fields"
-                                            >
-                                                <GearIcon className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleDeleteRole(role)}
-                                                disabled={role.isSystemRole || Boolean(role.userCount && role.userCount > 0)}
-                                            >
-                                                <TrashIcon className="h-4 w-4" />
-                                            </Button>
+                                            {!role.isSystemRole && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => handleDeleteRole(role)}
+                                                    disabled={role.userCount > 0}
+                                                >
+                                                    <TrashIcon className="h-4 w-4" />
+                                                </Button>
+                                            )}
                                         </div>
                                     </TableCell>
                                 </TableRow>
@@ -294,146 +538,149 @@ export default function RoleManagement() {
                 </CardContent>
             </Card>
 
+            {/* Role Dialog */}
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col">
-                    <DialogHeader className="flex-shrink-0">
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
                         <DialogTitle>
                             {editingRole ? 'Edit Role' : 'Create New Role'}
                         </DialogTitle>
                         <DialogDescription>
-                            Configure role details and permissions
+                            {editingRole ? 'Modify role details and permissions' : 'Create a new role with specific permissions'}
                         </DialogDescription>
                     </DialogHeader>
-
-                    <div className="flex-1 overflow-y-auto pr-2">
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label htmlFor="name">Role Name</Label>
-                                    <Input
-                                        id="name"
-                                        value={formData.name}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                                        placeholder="e.g., custom_doctor"
-                                        required
-                                        disabled={editingRole?.isSystemRole}
-                                    />
-                                </div>
-                                <div>
-                                    <Label htmlFor="displayName">Display Name</Label>
-                                    <Input
-                                        id="displayName"
-                                        value={formData.displayName}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, displayName: e.target.value }))}
-                                        placeholder="e.g., Custom Doctor"
-                                        required
-                                    />
-                                </div>
-                            </div>
-
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <Label htmlFor="description">Description</Label>
-                                <Textarea
-                                    id="description"
-                                    value={formData.description}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                                    placeholder="Brief description of this role's purpose"
+                                <Label htmlFor="name">Role Name</Label>
+                                <Input
+                                    id="name"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                                    placeholder="e.g., doctor"
+                                    required
                                 />
                             </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label htmlFor="accessLevel">Access Level (1-10)</Label>
-                                    <Input
-                                        id="accessLevel"
-                                        type="number"
-                                        min="1"
-                                        max="10"
-                                        value={formData.accessLevel}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, accessLevel: parseInt(e.target.value) }))}
-                                        required
-                                    />
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <Switch
-                                        id="isActive"
-                                        checked={formData.isActive}
-                                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
-                                    />
-                                    <Label htmlFor="isActive">Active</Label>
-                                </div>
-                            </div>
-
                             <div>
-                                <Label className="text-base font-medium mb-4 block">Permissions</Label>
-                                <div className="border rounded-lg p-4 bg-muted/20 max-h-96 overflow-y-auto">
-                                    <div className="space-y-6">
-                                        {Object.entries(groupedPermissions).map(([module, modulePermissions]) => (
-                                            <div key={module} className="bg-background rounded-lg border p-4">
-                                                <div className="flex items-center mb-4">
-                                                    <ShieldIcon className="h-5 w-5 mr-2 text-primary" />
-                                                    <h3 className="text-lg font-semibold capitalize">
-                                                        {module.replace('_', ' ')}
-                                                    </h3>
-                                                </div>
-                                                <div className="space-y-4">
-                                                    {modulePermissions.map((permission) => (
-                                                        <div key={permission.id} className="border rounded p-3 bg-card">
-                                                            <div className="flex items-start justify-between mb-3">
-                                                                <div className="flex-1">
-                                                                    <div className="font-medium text-sm">{permission.displayName}</div>
-                                                                    {permission.description && (
-                                                                        <div className="text-xs text-muted-foreground mt-1">
-                                                                            {permission.description}
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                            <div className="grid grid-cols-4 gap-3">
-                                                                {availableActions.map((action) => (
-                                                                    <div key={action} className="flex items-center space-x-2 p-2 rounded bg-muted/50">
-                                                                        <Checkbox
-                                                                            id={`${permission.id}-${action}`}
-                                                                            checked={getPermissionActions(permission.id).includes(action)}
-                                                                            onCheckedChange={(checked) => {
-                                                                                const currentActions = getPermissionActions(permission.id);
-                                                                                const newActions = checked
-                                                                                    ? [...currentActions, action]
-                                                                                    : currentActions.filter(a => a !== action);
-                                                                                handlePermissionChange(permission.id, newActions);
-                                                                            }}
-                                                                        />
-                                                                        <Label
-                                                                            htmlFor={`${permission.id}-${action}`}
-                                                                            className="text-sm capitalize font-medium cursor-pointer"
-                                                                        >
-                                                                            {action}
-                                                                        </Label>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
+                                <Label htmlFor="displayName">Display Name</Label>
+                                <Input
+                                    id="displayName"
+                                    value={formData.displayName}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, displayName: e.target.value }))}
+                                    placeholder="e.g., Doctor"
+                                    required
+                                />
                             </div>
+                        </div>
 
-                            <div className="flex justify-end space-x-2 pt-4 border-t">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setDialogOpen(false)}
-                                >
-                                    Cancel
-                                </Button>
-                                <Button type="submit">
-                                    {editingRole ? 'Update Role' : 'Create Role'}
-                                </Button>
+                        <div>
+                            <Label htmlFor="description">Description</Label>
+                            <Textarea
+                                id="description"
+                                value={formData.description}
+                                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                                placeholder="Brief description of this role"
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <Label htmlFor="accessLevel">Access Level (1-100)</Label>
+                                <Input
+                                    id="accessLevel"
+                                    type="number"
+                                    min="1"
+                                    max="100"
+                                    value={formData.accessLevel}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, accessLevel: parseInt(e.target.value) || 1 }))}
+                                />
                             </div>
-                        </form>
+                            <div className="flex items-center space-x-2">
+                                <Label htmlFor="isActive">Active</Label>
+                                <Switch
+                                    id="isActive"
+                                    checked={formData.isActive}
+                                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Permissions */}
+                        <div>
+                            <Label>Permissions</Label>
+                            <div className="space-y-4 max-h-64 overflow-y-auto border rounded p-4">
+                                {permissions.map((permission) => {
+                                    const rolePermission = formData.permissions.find(p => p.permissionId === permission.id);
+                                    const selectedActions = rolePermission?.actions || [];
+
+                                    return (
+                                        <div key={permission.id} className="space-y-2">
+                                            <div className="font-medium">{permission.name}</div>
+                                            <div className="flex gap-2">
+                                                {availableActions.map((action) => (
+                                                    <label key={action} className="flex items-center space-x-2">
+                                                        <Checkbox
+                                                            checked={selectedActions.includes(action)}
+                                                            onCheckedChange={(checked) => {
+                                                                const newActions = checked
+                                                                    ? [...selectedActions, action]
+                                                                    : selectedActions.filter(a => a !== action);
+                                                                handlePermissionChange(permission.id, newActions);
+                                                            }}
+                                                        />
+                                                        <span className="text-sm capitalize">{action}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-2">
+                            <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button type="submit">
+                                {editingRole ? 'Update Role' : 'Create Role'}
+                            </Button>
+                        </div>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Bulk Operations Dialog */}
+            <Dialog open={bulkDialogOpen} onOpenChange={setBulkDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Bulk Operations</DialogTitle>
+                        <DialogDescription>
+                            Perform bulk operations on {selectedRoles.length} selected roles
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div>
+                            <Label htmlFor="operation">Operation</Label>
+                            <Select value={bulkOperation} onValueChange={(value: any) => setBulkOperation(value)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select operation" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="activate">Activate Roles</SelectItem>
+                                    <SelectItem value="deactivate">Deactivate Roles</SelectItem>
+                                    <SelectItem value="delete">Delete Roles</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={() => setBulkDialogOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button onClick={handleBulkOperation} variant={bulkOperation === 'delete' ? 'destructive' : 'default'}>
+                                Apply Operation
+                            </Button>
+                        </div>
                     </div>
                 </DialogContent>
             </Dialog>
