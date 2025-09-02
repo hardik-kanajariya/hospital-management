@@ -5,7 +5,7 @@ export default class extends BaseSchema {
 
     async up() {
         this.schema.createTable(this.tableName, (table) => {
-            table.uuid('id').primary()
+            table.uuid('id').primary().defaultTo(this.raw('(UUID())'))
             table.uuid('role_id').notNullable()
             table.uuid('permission_id').notNullable()
             table.json('actions').notNullable() // ['create', 'read', 'update', 'delete']

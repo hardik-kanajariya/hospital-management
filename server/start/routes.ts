@@ -62,6 +62,16 @@ router.group(() => {
       router.delete('/:id', '#controllers/users_controller.destroy')
     }).prefix('/users')
 
+    // Organization management routes
+    router.group(() => {
+      router.get('/', '#controllers/organizations_controller.index')
+      router.get('/:id', '#controllers/organizations_controller.show')
+      router.get('/:id/stats', '#controllers/organizations_controller.stats')
+      router.post('/', '#controllers/organizations_controller.store')
+      router.put('/:id', '#controllers/organizations_controller.update')
+      router.delete('/:id', '#controllers/organizations_controller.destroy')
+    }).prefix('/organizations')
+
     // Patient management routes
     router.group(() => {
       router.get('/', '#controllers/patients_controller.index')
@@ -293,6 +303,9 @@ router.group(() => {
     router.group(() => {
       router.get('/', '#controllers/roles_controller.index')
       router.get('/permissions', '#controllers/roles_controller.permissions')
+      router.get('/templates', '#controllers/roles_controller.getTemplates')
+      router.post('/bulk-operation', '#controllers/roles_controller.bulkOperation')
+      router.post('/from-template', '#controllers/roles_controller.createFromTemplate')
       router.get('/:id', '#controllers/roles_controller.show')
       router.post('/', '#controllers/roles_controller.store')
       router.put('/:id', '#controllers/roles_controller.update')

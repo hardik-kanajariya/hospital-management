@@ -1,12 +1,15 @@
 import { DateTime } from 'luxon'
 import hash from '@adonisjs/core/services/hash'
 import { compose } from '@adonisjs/core/helpers'
-import { BaseModel, column, belongsTo, hasMany } from '@adonisjs/lucid/orm'
+import { BaseModel, column, belongsTo, hasMany, manyToMany, beforeCreate } from '@adonisjs/lucid/orm'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
-import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
+import type { BelongsTo, HasMany, ManyToMany } from '@adonisjs/lucid/types/relations'
 import Role from './role.js'
 import UserRoleData from './user_role_data.js'
+import Organization from './organization.js'
+import UserProfile from './user_profile.js'
+import { randomUUID } from 'node:crypto'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],
@@ -17,6 +20,11 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column({ isPrimary: true })
   declare id: string
 
+  @beforeCreate()
+  static async generateId(user: User) {
+    user.id = randomUUID()
+  }
+
   @column()
   declare email: string
 
@@ -25,6 +33,9 @@ export default class User extends compose(BaseModel, AuthFinder) {
 
   @column()
   declare name: string
+
+  @column({ columnName: 'organization_id' })
+  declare organizationId: string | null
 
   @column()
   declare roleId: string | null
@@ -64,11 +75,24 @@ export default class User extends compose(BaseModel, AuthFinder) {
   declare updatedAt: DateTime
 
   // Relationships
+  @belongsTo(() => Organization)
+  declare organization: BelongsTo<typeof Organization>
+
   @belongsTo(() => Role)
   declare role: BelongsTo<typeof Role>
 
   @hasMany(() => UserRoleData)
   declare roleData: HasMany<typeof UserRoleData>
+
+  @hasMany(() => UserProfile)
+  declare profiles: HasMany<typeof UserProfile>
+
+  @manyToMany(() => Role, {
+    pivotTable: 'user_roles',
+    pivotColumns: ['assigned_at', 'assigned_by', 'expires_at', 'is_active'],
+    pivotTimestamps: true
+  })
+  declare roles: ManyToMany<typeof Role>
 
   static accessTokens = DbAccessTokensProvider.forModel(User)
 
@@ -76,47 +100,114 @@ export default class User extends compose(BaseModel, AuthFinder) {
     return await hash.verify(this.passwordHash, password)
   }
 
-  // Method to get user permissions through role
+  // Method to get user's active roles (from many-to-many relationship)
+  public async getActiveRoles(): Promise<Role[]> {
+    const userWithRoles = await User.query()
+      .where('id', this.id)
+      .preload('roles', (query) => {
+        query.where('is_active', true)
+        query.whereNull('expires_at')
+        query.orWhere('expires_at', '>', new Date())
+        query.preload('permissions')
+      })
+      .first()
+
+    return userWithRoles?.roles || []
+  }
+
+  // Method to get user permissions through all active roles
   public async getUserPermissions(): Promise<Array<{ module: string; actions: string[] }>> {
-    if (!this.role) {
-      const user = await User.query()
-        .where('id', this.id)
-        .preload('role', (roleQuery) => {
-          roleQuery.preload('permissions')
-        })
-        .first()
+    const activeRoles = await this.getActiveRoles()
+    const allPermissions: Array<{ module: string; actions: string[] }> = []
 
-      if (user?.role) {
-        this.role = user.role
-      }
-    }
+    for (const role of activeRoles) {
+      const rolePermissions = role.permissions.map((permission) => {
+        const pivotData = (permission as any).$pivot
+        let actions: string[] = []
 
-    if (!this.role) return []
-
-    return this.role.permissions.map((permission) => {
-      // Access pivot data correctly - cast to any to access $pivot
-      const pivotData = (permission as any).$pivot
-      let actions: string[] = []
-
-      if (pivotData?.actions) {
-        // If actions is already an array
-        if (Array.isArray(pivotData.actions)) {
-          actions = pivotData.actions
-        } else if (typeof pivotData.actions === 'string') {
-          // If actions is a JSON string, parse it
-          try {
-            actions = JSON.parse(pivotData.actions)
-          } catch {
-            actions = []
+        if (pivotData?.actions) {
+          if (Array.isArray(pivotData.actions)) {
+            actions = pivotData.actions
+          } else if (typeof pivotData.actions === 'string') {
+            try {
+              actions = JSON.parse(pivotData.actions)
+            } catch {
+              actions = []
+            }
           }
         }
-      }
 
-      return {
-        module: permission.module,
-        actions
+        return {
+          module: permission.module,
+          actions
+        }
+      })
+
+      allPermissions.push(...rolePermissions)
+    }
+
+    // Merge permissions for same modules
+    const mergedPermissions = new Map<string, Set<string>>()
+
+    for (const permission of allPermissions) {
+      if (!mergedPermissions.has(permission.module)) {
+        mergedPermissions.set(permission.module, new Set())
       }
-    })
+      permission.actions.forEach(action =>
+        mergedPermissions.get(permission.module)!.add(action)
+      )
+    }
+
+    return Array.from(mergedPermissions.entries()).map(([module, actions]) => ({
+      module,
+      actions: Array.from(actions)
+    }))
+  }
+
+  // Method to check if user belongs to organization
+  public belongsToOrganization(organizationId: string): boolean {
+    return this.organizationId === organizationId
+  }
+
+  // Method to get user profile fields
+  public async getProfileFields(): Promise<Record<string, any>> {
+    const profiles = await UserProfile.query()
+      .where('user_id', this.id)
+      .where('is_visible', true)
+      .orderBy('sort_order', 'asc')
+
+    const profileData: Record<string, any> = {}
+
+    for (const profile of profiles) {
+      profileData[profile.fieldKey] = profile.getFormattedValue()
+    }
+
+    return profileData
+  }
+
+  // Method to set user profile fields
+  public async setProfileField(fieldKey: string, value: any, fieldType: string = 'text'): Promise<void> {
+    const profile = await UserProfile.updateOrCreate(
+      { userId: this.id, fieldKey },
+      {
+        fieldKey,
+        fieldType: fieldType as any,
+        isVisible: true,
+        sortOrder: 0
+      }
+    )
+
+    profile.setFormattedValue(value)
+    await profile.save()
+  }
+
+  // Static method to get users by organization
+  static async getByOrganization(organizationId: string) {
+    return await User.query()
+      .where('organization_id', organizationId)
+      .where('is_active', true)
+      .preload('roles')
+      .preload('organization')
   }
 
   // Method to check if user has specific permission
