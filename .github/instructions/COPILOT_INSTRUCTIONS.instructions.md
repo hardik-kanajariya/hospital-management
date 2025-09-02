@@ -6,7 +6,7 @@ applyTo: '**'
 ## System Overview
 This is a full-stack hospital management system with:
 - **Frontend**: React + TypeScript + Vite
-- **Backend**: Node.js + Express + MySQL
+- **Backend**: Adonis.js + MySQL
 - **Architecture**: RESTful API with role-based authentication
 - **Database**: MySQL with comprehensive medical data models
 
