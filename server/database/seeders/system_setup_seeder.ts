@@ -198,10 +198,9 @@ export default class extends BaseSeeder {
         console.log('✅ Role permissions assigned')
 
         // Create system users (production-ready, non-demo)
-        await User.updateOrCreate(
+        const systemAdmin = await User.firstOrCreate(
             { email: 'admin@hospital.com' },
             {
-                id: uuid(),
                 email: 'admin@hospital.com',
                 passwordHash: 'password123',
                 name: 'Super Administrator',
@@ -214,6 +213,21 @@ export default class extends BaseSeeder {
                 employeeId: 'SYS001'
             }
         )
+
+        // Also assign super admin role through many-to-many relationship
+        if (superAdminRole) {
+            const existingAssignment = await systemAdmin.related('roles').query()
+                .where('role_id', superAdminRole.id).first()
+
+            if (!existingAssignment) {
+                await systemAdmin.related('roles').attach({
+                    [superAdminRole.id]: {
+                        assigned_at: new Date(),
+                        is_active: true
+                    }
+                })
+            }
+        }
 
         console.log('✅ System admin user created')
 
@@ -306,10 +320,9 @@ export default class extends BaseSeeder {
 
             // Create demo users
             for (const userData of demoUsers) {
-                const user = await User.updateOrCreate(
+                const user = await User.firstOrCreate(
                     { email: userData.email },
                     {
-                        id: uuid(),
                         email: userData.email,
                         passwordHash: 'admin123',
                         name: userData.name,
