@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
+import { useDemoAccounts } from '@/hooks/useDemoAccounts';
 import { ROLE_CONFIGS } from '@/types/auth';
 import { HospitalIcon, SignInIcon, EyeSlashIcon } from '@phosphor-icons/react';
 import { toast } from 'sonner';
@@ -20,6 +21,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const { login, isLoading } = useAuth();
+  const { demoAccounts, isLoading: isDemoLoading } = useDemoAccounts();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -54,21 +56,13 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
     }
   };
 
-  const demoAccounts = [
-    { role: 'super_admin', email: 'admin@medcare.com', label: 'Super Admin' },
-    { role: 'doctor', email: 'dr.sharma@medcare.com', label: 'Doctor' },
-    { role: 'billing_manager', email: 'billing@medcare.com', label: 'Billing Manager' },
-    { role: 'nurse', email: 'nurse@medcare.com', label: 'Nurse' },
-    { role: 'lab_technician', email: 'lab@medcare.com', label: 'Lab Technician' },
-    { role: 'pharmacist', email: 'pharmacy@medcare.com', label: 'Pharmacist' },
-    { role: 'medical_store_manager', email: 'store@medcare.com', label: 'Store Manager' },
-    { role: 'receptionist', email: 'reception@medcare.com', label: 'Receptionist' }
-  ];
-
   const fillDemoCredentials = (email: string) => {
     setEmail(email);
     setPassword('admin123');
   };
+
+  // Show demo accounts section only if we have demo accounts available
+  const showDemoSection = demoAccounts.length > 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
@@ -145,57 +139,67 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
           </CardContent>
         </Card>
 
-        {/* Demo Accounts */}
-        <Card className="shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-xl">Demo Accounts</CardTitle>
-            <p className="text-muted-foreground">
-              Try different user roles to explore the system features
-            </p>
-          </CardHeader>
-
-          <CardContent className="space-y-4">
-            <div className="grid gap-3">
-              {demoAccounts.map((account) => {
-                const roleConfig = ROLE_CONFIGS.find(r => r.role === account.role);
-                return (
-                  <div
-                    key={account.email}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Badge
-                        variant={account.role === 'super_admin' ? 'destructive' : 'secondary'}
-                        className="min-w-fit"
-                      >
-                        {account.label}
-                      </Badge>
-                      <div>
-                        <p className="text-sm font-medium">{account.email}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Access Level: {roleConfig?.accessLevel}/10
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => fillDemoCredentials(account.email)}
-                    >
-                      Use Account
-                    </Button>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="pt-4 border-t">
-              <p className="text-xs text-muted-foreground text-center">
-                All demo accounts use password: <span className="font-mono font-semibold">admin123</span>
+        {/* Demo Accounts - Only show if available */}
+        {showDemoSection && (
+          <Card className="shadow-xl">
+            <CardHeader>
+              <CardTitle className="text-xl">Demo Accounts</CardTitle>
+              <p className="text-muted-foreground">
+                Try different user roles to explore the system features
               </p>
-            </div>
-          </CardContent>
-        </Card>
+            </CardHeader>
+
+            <CardContent className="space-y-4">
+              {isDemoLoading ? (
+                <div className="flex items-center justify-center p-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : (
+                <>
+                  <div className="grid gap-3">
+                    {demoAccounts.map((account) => {
+                      const roleConfig = ROLE_CONFIGS.find(r => r.role === account.role);
+                      return (
+                        <div
+                          key={account.email}
+                          className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <Badge
+                              variant={account.role === 'super_admin' ? 'destructive' : 'secondary'}
+                              className="min-w-fit"
+                            >
+                              {account.label}
+                            </Badge>
+                            <div>
+                              <p className="text-sm font-medium">{account.email}</p>
+                              <p className="text-xs text-muted-foreground">
+                                Access Level: {account.accessLevel || roleConfig?.accessLevel || 1}/10
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => fillDemoCredentials(account.email)}
+                          >
+                            Use Account
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="pt-4 border-t">
+                    <p className="text-xs text-muted-foreground text-center">
+                      All demo accounts use password: <span className="font-mono font-semibold">admin123</span>
+                    </p>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

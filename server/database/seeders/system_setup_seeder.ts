@@ -4,9 +4,13 @@ import Role from '#models/role'
 import Permission from '#models/permission'
 import User from '#models/user'
 import hash from '@adonisjs/core/services/hash'
+import env from '#start/env'
+import { v4 as uuid } from 'uuid'
 
 export default class extends BaseSeeder {
     async run() {
+        console.log('🚀 Starting system setup seeder...')
+
         // Create a default organization
         const defaultOrg = await Organization.firstOrCreate(
             { name: 'Default Hospital' },
@@ -19,6 +23,8 @@ export default class extends BaseSeeder {
                 language: 'en'
             }
         )
+
+        console.log(`✅ Default organization: ${defaultOrg.name}`)
 
         // Update existing roles to have organization_id = null for global roles
         await Role.query()
@@ -56,6 +62,8 @@ export default class extends BaseSeeder {
                 roleData
             )
         }
+
+        console.log('✅ System roles created/updated')
 
         // Create comprehensive permissions
         const permissions = [
@@ -124,11 +132,20 @@ export default class extends BaseSeeder {
             )
         }
 
-        // Assign permissions to roles
-        const superAdminRole = await Role.query().where('name', 'super_admin').first()
-        const orgAdminRole = await Role.query().where('name', 'org_admin').first()
-        const doctorRole = await Role.query().where('name', 'doctor').first()
+        console.log('✅ Permissions created/updated')
 
+        // Get all the roles we need
+        const superAdminRole = await Role.findBy('name', 'super_admin')
+        const orgAdminRole = await Role.findBy('name', 'org_admin')
+        const doctorRole = await Role.findBy('name', 'doctor')
+        const nurseRole = await Role.findBy('name', 'nurse')
+        const receptionistRole = await Role.findBy('name', 'receptionist')
+        const billingManagerRole = await Role.findBy('name', 'billing_manager')
+        const labTechnicianRole = await Role.findBy('name', 'lab_technician')
+        const pharmacistRole = await Role.findBy('name', 'pharmacist')
+        const medicalStoreManagerRole = await Role.findBy('name', 'medical_store_manager')
+
+        // Assign permissions to roles
         if (superAdminRole) {
             // Super admin gets system access
             const systemPermission = await Permission.query().where('name', 'system.*').first()
@@ -179,36 +196,147 @@ export default class extends BaseSeeder {
             }
         }
 
-        // Create a super admin user
-        const superAdminUser = await User.firstOrCreate(
+        console.log('✅ Role permissions assigned')
+
+        // Create system users (production-ready, non-demo)
+        await User.firstOrCreate(
             { email: 'admin@hospital.com' },
             {
+                id: uuid(),
                 email: 'admin@hospital.com',
                 passwordHash: await hash.make('password123'),
                 name: 'Super Administrator',
-                organizationId: null, // Super admin belongs to no specific organization
-                isActive: true
+                roleId: superAdminRole?.id,
+                organizationId: null,
+                isActive: true,
+                isForDemoPurpose: false,
+                phone: '+1234567890',
+                department: 'Administration',
+                employeeId: 'SYS001'
             }
         )
 
-        // Assign super admin role
-        if (superAdminRole) {
-            // Check if role already assigned
-            const existingUserRole = await superAdminUser.related('roles').query()
-                .where('role_id', superAdminRole.id).first()
+        console.log('✅ System admin user created')
 
-            if (!existingUserRole) {
-                await superAdminUser.related('roles').attach({
-                    [superAdminRole.id]: {
-                        assigned_at: new Date(),
-                        is_active: true
-                    }
+        // Create demo users only if environment allows
+        const shouldCreateDemoUsers = env.get('NODE_ENV') === 'development' ||
+            env.get('SHOW_DEMO_ACCOUNTS', 'false') === 'true'
+
+        if (shouldCreateDemoUsers && superAdminRole && doctorRole && nurseRole && receptionistRole) {
+            console.log('🎭 Creating demo users...')
+
+            const demoUsers = [
+                {
+                    email: 'admin@medcare.com',
+                    name: 'Demo Administrator',
+                    roleId: superAdminRole.id,
+                    phone: '+1234567890',
+                    department: 'Administration',
+                    employeeId: 'DEMO001'
+                },
+                {
+                    email: 'dr.sharma@medcare.com',
+                    name: 'Dr. Rajesh Sharma',
+                    roleId: doctorRole.id,
+                    phone: '+1234567891',
+                    department: 'General Medicine',
+                    employeeId: 'DEMO002'
+                },
+                {
+                    email: 'nurse@medcare.com',
+                    name: 'Nurse Priya Patel',
+                    roleId: nurseRole.id,
+                    phone: '+1234567892',
+                    department: 'General Ward',
+                    employeeId: 'DEMO003'
+                },
+                {
+                    email: 'reception@medcare.com',
+                    name: 'Mary Johnson',
+                    roleId: receptionistRole.id,
+                    phone: '+1234567893',
+                    department: 'Reception',
+                    employeeId: 'DEMO004'
+                }
+            ]
+
+            // Add additional demo users if roles exist
+            if (billingManagerRole) {
+                demoUsers.push({
+                    email: 'billing@medcare.com',
+                    name: 'Amit Kumar (Billing)',
+                    roleId: billingManagerRole.id,
+                    phone: '+1234567894',
+                    department: 'Billing',
+                    employeeId: 'DEMO005'
                 })
             }
+
+            if (labTechnicianRole) {
+                demoUsers.push({
+                    email: 'lab@medcare.com',
+                    name: 'Rahul Singh (Lab Tech)',
+                    roleId: labTechnicianRole.id,
+                    phone: '+1234567895',
+                    department: 'Laboratory',
+                    employeeId: 'DEMO006'
+                })
+            }
+
+            if (pharmacistRole) {
+                demoUsers.push({
+                    email: 'pharmacy@medcare.com',
+                    name: 'Sunita Sharma (Pharmacist)',
+                    roleId: pharmacistRole.id,
+                    phone: '+1234567896',
+                    department: 'Pharmacy',
+                    employeeId: 'DEMO007'
+                })
+            }
+
+            if (medicalStoreManagerRole) {
+                demoUsers.push({
+                    email: 'store@medcare.com',
+                    name: 'Vikram Yadav (Store Manager)',
+                    roleId: medicalStoreManagerRole.id,
+                    phone: '+1234567897',
+                    department: 'Medical Store',
+                    employeeId: 'DEMO008'
+                })
+            }
+
+            // Create demo users
+            for (const userData of demoUsers) {
+                await User.firstOrCreate(
+                    { email: userData.email },
+                    {
+                        id: uuid(),
+                        email: userData.email,
+                        passwordHash: await hash.make('admin123'),
+                        name: userData.name,
+                        roleId: userData.roleId,
+                        organizationId: defaultOrg.id,
+                        isActive: true,
+                        isForDemoPurpose: true,
+                        phone: userData.phone,
+                        department: userData.department,
+                        employeeId: userData.employeeId
+                    }
+                )
+            }
+
+            console.log(`✅ Created ${demoUsers.length} demo users`)
+            console.log('🔑 Demo password for all accounts: admin123')
+        } else {
+            console.log('⏭️  Skipping demo users creation (disabled in environment)')
         }
 
-        console.log('✅ Multi-tenant user management seeder completed')
-        console.log(`📧 Super Admin Login: admin@hospital.com / password123`)
+        console.log('\n🎉 System setup completed successfully!')
+        console.log(`📧 System Admin: admin@hospital.com / password123`)
         console.log(`🏥 Default Organization: ${defaultOrg.name}`)
+
+        if (shouldCreateDemoUsers) {
+            console.log('🎭 Demo accounts are available with password: admin123')
+        }
     }
 }

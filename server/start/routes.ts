@@ -42,6 +42,7 @@ router.group(() => {
     // Add unprotected logout route for expired tokens
     router.post('/logout-force', '#controllers/auth_controller.logoutForce')
     router.get('/verify', '#controllers/auth_controller.verify').use(middleware.auth())
+    router.get('/demo-accounts', '#controllers/auth_controller.getDemoAccounts')
   }).prefix('/auth')
 
   // Protected routes

@@ -314,4 +314,48 @@ export default class AuthController {
             })
         }
     }
+
+    /**
+     * Get demo accounts for login form
+     */
+    async getDemoAccounts({ response }: HttpContext) {
+        try {
+            const env = await import('#start/env')
+            const showDemoAccounts = env.default.get('SHOW_DEMO_ACCOUNTS', 'false') === 'true'
+
+            if (!showDemoAccounts) {
+                return response.status(200).json({
+                    success: true,
+                    data: []
+                })
+            }
+
+            // Fetch demo users with their roles
+            const demoUsers = await User.query()
+                .where('is_for_demo_purpose', true)
+                .where('is_active', true)
+                .preload('role')
+                .select(['id', 'email', 'name', 'role_id'])
+
+            const formattedDemoAccounts = demoUsers.map(user => ({
+                email: user.email,
+                label: user.name,
+                role: user.role?.name || 'unknown',
+                accessLevel: user.role?.accessLevel || 1
+            }))
+
+            return response.status(200).json({
+                success: true,
+                data: formattedDemoAccounts
+            })
+
+        } catch (error) {
+            console.error('Demo accounts fetch error:', error)
+            return response.status(500).json({
+                success: false,
+                message: 'Failed to fetch demo accounts',
+                data: []
+            })
+        }
+    }
 }
