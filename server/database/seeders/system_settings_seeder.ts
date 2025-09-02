@@ -3,9 +3,6 @@ import SystemSetting from '#models/system_setting'
 
 export default class extends BaseSeeder {
     async run() {
-        // Delete existing system settings to avoid duplicates
-        await SystemSetting.truncate()
-
         const defaultSettings = [
             // General Settings
             {
@@ -240,6 +237,17 @@ export default class extends BaseSeeder {
             }
         ]
 
-        await SystemSetting.createMany(defaultSettings)
+        // Use updateOrCreate to avoid duplicates while preserving user changes
+        for (const setting of defaultSettings) {
+            await SystemSetting.updateOrCreate(
+                {
+                    category: setting.category,
+                    key: setting.key
+                },
+                setting
+            )
+        }
+
+        console.log('✅ System settings seeded successfully')
     }
 }
