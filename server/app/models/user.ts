@@ -108,9 +108,12 @@ export default class User extends compose(BaseModel, AuthFinder) {
     const userWithRoles = await User.query()
       .where('id', this.id)
       .preload('roles', (query) => {
-        query.where('is_active', true)
-        query.whereNull('expires_at')
-        query.orWhere('expires_at', '>', new Date())
+        query.where('user_roles.is_active', true)
+        query.where((subQuery) => {
+          subQuery.whereNull('user_roles.expires_at')
+          subQuery.orWhere('user_roles.expires_at', '>', new Date())
+        })
+        query.where('roles.is_active', true) // Also ensure the role itself is active
         query.preload('permissions')
       })
       .first()

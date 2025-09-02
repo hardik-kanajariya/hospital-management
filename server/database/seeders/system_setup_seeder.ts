@@ -306,7 +306,7 @@ export default class extends BaseSeeder {
 
             // Create demo users
             for (const userData of demoUsers) {
-                await User.updateOrCreate(
+                const user = await User.updateOrCreate(
                     { email: userData.email },
                     {
                         id: uuid(),
@@ -322,6 +322,23 @@ export default class extends BaseSeeder {
                         employeeId: userData.employeeId
                     }
                 )
+
+                // Also assign role through many-to-many relationship
+                const role = await Role.find(userData.roleId)
+                if (role) {
+                    // Check if role is already assigned
+                    const existingAssignment = await user.related('roles').query()
+                        .where('role_id', role.id).first()
+
+                    if (!existingAssignment) {
+                        await user.related('roles').attach({
+                            [role.id]: {
+                                assigned_at: new Date(),
+                                is_active: true
+                            }
+                        })
+                    }
+                }
             }
 
             console.log(`✅ Created ${demoUsers.length} demo users`)
