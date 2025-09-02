@@ -58,7 +58,7 @@ export function MedicalTimeline({ records, onViewRecord, className }: MedicalTim
         }
 
         const date = new Date(dateString);
-        
+
         // Check if the date is valid
         if (isNaN(date.getTime())) {
             return 'Invalid date';
