@@ -11,8 +11,8 @@ export default class extends BaseSchema {
     async down() {
         // Recreate the doctors table in case of rollback
         this.schema.createTable(this.tableName, (table) => {
-            table.string('id', 36).primary()
-            table.string('user_id', 36).notNullable().references('id').inTable('users').onDelete('CASCADE')
+            table.uuid('id').primary()
+            table.uuid('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE')
             table.string('doctor_id', 50).notNullable().unique()
             table.string('specialization', 100).notNullable()
             table.string('qualification', 200).notNullable()

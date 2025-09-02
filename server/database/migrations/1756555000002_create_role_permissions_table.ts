@@ -5,9 +5,9 @@ export default class extends BaseSchema {
 
     async up() {
         this.schema.createTable(this.tableName, (table) => {
-            table.string('id', 36).primary()
-            table.string('role_id', 36).notNullable()
-            table.string('permission_id', 36).notNullable()
+            table.uuid('id').primary()
+            table.uuid('role_id').notNullable()
+            table.uuid('permission_id').notNullable()
             table.json('actions').notNullable() // ['create', 'read', 'update', 'delete']
 
             table.timestamp('created_at').notNullable()

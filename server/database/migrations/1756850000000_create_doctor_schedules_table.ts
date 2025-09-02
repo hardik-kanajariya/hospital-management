@@ -5,16 +5,16 @@ export default class extends BaseSchema {
 
     async up() {
         this.schema.createTable(this.tableName, (table) => {
-            table.string('id').primary()
-            table.string('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE')
-            table.string('day_of_week').notNullable() // Monday, Tuesday, etc.
+            table.uuid('id').primary()
+            table.uuid('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE')
+            table.string('day_of_week', 100).notNullable() // Monday, Tuesday, etc.
             table.time('start_time').notNullable()
             table.time('end_time').notNullable()
-            table.string('location').notNullable().defaultTo('General OPD')
+            table.string('location', 100).notNullable().defaultTo('General OPD')
             table.integer('max_patients').notNullable().defaultTo(20)
             table.integer('slot_duration_minutes').notNullable().defaultTo(15) // Duration of each appointment slot
-            table.string('schedule_type').notNullable().defaultTo('regular') // regular, emergency, surgery, consultation
-            table.string('status').notNullable().defaultTo('active') // active, inactive, suspended
+            table.string('schedule_type', 100).notNullable().defaultTo('regular') // regular, emergency, surgery, consultation
+            table.string('status', 100).notNullable().defaultTo('active') // active, inactive, suspended
             table.text('notes').nullable()
             table.json('break_times').nullable() // Array of {start_time, end_time} for lunch breaks, etc.
             table.boolean('is_recurring').notNullable().defaultTo(true) // Weekly recurring or one-time
