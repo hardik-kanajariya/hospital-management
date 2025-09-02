@@ -5,8 +5,8 @@ export default class extends BaseSchema {
 
     async up() {
         this.schema.createTable(this.tableName, (table) => {
-            table.string('id', 36).primary()
-            table.string('role_id', 36).notNullable().references('id').inTable('roles').onDelete('CASCADE')
+            table.uuid('id').primary()
+            table.uuid('role_id').notNullable().references('id').inTable('roles').onDelete('CASCADE')
             table.string('field_name', 100).notNullable()
             table.string('field_label', 150).notNullable()
             table.enum('field_type', [

@@ -5,10 +5,10 @@ export default class extends BaseSchema {
 
   async up() {
     this.schema.createTable(this.tableName, (table) => {
-      table.string('id', 36).primary()
-      table.string('bill_id', 20).unique().notNullable()
-      table.string('patient_id', 36).notNullable().references('id').inTable('patients').onDelete('CASCADE')
-      table.string('appointment_id', 36).nullable().references('id').inTable('appointments').onDelete('SET NULL')
+      table.uuid('id').primary()
+      table.uuid('bill_id').unique().notNullable()
+      table.uuid('patient_id').notNullable().references('id').inTable('patients').onDelete('CASCADE')
+      table.uuid('appointment_id').nullable().references('id').inTable('appointments').onDelete('SET NULL')
       table.datetime('bill_date').notNullable()
       table.datetime('due_date').notNullable()
       table.json('services').nullable()

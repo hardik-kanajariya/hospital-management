@@ -5,9 +5,9 @@ export default class extends BaseSchema {
 
     async up() {
         this.schema.createTable(this.tableName, (table) => {
-            table.string('id', 36).primary()
-            table.string('user_id', 36).notNullable().references('id').inTable('users').onDelete('CASCADE')
-            table.string('role_field_id', 36).notNullable().references('id').inTable('role_fields').onDelete('CASCADE')
+            table.uuid('id').primary()
+            table.uuid('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE')
+            table.uuid('role_field_id').notNullable().references('id').inTable('role_fields').onDelete('CASCADE')
             table.text('field_value').nullable() // Store all values as text, cast based on field_type
             table.timestamp('created_at', { useTz: true }).notNullable()
             table.timestamp('updated_at', { useTz: true }).notNullable()

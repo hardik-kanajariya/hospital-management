@@ -9,7 +9,7 @@ export default class extends BaseSchema {
             table.dropColumn('role')
 
             // Add new role_id foreign key
-            table.string('role_id', 36).nullable()
+            table.uuid('role_id').nullable()
 
             // Add foreign key constraint
             table.foreign('role_id').references('id').inTable('roles').onDelete('SET NULL')

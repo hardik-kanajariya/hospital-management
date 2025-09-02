@@ -5,13 +5,13 @@ export default class extends BaseSchema {
 
     async up() {
         this.schema.createTable(this.tableName, (table) => {
-            table.string('id').primary()
-            table.string('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE')
+            table.uuid('id').primary()
+            table.uuid('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE')
             table.date('date').notNullable() // Specific date for availability override
             table.boolean('is_available').notNullable().defaultTo(true)
             table.string('availability_type').notNullable().defaultTo('override') // override, leave, emergency, holiday
             table.text('reason').nullable() // Reason for unavailability
-            table.string('replacement_doctor_id').nullable().references('id').inTable('users') // Replacement doctor
+            table.uuid('replacement_doctor_id').nullable().references('id').inTable('users') // Replacement doctor
             table.time('custom_start_time').nullable() // Override start time for the day
             table.time('custom_end_time').nullable() // Override end time for the day
             table.string('custom_location').nullable() // Override location for the day
