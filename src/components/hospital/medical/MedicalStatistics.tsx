@@ -52,6 +52,17 @@ interface MedicalStatisticsProps {
 }
 
 export function MedicalStatistics({ data, className, compactMode = false }: MedicalStatisticsProps) {
+    // Safety check for data
+    if (!data) {
+        return (
+            <div className={`p-6 text-center text-muted-foreground ${className}`}>
+                <StethoscopeIcon size={48} className="mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">No Medical Data Available</h3>
+                <p className="text-sm">Medical statistics will appear here once patient data is available.</p>
+            </div>
+        );
+    }
+
     const formatDate = (dateString: string) => {
         try {
             return new Date(dateString).toLocaleDateString();
@@ -83,8 +94,10 @@ export function MedicalStatistics({ data, className, compactMode = false }: Medi
     };
 
     const getRecordsTrend = () => {
-        const current = data.recentTrends.recordsThisMonth;
-        const previous = data.recentTrends.recordsLastMonth;
+        if (!data?.recentTrends) return 'stable';
+
+        const current = data.recentTrends.recordsThisMonth || 0;
+        const previous = data.recentTrends.recordsLastMonth || 0;
 
         if (current > previous) return 'up';
         if (current < previous) return 'down';
@@ -92,8 +105,10 @@ export function MedicalStatistics({ data, className, compactMode = false }: Medi
     };
 
     const getRecordsTrendPercentage = () => {
-        const current = data.recentTrends.recordsThisMonth;
-        const previous = data.recentTrends.recordsLastMonth;
+        if (!data?.recentTrends) return 0;
+
+        const current = data.recentTrends.recordsThisMonth || 0;
+        const previous = data.recentTrends.recordsLastMonth || 0;
 
         if (previous === 0) return current > 0 ? 100 : 0;
         return Math.round(((current - previous) / previous) * 100);
@@ -115,7 +130,7 @@ export function MedicalStatistics({ data, className, compactMode = false }: Medi
                 <Card>
                     <CardContent className="p-4 text-center">
                         <PillIcon size={24} className="mx-auto mb-2 text-green-600" />
-                        <div className="text-2xl font-bold">{data.recentTrends.medicationsActive}</div>
+                        <div className="text-2xl font-bold">{data.recentTrends?.medicationsActive || 0}</div>
                         <div className="text-sm text-muted-foreground">Active Meds</div>
                     </CardContent>
                 </Card>
@@ -133,7 +148,7 @@ export function MedicalStatistics({ data, className, compactMode = false }: Medi
                 <Card>
                     <CardContent className="p-4 text-center">
                         <WarningIcon size={24} className="mx-auto mb-2 text-red-600" />
-                        <div className="text-2xl font-bold">{data.recentTrends.criticalAlerts}</div>
+                        <div className="text-2xl font-bold">{data.recentTrends?.criticalAlerts || 0}</div>
                         <div className="text-sm text-muted-foreground">Alerts</div>
                     </CardContent>
                 </Card>
@@ -177,7 +192,7 @@ export function MedicalStatistics({ data, className, compactMode = false }: Medi
                             <div className="text-3xl font-bold text-green-600">{data.totalMedications}</div>
                             <div className="text-sm text-muted-foreground">Total Medications</div>
                             <div className="text-xs text-muted-foreground mt-1">
-                                {data.recentTrends.medicationsActive} currently active
+                                {data.recentTrends?.medicationsActive || 0} currently active
                             </div>
                         </div>
 
@@ -199,7 +214,7 @@ export function MedicalStatistics({ data, className, compactMode = false }: Medi
                                     <CalendarIcon size={24} className="text-orange-600" />
                                 </div>
                             </div>
-                            <div className="text-3xl font-bold text-orange-600">{data.avgVisitsPerMonth.toFixed(1)}</div>
+                            <div className="text-3xl font-bold text-orange-600">{data.avgVisitsPerMonth}</div>
                             <div className="text-sm text-muted-foreground">Visits/Month</div>
                             {data.lastVisit && (
                                 <div className="text-xs text-muted-foreground mt-1">
@@ -223,13 +238,13 @@ export function MedicalStatistics({ data, className, compactMode = false }: Medi
                             <HeartIcon size={32} className="text-red-600" />
                             <div className="flex-1">
                                 <div className="text-lg font-semibold">
-                                    {data.vitalsTrends.averageHeartRate} bpm
+                                    {data.vitalsTrends?.averageHeartRate || 0} bpm
                                 </div>
                                 <div className="text-sm text-muted-foreground">Average Heart Rate</div>
                                 <div className="flex items-center gap-1 mt-1">
-                                    {getTrendIcon(data.vitalsTrends.trends.heartRate)}
-                                    <span className={`text-xs ${getTrendColor(data.vitalsTrends.trends.heartRate)}`}>
-                                        {data.vitalsTrends.trends.heartRate} trend
+                                    {getTrendIcon(data.vitalsTrends?.trends?.heartRate || 'stable')}
+                                    <span className={`text-xs ${getTrendColor(data.vitalsTrends?.trends?.heartRate || 'stable')}`}>
+                                        {data.vitalsTrends?.trends?.heartRate || 'stable'} trend
                                     </span>
                                 </div>
                             </div>
@@ -240,13 +255,13 @@ export function MedicalStatistics({ data, className, compactMode = false }: Medi
                             <ActivityIcon size={32} className="text-blue-600" />
                             <div className="flex-1">
                                 <div className="text-lg font-semibold">
-                                    {data.vitalsTrends.averageBloodPressure}
+                                    {data.vitalsTrends?.averageBloodPressure || 'N/A'}
                                 </div>
                                 <div className="text-sm text-muted-foreground">Average Blood Pressure</div>
                                 <div className="flex items-center gap-1 mt-1">
-                                    {getTrendIcon(data.vitalsTrends.trends.bloodPressure)}
-                                    <span className={`text-xs ${getTrendColor(data.vitalsTrends.trends.bloodPressure)}`}>
-                                        {data.vitalsTrends.trends.bloodPressure} trend
+                                    {getTrendIcon(data.vitalsTrends?.trends?.bloodPressure || 'stable')}
+                                    <span className={`text-xs ${getTrendColor(data.vitalsTrends?.trends?.bloodPressure || 'stable')}`}>
+                                        {data.vitalsTrends?.trends?.bloodPressure || 'stable'} trend
                                     </span>
                                 </div>
                             </div>
@@ -257,13 +272,13 @@ export function MedicalStatistics({ data, className, compactMode = false }: Medi
                             <ActivityIcon size={32} className="text-yellow-600" />
                             <div className="flex-1">
                                 <div className="text-lg font-semibold">
-                                    {data.vitalsTrends.averageTemperature}°C
+                                    {data.vitalsTrends?.averageTemperature || 0}°C
                                 </div>
                                 <div className="text-sm text-muted-foreground">Average Temperature</div>
                                 <div className="flex items-center gap-1 mt-1">
-                                    {getTrendIcon(data.vitalsTrends.trends.temperature)}
-                                    <span className={`text-xs ${getTrendColor(data.vitalsTrends.trends.temperature)}`}>
-                                        {data.vitalsTrends.trends.temperature} trend
+                                    {getTrendIcon(data.vitalsTrends?.trends?.temperature || 'stable')}
+                                    <span className={`text-xs ${getTrendColor(data.vitalsTrends?.trends?.temperature || 'stable')}`}>
+                                        {data.vitalsTrends?.trends?.temperature || 'stable'} trend
                                     </span>
                                 </div>
                             </div>
@@ -286,20 +301,20 @@ export function MedicalStatistics({ data, className, compactMode = false }: Medi
                         <div className="space-y-3">
                             <div className="flex justify-between items-center">
                                 <span className="text-sm text-muted-foreground">Critical Alerts</span>
-                                <Badge variant={data.recentTrends.criticalAlerts > 0 ? "destructive" : "secondary"}>
-                                    {data.recentTrends.criticalAlerts}
+                                <Badge variant={(data.recentTrends?.criticalAlerts || 0) > 0 ? "destructive" : "secondary"}>
+                                    {data.recentTrends?.criticalAlerts || 0}
                                 </Badge>
                             </div>
                             <div className="flex justify-between items-center">
                                 <span className="text-sm text-muted-foreground">Pending Follow-ups</span>
-                                <Badge variant={data.recentTrends.pendingFollowUps > 0 ? "secondary" : "outline"}>
-                                    {data.recentTrends.pendingFollowUps}
+                                <Badge variant={(data.recentTrends?.pendingFollowUps || 0) > 0 ? "secondary" : "outline"}>
+                                    {data.recentTrends?.pendingFollowUps || 0}
                                 </Badge>
                             </div>
                             <div className="flex justify-between items-center">
                                 <span className="text-sm text-muted-foreground">Active Medications</span>
                                 <Badge variant="outline">
-                                    {data.recentTrends.medicationsActive}
+                                    {data.recentTrends?.medicationsActive || 0}
                                 </Badge>
                             </div>
                         </div>
@@ -313,7 +328,7 @@ export function MedicalStatistics({ data, className, compactMode = false }: Medi
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
-                            {data.commonDiagnoses.slice(0, 5).map((diagnosis, index) => (
+                            {data.commonDiagnoses && data.commonDiagnoses.slice(0, 5).map((diagnosis, index) => (
                                 <div key={index} className="flex justify-between items-center">
                                     <div>
                                         <div className="text-sm font-medium">{diagnosis.diagnosis}</div>
@@ -326,7 +341,7 @@ export function MedicalStatistics({ data, className, compactMode = false }: Medi
                                     </Badge>
                                 </div>
                             ))}
-                            {data.commonDiagnoses.length === 0 && (
+                            {(!data.commonDiagnoses || data.commonDiagnoses.length === 0) && (
                                 <div className="text-center text-muted-foreground py-4">
                                     <StethoscopeIcon size={32} className="mx-auto mb-2" />
                                     <p className="text-sm">No diagnoses recorded yet</p>
@@ -349,13 +364,13 @@ export function MedicalStatistics({ data, className, compactMode = false }: Medi
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="text-center p-4 bg-blue-50 rounded-lg">
                             <div className="text-2xl font-bold text-blue-600">
-                                {data.recentTrends.recordsThisMonth}
+                                {data.recentTrends?.recordsThisMonth || 0}
                             </div>
                             <div className="text-sm text-muted-foreground">Records This Month</div>
                             <div className="flex items-center justify-center gap-1 mt-1">
                                 {getTrendIcon(getRecordsTrend())}
                                 <span className={`text-xs ${getTrendColor(getRecordsTrend())}`}>
-                                    vs {data.recentTrends.recordsLastMonth} last month
+                                    vs {data.recentTrends?.recordsLastMonth || 0} last month
                                 </span>
                             </div>
                         </div>
@@ -365,7 +380,7 @@ export function MedicalStatistics({ data, className, compactMode = false }: Medi
                             </div>
                             <div className="text-sm text-muted-foreground">Total Visits</div>
                             <div className="text-xs text-muted-foreground mt-1">
-                                {data.avgVisitsPerMonth.toFixed(1)} per month average
+                                {data.avgVisitsPerMonth} per month average
                             </div>
                         </div>
                         <div className="text-center p-4 bg-purple-50 rounded-lg">

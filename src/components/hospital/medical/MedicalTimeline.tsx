@@ -21,22 +21,22 @@ interface TimelineRecord {
     visit_date: string;
     diagnosis: string;
     treatment: string;
-    medications: Array<{
+    medications?: Array<{
         name: string;
         dosage: string;
         frequency: string;
     }>;
-    lab_results: Array<{
+    lab_results?: Array<{
         test_name: string;
         result: string;
         status: string;
     }>;
-    vital_signs: {
-        temperature: string;
-        blood_pressure: string;
-        heart_rate: string;
-        respiratory_rate: string;
-        oxygen_saturation: string;
+    vital_signs?: {
+        temperature?: string;
+        blood_pressure?: string;
+        heart_rate?: string;
+        respiratory_rate?: string;
+        oxygen_saturation?: string;
     };
     doctor?: {
         id: string;
@@ -53,19 +53,32 @@ interface MedicalTimelineProps {
 
 export function MedicalTimeline({ records, onViewRecord, className }: MedicalTimelineProps) {
     const formatTimelineDate = (dateString: string) => {
+        if (!dateString) {
+            return 'Unknown date';
+        }
+
         const date = new Date(dateString);
 
-        if (isToday(date)) {
-            return `Today, ${format(date, 'h:mm a')}`;
-        } else if (isYesterday(date)) {
-            return `Yesterday, ${format(date, 'h:mm a')}`;
-        } else {
-            const daysAgo = differenceInDays(new Date(), date);
-            if (daysAgo <= 7) {
-                return `${daysAgo} days ago, ${format(date, 'h:mm a')}`;
+        // Check if the date is valid
+        if (isNaN(date.getTime())) {
+            return 'Invalid date';
+        }
+
+        try {
+            if (isToday(date)) {
+                return `Today, ${format(date, 'h:mm a')}`;
+            } else if (isYesterday(date)) {
+                return `Yesterday, ${format(date, 'h:mm a')}`;
             } else {
-                return format(date, 'MMM dd, yyyy h:mm a');
+                const daysAgo = differenceInDays(new Date(), date);
+                if (daysAgo <= 7) {
+                    return `${daysAgo} days ago, ${format(date, 'h:mm a')}`;
+                } else {
+                    return format(date, 'MMM dd, yyyy h:mm a');
+                }
             }
+        } catch (error) {
+            return 'Invalid date';
         }
     };
 
@@ -73,9 +86,9 @@ export function MedicalTimeline({ records, onViewRecord, className }: MedicalTim
         // Check for critical indicators
         const vitals = record.vital_signs;
         if (vitals) {
-            const temp = parseFloat(vitals.temperature);
+            const temp = vitals.temperature ? parseFloat(vitals.temperature) : 0;
             const systolic = vitals.blood_pressure ? parseInt(vitals.blood_pressure.split('/')[0]) : 0;
-            const hr = parseInt(vitals.heart_rate);
+            const hr = vitals.heart_rate ? parseInt(vitals.heart_rate) : 0;
 
             if (temp > 38.5 || systolic > 160 || systolic < 80 || hr > 120 || hr < 50) {
                 return 'critical';
@@ -85,7 +98,7 @@ export function MedicalTimeline({ records, onViewRecord, className }: MedicalTim
         }
 
         // Check lab results for abnormal values
-        const hasAbnormalLab = record.lab_results.some(lab => lab.status !== 'normal');
+        const hasAbnormalLab = record.lab_results?.some(lab => lab.status !== 'normal');
         if (hasAbnormalLab) {
             return 'warning';
         }
@@ -191,13 +204,13 @@ export function MedicalTimeline({ records, onViewRecord, className }: MedicalTim
 
                                         {/* Quick metrics */}
                                         <div className="flex flex-wrap gap-3 text-xs mb-3">
-                                            {record.medications.length > 0 && (
+                                            {record.medications && record.medications.length > 0 && (
                                                 <div className="flex items-center gap-1 text-blue-600">
                                                     <PillIcon size={12} />
                                                     {record.medications.length} med{record.medications.length !== 1 ? 's' : ''}
                                                 </div>
                                             )}
-                                            {record.lab_results.length > 0 && (
+                                            {record.lab_results && record.lab_results.length > 0 && (
                                                 <div className="flex items-center gap-1 text-green-600">
                                                     <TestTubeIcon size={12} />
                                                     {record.lab_results.length} lab{record.lab_results.length !== 1 ? 's' : ''}
@@ -244,7 +257,7 @@ export function MedicalTimeline({ records, onViewRecord, className }: MedicalTim
                                         )}
 
                                         {/* Medications preview */}
-                                        {record.medications.length > 0 && (
+                                        {record.medications && record.medications.length > 0 && (
                                             <div className="mb-3">
                                                 <div className="text-xs text-muted-foreground mb-1">Medications:</div>
                                                 <div className="flex flex-wrap gap-1">
@@ -263,7 +276,7 @@ export function MedicalTimeline({ records, onViewRecord, className }: MedicalTim
                                         )}
 
                                         {/* Lab results preview */}
-                                        {record.lab_results.length > 0 && (
+                                        {record.lab_results && record.lab_results.length > 0 && (
                                             <div className="mb-3">
                                                 <div className="text-xs text-muted-foreground mb-1">Lab Results:</div>
                                                 <div className="flex flex-wrap gap-1">
