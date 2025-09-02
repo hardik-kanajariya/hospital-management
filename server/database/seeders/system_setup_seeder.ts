@@ -3,7 +3,6 @@ import Organization from '#models/organization'
 import Role from '#models/role'
 import Permission from '#models/permission'
 import User from '#models/user'
-import hash from '@adonisjs/core/services/hash'
 import env from '#start/env'
 import { v4 as uuid } from 'uuid'
 
@@ -12,7 +11,7 @@ export default class extends BaseSeeder {
         console.log('🚀 Starting system setup seeder...')
 
         // Create a default organization
-        const defaultOrg = await Organization.firstOrCreate(
+        const defaultOrg = await Organization.updateOrCreate(
             { name: 'Default Hospital' },
             {
                 name: 'Default Hospital',
@@ -57,7 +56,7 @@ export default class extends BaseSeeder {
         ]
 
         for (const roleData of systemRoles) {
-            await Role.firstOrCreate(
+            await Role.updateOrCreate(
                 { name: roleData.name },
                 roleData
             )
@@ -126,7 +125,7 @@ export default class extends BaseSeeder {
         ]
 
         for (const permissionData of permissions) {
-            await Permission.firstOrCreate(
+            await Permission.updateOrCreate(
                 { name: permissionData.name },
                 permissionData
             )
@@ -199,12 +198,12 @@ export default class extends BaseSeeder {
         console.log('✅ Role permissions assigned')
 
         // Create system users (production-ready, non-demo)
-        await User.firstOrCreate(
+        await User.updateOrCreate(
             { email: 'admin@hospital.com' },
             {
                 id: uuid(),
                 email: 'admin@hospital.com',
-                passwordHash: await hash.make('password123'),
+                passwordHash: 'password123',
                 name: 'Super Administrator',
                 roleId: superAdminRole?.id,
                 organizationId: null,
@@ -307,12 +306,12 @@ export default class extends BaseSeeder {
 
             // Create demo users
             for (const userData of demoUsers) {
-                await User.firstOrCreate(
+                await User.updateOrCreate(
                     { email: userData.email },
                     {
                         id: uuid(),
                         email: userData.email,
-                        passwordHash: await hash.make('admin123'),
+                        passwordHash: 'admin123',
                         name: userData.name,
                         roleId: userData.roleId,
                         organizationId: defaultOrg.id,

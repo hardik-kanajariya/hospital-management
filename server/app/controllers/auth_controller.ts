@@ -23,7 +23,7 @@ export default class AuthController {
             if (!user) {
                 return response.status(401).json({
                     success: false,
-                    message: 'Invalid credentials'
+                    message: 'No Valid Permissons Found'
                 })
             }
 
@@ -40,7 +40,7 @@ export default class AuthController {
             if (!isValid) {
                 return response.status(401).json({
                     success: false,
-                    message: 'Invalid credentials'
+                    message: 'Invalid credentials password'
                 })
             }
 

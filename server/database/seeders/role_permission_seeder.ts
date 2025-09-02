@@ -99,7 +99,7 @@ export default class extends BaseSeeder {
 
         const permissions: Record<string, any> = {}
         for (const permData of permissionData) {
-            const permission = await Permission.firstOrCreate(
+            const permission = await Permission.updateOrCreate(
                 { name: permData.name },
                 {
                     id: crypto.randomUUID(),
@@ -232,7 +232,7 @@ export default class extends BaseSeeder {
         ]
 
         for (const roleInfo of roleData) {
-            const role = await Role.firstOrCreate(
+            const role = await Role.updateOrCreate(
                 { name: roleInfo.name },
                 {
                     id: crypto.randomUUID(),

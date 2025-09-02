@@ -112,14 +112,11 @@ export default class UsersController {
             // Generate unique employee ID
             const employeeId = await this.generateEmployeeId()
 
-            // Hash the password
-            const hashedPassword = await hash.make(payload.password)
-
             // Create user
             const user = new User()
             user.id = uuid()
             user.email = payload.email
-            user.passwordHash = hashedPassword
+            user.passwordHash = payload.password
             user.name = payload.name
             user.roleId = payload.roleId
             user.phone = payload.phone || null
@@ -214,8 +211,7 @@ export default class UsersController {
 
             // Handle password update if provided
             if (payload.password) {
-                const hashedPassword = await hash.make(payload.password)
-                user.passwordHash = hashedPassword
+                user.passwordHash = payload.password
                 // Remove password from payload to avoid merge issues
                 delete payload.password
             }
