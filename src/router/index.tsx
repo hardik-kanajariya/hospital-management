@@ -9,7 +9,7 @@ import LandingPage from '../components/landing/LandingPage';
 import SuperDuparAdminLogin from '../components/superduparadmin/SuperDuparAdminLogin';
 import SuperDuparAdminDashboard from '../components/superduparadmin/SuperDuparAdminDashboard';
 import SuperDuparAdminUserManagement from '../components/superduparadmin/SuperAdminUserManagement';
-import { SuperDuparAdminAuthProvider } from '../hooks/useSuperDuparAdminAuth';
+import ProtectedSuperDuparAdminRoute from '../components/superduparadmin/ProtectedSuperDuparAdminRoute';
 
 // Hospital Module Imports - Using new modular structure
 import Dashboard from '../components/hospital/dashboard/Dashboard';
@@ -88,25 +88,25 @@ export const router = createBrowserRouter([
                     {
                         path: 'login',
                         element: (
-                            <SuperDuparAdminAuthProvider>
+                            <ProtectedSuperDuparAdminRoute requireAuth={false}>
                                 <SuperDuparAdminLogin />
-                            </SuperDuparAdminAuthProvider>
+                            </ProtectedSuperDuparAdminRoute>
                         )
                     },
                     {
                         path: 'dashboard',
                         element: (
-                            <SuperDuparAdminAuthProvider>
+                            <ProtectedSuperDuparAdminRoute>
                                 <SuperDuparAdminDashboard />
-                            </SuperDuparAdminAuthProvider>
+                            </ProtectedSuperDuparAdminRoute>
                         )
                     },
                     {
                         path: 'manage-admins',
                         element: (
-                            <SuperDuparAdminAuthProvider>
+                            <ProtectedSuperDuparAdminRoute>
                                 <SuperDuparAdminUserManagement />
-                            </SuperDuparAdminAuthProvider>
+                            </ProtectedSuperDuparAdminRoute>
                         )
                     }
                 ]

@@ -125,18 +125,14 @@ export const SuperDuparAdminAuthProvider: React.FC<{ children: ReactNode }> = ({
     };
 
     const login = async (email: string, password: string): Promise<SuperDuparAdmin> => {
-        setAuthState(prev => ({ ...prev, isLoading: true }));
-        setError(null);
-
         try {
-            if (!navigator.onLine) {
-                throw new Error('Internet connection is required for authentication. Please check your connection and try again.');
-            }
+            setError(null);
+            setAuthState(prev => ({ ...prev, isLoading: true }));
 
             const response = await fetch('/api/super-dupar-admin/auth/login', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ email, password })
             });
@@ -144,29 +140,28 @@ export const SuperDuparAdminAuthProvider: React.FC<{ children: ReactNode }> = ({
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || 'Authentication failed');
+                throw new Error(data.message || 'Login failed');
             }
 
-            if (!data.success || !data.data?.token) {
+            if (data.success && data.data?.user && data.data?.token) {
+                const { user, token } = data.data;
+                
+                // Store authentication data
+                setUserData(user, token.token);
+                
+                // Update auth state
+                setAuthState({
+                    user,
+                    isAuthenticated: true,
+                    isLoading: false
+                });
+
+                return user;
+            } else {
                 throw new Error('Invalid response format');
             }
-
-            const { user, token } = data.data;
-
-            // Store user data and token
-            setUserData(user, token.token);
-
-            // Update auth state
-            setAuthState({
-                user,
-                isAuthenticated: true,
-                isLoading: false
-            });
-
-            return user;
-
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
+            const errorMessage = err instanceof Error ? err.message : 'Login failed';
             console.error('Super Dupar Admin authentication error:', errorMessage);
             setError(errorMessage);
 
@@ -227,10 +222,10 @@ export const SuperDuparAdminAuthProvider: React.FC<{ children: ReactNode }> = ({
     );
 };
 
-export function useSuperDuparAdminAuth() {
+export const useSuperDuparAdminAuth = (): SuperDuparAdminAuthContextType => {
     const context = useContext(SuperDuparAdminAuthContext);
     if (context === undefined) {
         throw new Error('useSuperDuparAdminAuth must be used within a SuperDuparAdminAuthProvider');
     }
     return context;
-}
+};
