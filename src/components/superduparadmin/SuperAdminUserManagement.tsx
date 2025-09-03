@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    Users, 
-    Plus, 
-    Search, 
+import {
+    Users,
+    Plus,
+    Search,
     Filter,
     UserCheck,
     UserX,
@@ -104,7 +104,7 @@ export default function SuperAdminUserManagement() {
         e.preventDefault();
         try {
             const response = await httpService.post('/super-dupar-admin/super-admins', formData);
-            
+
             if (response.success) {
                 toast({
                     title: 'Success',
@@ -129,7 +129,7 @@ export default function SuperAdminUserManagement() {
 
         try {
             const response = await httpService.put(`/super-dupar-admin/super-admins/${editingUser.id}`, formData);
-            
+
             if (response.success) {
                 toast({
                     title: 'Success',
@@ -153,7 +153,7 @@ export default function SuperAdminUserManagement() {
             const response = await httpService.patch(`/super-dupar-admin/super-admins/${user.id}/status`, {
                 isActive: !user.isActive
             });
-            
+
             if (response.success) {
                 toast({
                     title: 'Success',

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    Users, 
-    Building2, 
-    Activity, 
+import {
+    Users,
+    Building2,
+    Activity,
     TrendingUp,
     UserCheck,
     Settings,

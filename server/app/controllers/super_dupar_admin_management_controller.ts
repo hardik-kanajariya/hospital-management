@@ -121,7 +121,7 @@ export default class SuperDuparAdminManagementController {
                 organizationId
             } = request.only([
                 'email',
-                'password', 
+                'password',
                 'name',
                 'phone',
                 'department',

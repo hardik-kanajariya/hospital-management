@@ -75,7 +75,7 @@ export default class extends BaseSeeder {
         const permissions = [
             // Super Dupar Admin permissions
             { name: 'super_dupar.*', displayName: 'Super Dupar Administrator Access', module: 'super_dupar', description: 'Complete system administration across all organizations and super admins' },
-            
+
             // System permissions
             { name: 'system.*', displayName: 'System Administrator', module: 'system', description: 'Full system access' },
             { name: 'organizations.*', displayName: 'Manage Organizations', module: 'organizations', description: 'Manage organizations' },

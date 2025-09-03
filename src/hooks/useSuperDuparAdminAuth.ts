@@ -103,7 +103,7 @@ export function SuperDuparAdminAuthProvider({ children }: { children: ReactNode 
 
     const makeAuthenticatedRequest = async (url: string, options: RequestInit = {}) => {
         const token = localStorage.getItem(STORAGE_KEY);
-        
+
         const response = await fetch(`/api${url}`, {
             ...options,
             headers: {
@@ -193,7 +193,7 @@ export function SuperDuparAdminAuthProvider({ children }: { children: ReactNode 
     const refreshUser = async (): Promise<void> => {
         try {
             const response = await makeAuthenticatedRequest('/super-dupar-admin/me');
-            
+
             if (response.success && response.data?.user) {
                 const user = response.data.user;
                 setUserData(user);
@@ -219,12 +219,6 @@ export function SuperDuparAdminAuthProvider({ children }: { children: ReactNode 
         refreshUser,
         error
     };
-
-    return (
-        <SuperDuparAdminAuthContext.Provider value={value}>
-            {children}
-        </SuperDuparAdminAuthContext.Provider>
-    );
 }
 
 export function useSuperDuparAdminAuth() {

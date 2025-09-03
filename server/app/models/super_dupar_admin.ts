@@ -7,8 +7,8 @@ import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
 import { randomUUID } from 'node:crypto'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
-  uids: ['email'],
-  passwordColumnName: 'passwordHash',
+    uids: ['email'],
+    passwordColumnName: 'passwordHash',
 })
 
 export default class SuperDuparAdmin extends compose(BaseModel, AuthFinder) {
