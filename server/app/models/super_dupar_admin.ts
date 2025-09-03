@@ -40,13 +40,23 @@ export default class SuperDuparAdmin extends compose(BaseModel, AuthFinder) {
 
     @column({
         prepare: (value: any) => JSON.stringify(value),
-        consume: (value: string) => JSON.parse(value || '{}')
+        consume: (value: string | object) => {
+            if (typeof value === 'string') {
+                return JSON.parse(value || '{}')
+            }
+            return value || {}
+        }
     })
     declare settings: Record<string, any>
 
     @column({
         prepare: (value: any) => JSON.stringify(value),
-        consume: (value: string) => JSON.parse(value || '[]')
+        consume: (value: string | object) => {
+            if (typeof value === 'string') {
+                return JSON.parse(value || '[]')
+            }
+            return value || []
+        }
     })
     declare permissions: string[]
 
