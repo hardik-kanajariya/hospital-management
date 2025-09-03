@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useContext } from 'react';
 import { httpService } from '@/services/HttpService';
 
 interface SuperDuparAdmin {
@@ -34,75 +34,24 @@ interface SuperDuparAdminAuthContextType extends SuperDuparAdminAuthState {
     error: string | null;
 }
 
-const SuperDuparAdminAuthContext = createContext<SuperDuparAdminAuthContextType | undefined>(undefined);
-
 const STORAGE_KEY = 'super_dupar_admin_token';
 const USER_STORAGE_KEY = 'super_dupar_admin_user';
 
-export const SuperDuparAdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [authState, setAuthState] = useState<SuperDuparAdminAuthState>({
-        user: null,
-        isAuthenticated: false,
-        isLoading: true
-    });
-    const [error, setError] = useState<string | null>(null);
-
-    // Initialize auth state on mount
-    useEffect(() => {
-        initializeAuth();
-    }, []);
-
-    const initializeAuth = async () => {
-        try {
-            const token = localStorage.getItem(STORAGE_KEY);
-            const userData = localStorage.getItem(USER_STORAGE_KEY);
-
-            if (token && userData) {
-                const user = JSON.parse(userData);
-                setAuthState({
-                    user,
-                    isAuthenticated: true,
-                    isLoading: false
-                });
-
-                // Verify token is still valid
-                try {
-                    await refreshUser();
-                } catch (err) {
-                    // Token invalid, clear storage
-                    clearAuth();
-                }
-            } else {
-                setAuthState({
-                    user: null,
-                    isAuthenticated: false,
-                    isLoading: false
-                });
-            }
-        } catch (err) {
-            console.error('Auth initialization error:', err);
-            clearAuth();
-        }
-    };
-
-    const setUserData = (user: SuperDuparAdmin, token?: string) => {
+// Helper functions for auth operations
+export const authHelpers = {
+    setUserData: (user: SuperDuparAdmin, token?: string) => {
         localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
         if (token) {
             localStorage.setItem(STORAGE_KEY, token);
         }
-    };
+    },
 
-    const clearAuth = () => {
+    clearAuth: () => {
         localStorage.removeItem(STORAGE_KEY);
         localStorage.removeItem(USER_STORAGE_KEY);
-        setAuthState({
-            user: null,
-            isAuthenticated: false,
-            isLoading: false
-        });
-    };
+    },
 
-    const makeAuthenticatedRequest = async (url: string, options: { method?: string; data?: any } = {}) => {
+    makeAuthenticatedRequest: async (url: string, options: { method?: string; data?: any } = {}) => {
         const token = localStorage.getItem(STORAGE_KEY);
 
         if (token) {
@@ -134,7 +83,7 @@ export const SuperDuparAdminAuthProvider: React.FC<{ children: ReactNode }> = ({
                 return response;
             } catch (error) {
                 if (error instanceof Error && error.message.includes('HTTP 401')) {
-                    clearAuth();
+                    authHelpers.clearAuth();
                     throw new Error('Authentication failed');
                 }
                 throw error;
@@ -149,13 +98,40 @@ export const SuperDuparAdminAuthProvider: React.FC<{ children: ReactNode }> = ({
         } else {
             throw new Error('No authentication token found');
         }
-    };
+    },
 
-    const login = async (email: string, password: string): Promise<SuperDuparAdmin> => {
+    initializeAuth: async (): Promise<SuperDuparAdminAuthState> => {
         try {
-            setError(null);
-            setAuthState(prev => ({ ...prev, isLoading: true }));
+            const token = localStorage.getItem(STORAGE_KEY);
+            const userData = localStorage.getItem(USER_STORAGE_KEY);
 
+            if (token && userData) {
+                const user = JSON.parse(userData);
+                return {
+                    user,
+                    isAuthenticated: true,
+                    isLoading: false
+                };
+            } else {
+                return {
+                    user: null,
+                    isAuthenticated: false,
+                    isLoading: false
+                };
+            }
+        } catch (err) {
+            console.error('Auth initialization error:', err);
+            authHelpers.clearAuth();
+            return {
+                user: null,
+                isAuthenticated: false,
+                isLoading: false
+            };
+        }
+    },
+
+    login: async (email: string, password: string): Promise<SuperDuparAdmin> => {
+        try {
             const response = await httpService.post('/super-dupar-admin/auth/login', {
                 email,
                 password
@@ -165,14 +141,7 @@ export const SuperDuparAdminAuthProvider: React.FC<{ children: ReactNode }> = ({
                 const { user, token } = response.data;
 
                 // Store authentication data
-                setUserData(user, token.token);
-
-                // Update auth state
-                setAuthState({
-                    user,
-                    isAuthenticated: true,
-                    isLoading: false
-                });
+                authHelpers.setUserData(user, token.token);
 
                 return user;
             } else {
@@ -181,69 +150,51 @@ export const SuperDuparAdminAuthProvider: React.FC<{ children: ReactNode }> = ({
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Login failed';
             console.error('Super Dupar Admin authentication error:', errorMessage);
-            setError(errorMessage);
 
             // Reset auth state on error
-            clearAuth();
+            authHelpers.clearAuth();
             throw new Error(errorMessage);
         }
-    };
+    },
 
-    const logout = async (): Promise<void> => {
+    logout: async (): Promise<void> => {
         try {
             // Call logout endpoint using the makeAuthenticatedRequest
-            await makeAuthenticatedRequest('/super-dupar-admin/auth/logout', {
+            await authHelpers.makeAuthenticatedRequest('/super-dupar-admin/auth/logout', {
                 method: 'POST'
             });
         } catch (err) {
             console.warn('Logout request failed:', err);
         } finally {
-            clearAuth();
-            setError(null);
+            authHelpers.clearAuth();
         }
-    };
+    },
 
-    const refreshUser = async (): Promise<void> => {
+    refreshUser: async (): Promise<SuperDuparAdmin> => {
         try {
-            const response = await makeAuthenticatedRequest('/super-dupar-admin/me');
+            const response = await authHelpers.makeAuthenticatedRequest('/super-dupar-admin/me');
 
             if (response.success && response.data?.user) {
                 const user = response.data.user;
-                setUserData(user);
-                setAuthState(prev => ({
-                    ...prev,
-                    user,
-                    isAuthenticated: true
-                }));
+                authHelpers.setUserData(user);
+                return user;
             } else {
                 throw new Error('Failed to refresh user data');
             }
         } catch (err) {
             console.error('Failed to refresh user:', err);
-            clearAuth();
+            authHelpers.clearAuth();
             throw err;
         }
-    };
-
-    const value: SuperDuparAdminAuthContextType = {
-        ...authState,
-        login,
-        logout,
-        refreshUser,
-        error
-    };
-
-    return (
-        <SuperDuparAdminAuthContext.Provider value={value}>
-            {children}
-        </SuperDuparAdminAuthContext.Provider>
-    );
-};
-
-export const useSuperDuparAdminAuth = (): SuperDuparAdminAuthContextType => {
-    const context = useContext(SuperDuparAdminAuthContext);
-    if (context === undefined) {
-        throw new Error('useSuperDuparAdminAuth must be used within a SuperDuparAdminAuthProvider');
     }
-    return context;
 };
+
+// Export types for use in the provider and components
+export type {
+    SuperDuparAdmin,
+    AuthToken,
+    SuperDuparAdminAuthState,
+    SuperDuparAdminAuthContextType
+};
+
+export { STORAGE_KEY, USER_STORAGE_KEY };

@@ -6,7 +6,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
-import { useSuperDuparAdminAuth } from '@/hooks/useSuperDuparAdminAuth.tsx';
+import { useSuperDuparAdminAuth } from '@/hooks/useSuperDuparAdminAuthContext';
 
 export default function SuperDuparAdminLogin() {
     const navigate = useNavigate();
