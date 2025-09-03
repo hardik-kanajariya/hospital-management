@@ -13,8 +13,8 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { useSuperDuparAdminAuth } from '../../hooks/useSuperDuparAdminAuth2';
 import { httpService } from '../../services/HttpService';
+import { useSuperDuparAdminAuth } from '@/hooks/useSuperDuparAdminAuth';
 
 interface DashboardStats {
     organizations: {

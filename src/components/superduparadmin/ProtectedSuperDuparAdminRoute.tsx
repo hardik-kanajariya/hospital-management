@@ -1,7 +1,6 @@
+import { SuperDuparAdminAuthProvider, useSuperDuparAdminAuth } from '@/hooks/useSuperDuparAdminAuth';
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { SuperDuparAdminAuthProvider, useSuperDuparAdminAuth } from '../../hooks/useSuperDuparAdminAuth';
-
 interface ProtectedSuperDuparAdminRouteProps {
     children: React.ReactNode;
     requireAuth?: boolean;
