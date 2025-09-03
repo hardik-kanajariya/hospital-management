@@ -1,8 +1,15 @@
 import React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
+
 import App from '../App';
 import LoginRedirect from '../components/auth/LoginRedirect';
 import LandingPage from '../components/landing/LandingPage';
+
+// Super Dupar Admin Components
+import SuperDuparAdminLogin from '../components/superduparadmin/SuperDuparAdminLogin';
+import SuperDuparAdminDashboard from '../components/superduparadmin/SuperDuparAdminDashboard';
+import SuperDuparAdminUserManagement from '../components/superduparadmin/SuperAdminUserManagement';
+import { SuperDuparAdminAuthProvider } from '../hooks/useSuperDuparAdminAuth';
 
 // Hospital Module Imports - Using new modular structure
 import Dashboard from '../components/hospital/dashboard/Dashboard';
@@ -73,6 +80,36 @@ export const router = createBrowserRouter([
             {
                 path: 'login',
                 element: <LoginRedirect />
+            },
+            // Super Dupar Admin Routes
+            {
+                path: 'super-dupar-admin',
+                children: [
+                    {
+                        path: 'login',
+                        element: (
+                            <SuperDuparAdminAuthProvider>
+                                <SuperDuparAdminLogin />
+                            </SuperDuparAdminAuthProvider>
+                        )
+                    },
+                    {
+                        path: 'dashboard',
+                        element: (
+                            <SuperDuparAdminAuthProvider>
+                                <SuperDuparAdminDashboard />
+                            </SuperDuparAdminAuthProvider>
+                        )
+                    },
+                    {
+                        path: 'manage-admins',
+                        element: (
+                            <SuperDuparAdminAuthProvider>
+                                <SuperDuparAdminUserManagement />
+                            </SuperDuparAdminAuthProvider>
+                        )
+                    }
+                ]
             },
             {
                 path: 'dashboard',

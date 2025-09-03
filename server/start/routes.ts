@@ -45,6 +45,24 @@ router.group(() => {
     router.get('/demo-accounts', '#controllers/auth_controller.getDemoAccounts')
   }).prefix('/auth')
 
+  // Super Dupar Admin routes (public login/logout)
+  router.group(() => {
+    router.post('/login', '#controllers/super_dupar_admin_auth_controller.login')
+    router.post('/logout', '#controllers/super_dupar_admin_auth_controller.logout')
+  }).prefix('/super-dupar-admin/auth')
+
+  // Super Dupar Admin protected routes
+  router.group(() => {
+    router.get('/me', '#controllers/super_dupar_admin_auth_controller.me')
+    router.get('/dashboard-stats', '#controllers/super_dupar_admin_management_controller.dashboardStats')
+    router.get('/super-admins', '#controllers/super_dupar_admin_management_controller.getSuperAdmins')
+    router.post('/super-admins', '#controllers/super_dupar_admin_management_controller.createSuperAdmin')
+    router.put('/super-admins/:id', '#controllers/super_dupar_admin_management_controller.updateSuperAdmin')
+    router.patch('/super-admins/:id/status', '#controllers/super_dupar_admin_management_controller.toggleSuperAdminStatus')
+    router.get('/organizations', '#controllers/super_dupar_admin_management_controller.getOrganizations')
+    router.get('/activities', '#controllers/super_dupar_admin_management_controller.getRecentActivities')
+  }).prefix('/super-dupar-admin').use(middleware.superDuparAdminAuth)
+
   // Protected routes
   router.group(() => {
 

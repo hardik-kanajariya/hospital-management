@@ -4,7 +4,6 @@ import Role from '#models/role'
 import Permission from '#models/permission'
 import User from '#models/user'
 import env from '#start/env'
-import { v4 as uuid } from 'uuid'
 
 export default class extends BaseSeeder {
     async run() {
@@ -38,6 +37,14 @@ export default class extends BaseSeeder {
         // Create any missing global system roles
         const systemRoles = [
             {
+                name: 'super_dupar_admin',
+                displayName: 'Super Dupar Administrator',
+                description: 'Highest level administrator with access to manage all super admins across organizations',
+                accessLevel: 1000,
+                isSystemRole: true,
+                organizationId: null
+            },
+            {
                 name: 'super_admin',
                 displayName: 'Super Administrator',
                 description: 'Full system access across all organizations',
@@ -66,6 +73,9 @@ export default class extends BaseSeeder {
 
         // Create comprehensive permissions
         const permissions = [
+            // Super Dupar Admin permissions
+            { name: 'super_dupar.*', displayName: 'Super Dupar Administrator Access', module: 'super_dupar', description: 'Complete system administration across all organizations and super admins' },
+            
             // System permissions
             { name: 'system.*', displayName: 'System Administrator', module: 'system', description: 'Full system access' },
             { name: 'organizations.*', displayName: 'Manage Organizations', module: 'organizations', description: 'Manage organizations' },
@@ -134,6 +144,7 @@ export default class extends BaseSeeder {
         console.log('✅ Permissions created/updated')
 
         // Get all the roles we need
+        const superDuparAdminRole = await Role.findBy('name', 'super_dupar_admin')
         const superAdminRole = await Role.findBy('name', 'super_admin')
         const orgAdminRole = await Role.findBy('name', 'org_admin')
         const doctorRole = await Role.findBy('name', 'doctor')
@@ -145,6 +156,21 @@ export default class extends BaseSeeder {
         const medicalStoreManagerRole = await Role.findBy('name', 'medical_store_manager')
 
         // Assign permissions to roles
+        if (superDuparAdminRole) {
+            // Super Dupar Admin gets super dupar access
+            const superDuparPermission = await Permission.query().where('name', 'super_dupar.*').first()
+            if (superDuparPermission) {
+                const existingRelation = await superDuparAdminRole.related('permissions').query()
+                    .where('permission_id', superDuparPermission.id).first()
+
+                if (!existingRelation) {
+                    await superDuparAdminRole.related('permissions').attach({
+                        [superDuparPermission.id]: { actions: JSON.stringify(['*']) }
+                    })
+                }
+            }
+        }
+
         if (superAdminRole) {
             // Super admin gets system access
             const systemPermission = await Permission.query().where('name', 'system.*').first()
