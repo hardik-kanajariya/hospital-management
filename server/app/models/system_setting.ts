@@ -1,5 +1,7 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
+import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import Organization from './organization.js'
 
 export default class SystemSetting extends BaseModel {
     public static table = 'system_settings'
@@ -25,11 +27,18 @@ export default class SystemSetting extends BaseModel {
     @column()
     declare isEditable: boolean
 
+    @column({ columnName: 'organization_id' })
+    declare organizationId: string | null
+
     @column.dateTime({ autoCreate: true })
     declare createdAt: DateTime
 
     @column.dateTime({ autoCreate: true, autoUpdate: true })
     declare updatedAt: DateTime
+
+    // Relationships
+    @belongsTo(() => Organization)
+    declare organization: BelongsTo<typeof Organization>
 
     // Helper method to get typed value
     public getTypedValue(): any {

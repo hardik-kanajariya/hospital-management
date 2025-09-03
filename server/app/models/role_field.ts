@@ -2,6 +2,7 @@ import { DateTime } from 'luxon'
 import { BaseModel, column, belongsTo, hasMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import Role from './role.js'
+import Organization from './organization.js'
 import UserRoleData from './user_role_data.js'
 
 export default class RoleField extends BaseModel {
@@ -45,6 +46,9 @@ export default class RoleField extends BaseModel {
     @column({ columnName: 'is_system_field' })
     declare isSystemField: boolean
 
+    @column({ columnName: 'organization_id' })
+    declare organizationId: string | null
+
     @column()
     declare description: string | null
 
@@ -70,6 +74,9 @@ export default class RoleField extends BaseModel {
     // Relationships
     @belongsTo(() => Role)
     declare role: BelongsTo<typeof Role>
+
+    @belongsTo(() => Organization)
+    declare organization: BelongsTo<typeof Organization>
 
     @hasMany(() => UserRoleData)
     declare userRoleData: HasMany<typeof UserRoleData>

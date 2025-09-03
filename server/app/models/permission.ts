@@ -1,7 +1,8 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, manyToMany, beforeCreate } from '@adonisjs/lucid/orm'
-import type { ManyToMany } from '@adonisjs/lucid/types/relations'
+import { BaseModel, column, manyToMany, belongsTo, beforeCreate } from '@adonisjs/lucid/orm'
+import type { ManyToMany, BelongsTo } from '@adonisjs/lucid/types/relations'
 import Role from './role.js'
+import Organization from './organization.js'
 import { randomUUID } from 'node:crypto'
 
 export default class Permission extends BaseModel {
@@ -25,6 +26,9 @@ export default class Permission extends BaseModel {
     @column()
     declare description: string | null
 
+    @column({ columnName: 'organization_id' })
+    declare organizationId: string | null
+
     @column()
     declare isActive: boolean
 
@@ -35,6 +39,9 @@ export default class Permission extends BaseModel {
     declare updatedAt: DateTime
 
     // Relationships
+    @belongsTo(() => Organization)
+    declare organization: BelongsTo<typeof Organization>
+
     @manyToMany(() => Role, {
         pivotTable: 'role_permissions',
         pivotColumns: ['actions'],
