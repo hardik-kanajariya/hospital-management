@@ -20,6 +20,8 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: '🚀 Getting Started',
       items: [
+        'quick-start',
+        'system-requirements',
         'current-state',
         'installation',
         'technology-stack',
@@ -35,10 +37,19 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: '🚀 Deployment',
+      items: [
+        'deployment/production',
+        'deployment/docker',
+      ],
+    },
+    {
+      type: 'category',
       label: '🔧 Developer Resources',
       items: [
         'api-reference',
         'database-schema',
+        'troubleshooting',
       ],
     },
   ],
