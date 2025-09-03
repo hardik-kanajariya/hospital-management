@@ -7,8 +7,8 @@ interface ProtectedSuperDuparAdminRouteProps {
     requireAuth?: boolean;
 }
 
-const ProtectedRouteContent: React.FC<{ 
-    children: React.ReactNode; 
+const ProtectedRouteContent: React.FC<{
+    children: React.ReactNode;
     requireAuth: boolean;
 }> = ({ children, requireAuth }) => {
     const { user, isLoading } = useSuperDuparAdminAuth();
@@ -34,9 +34,9 @@ const ProtectedRouteContent: React.FC<{
     return <>{children}</>;
 };
 
-const ProtectedSuperDuparAdminRoute: React.FC<ProtectedSuperDuparAdminRouteProps> = ({ 
-    children, 
-    requireAuth = true 
+const ProtectedSuperDuparAdminRoute: React.FC<ProtectedSuperDuparAdminRouteProps> = ({
+    children,
+    requireAuth = true
 }) => {
     return (
         <SuperDuparAdminAuthProvider>

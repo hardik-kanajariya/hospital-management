@@ -145,10 +145,10 @@ export const SuperDuparAdminAuthProvider: React.FC<{ children: ReactNode }> = ({
 
             if (data.success && data.data?.user && data.data?.token) {
                 const { user, token } = data.data;
-                
+
                 // Store authentication data
                 setUserData(user, token.token);
-                
+
                 // Update auth state
                 setAuthState({
                     user,
