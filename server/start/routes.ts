@@ -57,6 +57,7 @@ router.group(() => {
     router.get('/dashboard-stats', '#controllers/super_dupar_admin_management_controller.dashboardStats')
     router.get('/super-admins', '#controllers/super_dupar_admin_management_controller.getSuperAdmins')
     router.post('/super-admins', '#controllers/super_dupar_admin_management_controller.createSuperAdmin')
+    router.post('/organizations-with-super-admin', '#controllers/super_dupar_admin_management_controller.createOrganizationWithSuperAdmin')
     router.put('/super-admins/:id', '#controllers/super_dupar_admin_management_controller.updateSuperAdmin')
     router.patch('/super-admins/:id/status', '#controllers/super_dupar_admin_management_controller.toggleSuperAdminStatus')
     router.get('/organizations', '#controllers/super_dupar_admin_management_controller.getOrganizations')

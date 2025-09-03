@@ -2,6 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import User from '#models/user'
 import Organization from '#models/organization'
 import Role from '#models/role'
+import OrganizationSeedingService from '#services/organization_seeding_service'
 import { DateTime } from 'luxon'
 
 export default class SuperDuparAdminManagementController {
@@ -102,6 +103,247 @@ export default class SuperDuparAdminManagementController {
             return response.status(500).json({
                 success: false,
                 message: 'Failed to fetch super admins'
+            })
+        }
+    }
+
+    /**
+     * Create a new organization with its super admin
+     */
+    async createOrganizationWithSuperAdmin({ request, response, superDuparAdmin }: HttpContext) {
+        try {
+            const {
+                // Organization data
+                organizationName,
+                organizationType,
+                registrationNumber,
+                address,
+                phone: orgPhone,
+                email: orgEmail,
+                website,
+                timezone,
+                currency,
+                language,
+                // Super admin data
+                email,
+                password,
+                name,
+                phone,
+                department,
+                employeeId
+            } = request.only([
+                'organizationName',
+                'organizationType', 
+                'registrationNumber',
+                'address',
+                'orgPhone',
+                'orgEmail',
+                'website',
+                'timezone',
+                'currency',
+                'language',
+                'email',
+                'password',
+                'name',
+                'phone',
+                'department',
+                'employeeId'
+            ])
+
+            // Validation
+            if (!organizationName || !email || !password || !name) {
+                return response.status(400).json({
+                    success: false,
+                    message: 'Organization name, super admin email, password, and name are required'
+                })
+            }
+
+            // Check if email already exists
+            const existingUser = await User.findBy('email', email)
+            if (existingUser) {
+                return response.status(400).json({
+                    success: false,
+                    message: 'User with this email already exists'
+                })
+            }
+
+            // Create organization
+            const organization = await Organization.create({
+                name: organizationName,
+                type: organizationType || 'hospital',
+                registrationNumber,
+                address,
+                phone: orgPhone,
+                email: orgEmail,
+                website,
+                status: 'active',
+                timezone: timezone || 'UTC',
+                currency: currency || 'USD',
+                language: language || 'en',
+                settings: {},
+                branding: {}
+            })
+
+            // Seed organization data with system defaults
+            try {
+                await OrganizationSeedingService.seedOrganizationData(organization.id)
+            } catch (seedingError) {
+                console.error('Organization seeding failed:', seedingError)
+                // In case of seeding failure, we should probably rollback organization creation
+                await organization.delete()
+                return response.status(500).json({
+                    success: false,
+                    message: 'Failed to initialize organization data. Please try again.'
+                })
+            }
+
+            // Get organization-specific super admin role
+            const superAdminRole = await Role.query()
+                .where('name', 'super_admin')
+                .where('organization_id', organization.id)
+                .first()
+
+            if (!superAdminRole) {
+                // Fallback to system super admin role
+                const systemSuperAdminRole = await Role.query()
+                    .where('name', 'super_admin')
+                    .whereNull('organization_id')
+                    .first()
+                
+                if (!systemSuperAdminRole) {
+                    await organization.delete()
+                    return response.status(500).json({
+                        success: false,
+                        message: 'Super admin role not found'
+                    })
+                }
+                
+                // Create super admin user with system role for now
+                const user = await User.create({
+                    email,
+                    passwordHash: password, 
+                    name,
+                    phone,
+                    department,
+                    employeeId,
+                    organizationId: organization.id,
+                    roleId: systemSuperAdminRole.id,
+                    isActive: true,
+                    isForDemoPurpose: false
+                })
+
+                // Assign super admin role via many-to-many relationship
+                await user.related('roles').attach({
+                    [systemSuperAdminRole.id]: {
+                        assigned_at: DateTime.now(),
+                        assigned_by: superDuparAdmin?.id,
+                        is_active: true
+                    }
+                })
+
+                // Load the created user with relations
+                await user.load('organization')
+                await user.load('roles')
+
+                // Log activity
+                if (superDuparAdmin) {
+                    await superDuparAdmin.logActivity('create_organization_with_super_admin', {
+                        entityType: 'organization',
+                        entityId: organization.id,
+                        details: {
+                            organizationName: organization.name,
+                            superAdminEmail: user.email,
+                            superAdminName: user.name
+                        }
+                    })
+                }
+
+                return response.status(201).json({
+                    success: true,
+                    message: 'Organization and super admin created successfully',
+                    data: {
+                        organization: organization.serialize(),
+                        superAdmin: {
+                            id: user.id,
+                            email: user.email,
+                            name: user.name,
+                            phone: user.phone,
+                            department: user.department,
+                            employeeId: user.employeeId,
+                            organization: user.organization,
+                            roles: user.roles,
+                            isActive: user.isActive,
+                            createdAt: user.createdAt
+                        }
+                    }
+                })
+            }
+
+            // Create super admin with organization-specific role
+            const user = await User.create({
+                email,
+                passwordHash: password,
+                name,
+                phone,
+                department,
+                employeeId,
+                organizationId: organization.id,
+                roleId: superAdminRole.id,
+                isActive: true,
+                isForDemoPurpose: false
+            })
+
+            // Assign super admin role via many-to-many relationship
+            await user.related('roles').attach({
+                [superAdminRole.id]: {
+                    assigned_at: DateTime.now(),
+                    assigned_by: superDuparAdmin?.id,
+                    is_active: true
+                }
+            })
+
+            // Load the created user with relations
+            await user.load('organization')
+            await user.load('roles')
+
+            // Log activity
+            if (superDuparAdmin) {
+                await superDuparAdmin.logActivity('create_organization_with_super_admin', {
+                    entityType: 'organization',
+                    entityId: organization.id,
+                    details: {
+                        organizationName: organization.name,
+                        superAdminEmail: user.email,
+                        superAdminName: user.name
+                    }
+                })
+            }
+
+            return response.status(201).json({
+                success: true,
+                message: 'Organization and super admin created successfully',
+                data: {
+                    organization: organization.serialize(),
+                    superAdmin: {
+                        id: user.id,
+                        email: user.email,
+                        name: user.name,
+                        phone: user.phone,
+                        department: user.department,
+                        employeeId: user.employeeId,
+                        organization: user.organization,
+                        roles: user.roles,
+                        isActive: user.isActive,
+                        createdAt: user.createdAt
+                    }
+                }
+            })
+
+        } catch (error) {
+            console.error('Create organization with super admin error:', error)
+            return response.status(500).json({
+                success: false,
+                message: 'Failed to create organization and super admin'
             })
         }
     }

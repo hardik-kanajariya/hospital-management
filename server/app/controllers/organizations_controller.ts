@@ -3,6 +3,7 @@ import Organization from '#models/organization'
 import User from '#models/user'
 import Role from '#models/role'
 import UserAuditLog from '#models/user_audit_log'
+import OrganizationSeedingService from '#services/organization_seeding_service'
 import { createOrganizationValidator, updateOrganizationValidator } from '#validators/organization'
 
 export default class OrganizationsController {
@@ -102,6 +103,15 @@ export default class OrganizationsController {
             const payload = await request.validateUsing(createOrganizationValidator)
 
             const organization = await Organization.create(payload)
+
+            // Seed organization data with system defaults
+            try {
+                await OrganizationSeedingService.seedOrganizationData(organization.id)
+            } catch (seedingError) {
+                console.error('Organization seeding failed:', seedingError)
+                // Consider whether to rollback organization creation or continue
+                // For now, we'll log and continue, but you might want to rollback in production
+            }
 
             // Log the action
             await UserAuditLog.logUserAction(user.id, organization.id, 'create_organization', {
