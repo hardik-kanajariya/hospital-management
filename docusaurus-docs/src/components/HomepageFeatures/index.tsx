@@ -1,4 +1,4 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 import clsx from 'clsx';
 import Heading from '@theme/Heading';
 import styles from './styles.module.css';
@@ -15,8 +15,8 @@ const FeatureList: FeatureItem[] = [
     Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
     description: (
       <>
-        Comprehensive hospital management system covering patient care, appointments, 
-        medical records, billing, inventory, and laboratory management. Everything 
+        Comprehensive hospital management system covering patient care, appointments,
+        medical records, billing, inventory, and laboratory management. Everything
         you need to run a modern healthcare facility.
       </>
     ),
@@ -26,8 +26,8 @@ const FeatureList: FeatureItem[] = [
     Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
       <>
-        Built with React 19, AdonisJS 6, MySQL 8, and TypeScript. Features real-time 
-        updates, responsive design, role-based access control, and multi-tenant 
+        Built with React 19, AdonisJS 6, MySQL 8, and TypeScript. Features real-time
+        updates, responsive design, role-based access control, and multi-tenant
         architecture for scalable healthcare operations.
       </>
     ),
@@ -37,15 +37,15 @@ const FeatureList: FeatureItem[] = [
     Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
     description: (
       <>
-        Complete documentation with installation guides, user manuals, API reference, 
-        deployment instructions, and troubleshooting. Get started quickly with our 
+        Complete documentation with installation guides, user manuals, API reference,
+        deployment instructions, and troubleshooting. Get started quickly with our
         5-minute setup guide and detailed tutorials.
       </>
     ),
   },
 ];
 
-function Feature({title, Svg, description}: FeatureItem) {
+function Feature({ title, Svg, description }: FeatureItem) {
   return (
     <div className={clsx('col col--4')}>
       <div className="text--center">
