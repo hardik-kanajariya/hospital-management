@@ -1,4 +1,5 @@
 import React, { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { httpService } from '@/services/HttpService';
 
 interface SuperDuparAdmin {
     id: string;
@@ -101,27 +102,53 @@ export const SuperDuparAdminAuthProvider: React.FC<{ children: ReactNode }> = ({
         });
     };
 
-    const makeAuthenticatedRequest = async (url: string, options: RequestInit = {}) => {
+    const makeAuthenticatedRequest = async (url: string, options: { method?: string; data?: any } = {}) => {
         const token = localStorage.getItem(STORAGE_KEY);
 
-        const response = await fetch(`/api${url}`, {
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...(token && { 'Authorization': `Bearer ${token}` }),
-                ...options.headers
-            }
-        });
+        if (token) {
+            // Temporarily set the token for this request
+            const originalToken = httpService.getToken();
+            httpService.setToken(token);
 
-        if (!response.ok) {
-            if (response.status === 401) {
-                clearAuth();
-                throw new Error('Authentication failed');
+            try {
+                let response;
+                const { method = 'GET', data } = options;
+
+                switch (method.toUpperCase()) {
+                    case 'POST':
+                        response = await httpService.post(url, data);
+                        break;
+                    case 'PUT':
+                        response = await httpService.put(url, data);
+                        break;
+                    case 'PATCH':
+                        response = await httpService.patch(url, data);
+                        break;
+                    case 'DELETE':
+                        response = await httpService.delete(url);
+                        break;
+                    default:
+                        response = await httpService.get(url);
+                }
+
+                return response;
+            } catch (error) {
+                if (error instanceof Error && error.message.includes('HTTP 401')) {
+                    clearAuth();
+                    throw new Error('Authentication failed');
+                }
+                throw error;
+            } finally {
+                // Restore original token
+                if (originalToken) {
+                    httpService.setToken(originalToken);
+                } else {
+                    httpService.clearToken();
+                }
             }
-            throw new Error(`Request failed: ${response.statusText}`);
+        } else {
+            throw new Error('No authentication token found');
         }
-
-        return response.json();
     };
 
     const login = async (email: string, password: string): Promise<SuperDuparAdmin> => {
@@ -129,22 +156,13 @@ export const SuperDuparAdminAuthProvider: React.FC<{ children: ReactNode }> = ({
             setError(null);
             setAuthState(prev => ({ ...prev, isLoading: true }));
 
-            const response = await fetch('/api/super-dupar-admin/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password })
+            const response = await httpService.post('/super-dupar-admin/auth/login', {
+                email,
+                password
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Login failed');
-            }
-
-            if (data.success && data.data?.user && data.data?.token) {
-                const { user, token } = data.data;
+            if (response.success && response.data?.user && response.data?.token) {
+                const { user, token } = response.data;
 
                 // Store authentication data
                 setUserData(user, token.token);
@@ -158,7 +176,7 @@ export const SuperDuparAdminAuthProvider: React.FC<{ children: ReactNode }> = ({
 
                 return user;
             } else {
-                throw new Error('Invalid response format');
+                throw new Error(response.error || 'Invalid response format');
             }
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Login failed';
@@ -173,7 +191,7 @@ export const SuperDuparAdminAuthProvider: React.FC<{ children: ReactNode }> = ({
 
     const logout = async (): Promise<void> => {
         try {
-            // Call logout endpoint
+            // Call logout endpoint using the makeAuthenticatedRequest
             await makeAuthenticatedRequest('/super-dupar-admin/auth/logout', {
                 method: 'POST'
             });
