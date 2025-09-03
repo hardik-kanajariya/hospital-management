@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { httpService } from '../../services/HttpService';
-import { useSuperDuparAdminAuth } from '@/hooks/useSuperDuparAdminAuth';
+import { useSuperDuparAdminAuth } from '@/hooks/useSuperDuparAdminAuth.tsx';
 
 interface DashboardStats {
     organizations: {

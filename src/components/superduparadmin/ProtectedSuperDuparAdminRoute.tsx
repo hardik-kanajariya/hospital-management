@@ -1,4 +1,4 @@
-import { SuperDuparAdminAuthProvider, useSuperDuparAdminAuth } from '@/hooks/useSuperDuparAdminAuth';
+import { SuperDuparAdminAuthProvider, useSuperDuparAdminAuth } from '@/hooks/useSuperDuparAdminAuth.tsx';
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 interface ProtectedSuperDuparAdminRouteProps {
