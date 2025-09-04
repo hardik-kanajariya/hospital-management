@@ -37,7 +37,7 @@ export function useBedApi() {
 
     const getAvailableBeds = useCallback(async (roomId?: string) => {
         try {
-            const url = roomId 
+            const url = roomId
                 ? `${process.env.VITE_API_URL || 'http://localhost:51167'}/api/beds/available?room_id=${roomId}`
                 : `${process.env.VITE_API_URL || 'http://localhost:51167'}/api/beds/available`;
             const response = await fetch(url);
