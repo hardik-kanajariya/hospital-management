@@ -264,7 +264,7 @@ export default function ClinicalAlertsMonitoring() {
     const acknowledgeAlert = async (alertId: string) => {
         try {
             // API call to acknowledge alert
-            setAlerts(prev => prev.map(alert => 
+            setAlerts(prev => prev.map(alert =>
                 alert.id === alertId ? { ...alert, acknowledged: true } : alert
             ))
             toast.success('Alert acknowledged')
@@ -361,7 +361,7 @@ export default function ClinicalAlertsMonitoring() {
                         <BellIcon className="w-4 h-4" />
                         <Switch
                             checked={alertPreferences.criticalAlerts}
-                            onCheckedChange={(checked) => 
+                            onCheckedChange={(checked) =>
                                 setAlertPreferences(prev => ({ ...prev, criticalAlerts: checked }))
                             }
                         />
@@ -550,7 +550,7 @@ export default function ClinicalAlertsMonitoring() {
                                                 )}
                                             </div>
                                         </div>
-                                        
+
                                         <div className="mb-3">
                                             <div className="flex items-center justify-between mb-1">
                                                 <span className="text-sm font-medium">Overall Risk Score</span>
@@ -558,7 +558,7 @@ export default function ClinicalAlertsMonitoring() {
                                             </div>
                                             <Progress value={risk.overallScore} className="h-2" />
                                         </div>
-                                        
+
                                         <div className="space-y-2">
                                             {risk.factors.slice(0, 3).map((factor, index) => (
                                                 <div key={index} className="flex items-center justify-between text-sm">
@@ -567,7 +567,7 @@ export default function ClinicalAlertsMonitoring() {
                                                 </div>
                                             ))}
                                         </div>
-                                        
+
                                         <Button variant="ghost" size="sm" className="mt-2 w-full">
                                             <EyeIcon className="w-4 h-4 mr-2" />
                                             View Details
@@ -598,13 +598,13 @@ export default function ClinicalAlertsMonitoring() {
                                         <h4 className="font-semibold">{interaction.patientName}</h4>
                                         <Badge variant={
                                             interaction.severity === 'severe' ? 'destructive' :
-                                            interaction.severity === 'moderate' ? 'default' : 'secondary'
+                                                interaction.severity === 'moderate' ? 'default' : 'secondary'
                                         }>
                                             {interaction.severity}
                                         </Badge>
                                     </div>
                                     <p className="text-sm mb-2">
-                                        <span className="font-medium">{interaction.drug1}</span> + 
+                                        <span className="font-medium">{interaction.drug1}</span> +
                                         <span className="font-medium"> {interaction.drug2}</span>
                                     </p>
                                     <p className="text-sm text-muted-foreground mb-2">
@@ -636,7 +636,7 @@ export default function ClinicalAlertsMonitoring() {
                                         <div className="flex items-center gap-2">
                                             <Badge variant={
                                                 immunization.priority === 'critical' ? 'destructive' :
-                                                immunization.priority === 'urgent' ? 'default' : 'secondary'
+                                                    immunization.priority === 'urgent' ? 'default' : 'secondary'
                                             }>
                                                 {immunization.priority}
                                             </Badge>

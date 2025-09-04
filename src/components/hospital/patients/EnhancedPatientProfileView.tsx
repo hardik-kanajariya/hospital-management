@@ -50,7 +50,7 @@ interface TimelineEvent {
 export default function EnhancedPatientProfile() {
     const { id } = useParams<{ id: string }>()
     const navigate = useNavigate()
-    
+
     const [patient, setPatient] = useState<Patient | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -206,11 +206,11 @@ export default function EnhancedPatientProfile() {
         const birthDate = new Date(dateOfBirth)
         let age = today.getFullYear() - birthDate.getFullYear()
         const monthDiff = today.getMonth() - birthDate.getMonth()
-        
+
         if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
             age--
         }
-        
+
         return age
     }
 
@@ -273,7 +273,7 @@ export default function EnhancedPatientProfile() {
                                     {patient.name.split(' ').map(n => n[0]).join('')}
                                 </AvatarFallback>
                             </Avatar>
-                            
+
                             <div className="space-y-1">
                                 <h1 className="text-3xl font-bold">{patient.name}</h1>
                                 <div className="flex items-center gap-4 text-muted-foreground">
@@ -300,7 +300,7 @@ export default function EnhancedPatientProfile() {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div className="flex items-center gap-2">
                             <Button variant="outline" size="sm" onClick={printProfile}>
                                 <PrinterIcon className="w-4 h-4 mr-2" />
@@ -523,7 +523,7 @@ export default function EnhancedPatientProfile() {
                                                     </div>
                                                     <Badge variant={
                                                         allergy.severity === 'severe' ? 'destructive' :
-                                                        allergy.severity === 'moderate' ? 'default' : 'secondary'
+                                                            allergy.severity === 'moderate' ? 'default' : 'secondary'
                                                     }>
                                                         {allergy.severity}
                                                     </Badge>
@@ -779,7 +779,7 @@ export default function EnhancedPatientProfile() {
                                                     </div>
                                                 </div>
                                             </div>
-                                            
+
                                             <div>
                                                 <h4 className="font-semibold mb-3">Lab Results</h4>
                                                 <div className="space-y-2">
@@ -798,9 +798,9 @@ export default function EnhancedPatientProfile() {
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <Separator />
-                                        
+
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <div className="flex items-center justify-between">
                                                 <span className="text-sm">Marketing Communications</span>

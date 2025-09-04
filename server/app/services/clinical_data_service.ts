@@ -100,10 +100,10 @@ export default class ClinicalDataService {
 
         for (const allergy of allergies) {
             const allergen = allergy.allergen.toLowerCase()
-            
+
             for (const medication of proposedMedications) {
                 const med = medication.toLowerCase()
-                
+
                 // Check direct contraindications
                 if (this.DRUG_ALLERGY_INTERACTIONS[allergen]?.contraindicated?.includes(med)) {
                     interactions.push({
@@ -116,7 +116,7 @@ export default class ClinicalDataService {
                         ]
                     })
                 }
-                
+
                 // Check caution medications
                 if (this.DRUG_ALLERGY_INTERACTIONS[allergen]?.caution?.includes(med)) {
                     interactions.push({
@@ -148,7 +148,7 @@ export default class ClinicalDataService {
 
         for (const currentMed of currentMedications) {
             const current = currentMed.medicationName.toLowerCase()
-            
+
             // Check for major interactions
             if (this.DRUG_INTERACTIONS[current]?.major?.includes(proposed) ||
                 this.DRUG_INTERACTIONS[proposed]?.major?.includes(current)) {
@@ -168,7 +168,7 @@ export default class ClinicalDataService {
                     ]
                 })
             }
-            
+
             // Check for moderate interactions
             if (this.DRUG_INTERACTIONS[current]?.moderate?.includes(proposed) ||
                 this.DRUG_INTERACTIONS[proposed]?.moderate?.includes(current)) {
@@ -214,12 +214,12 @@ export default class ClinicalDataService {
         // Check annual vaccines
         for (const vaccine of this.IMMUNIZATION_SCHEDULE.annual) {
             const lastDate = lastVaccines.get(vaccine)
-            const dueDate = lastDate 
+            const dueDate = lastDate
                 ? lastDate.plus({ years: 1 })
                 : DateTime.now()
-            
+
             const isOverdue = DateTime.now() > dueDate.plus({ months: 1 })
-            
+
             schedule.push({
                 vaccine,
                 dueDate,
@@ -232,12 +232,12 @@ export default class ClinicalDataService {
         // Check 10-year vaccines
         for (const vaccine of this.IMMUNIZATION_SCHEDULE.every_10_years) {
             const lastDate = lastVaccines.get(vaccine)
-            const dueDate = lastDate 
+            const dueDate = lastDate
                 ? lastDate.plus({ years: 10 })
                 : DateTime.now()
-            
+
             const isOverdue = DateTime.now() > dueDate
-            
+
             schedule.push({
                 vaccine,
                 dueDate,
@@ -278,7 +278,7 @@ export default class ClinicalDataService {
      */
     async calculateRiskScore(patientId: string, demographics: any, allergies: PatientAllergy[], medications: PatientMedication[]): Promise<RiskScore> {
         const factors: Array<{ category: string, factor: string, impact: number, weight: number }> = []
-        
+
         // Age factor
         const age = demographics.age || 0
         if (age > 65) {
@@ -291,7 +291,7 @@ export default class ClinicalDataService {
         }
 
         // Allergy factors
-        const severeAllergies = allergies.filter(a => 
+        const severeAllergies = allergies.filter(a =>
             a.severity === 'severe' || a.severity === 'life-threatening'
         )
         if (severeAllergies.length > 0) {
@@ -321,7 +321,7 @@ export default class ClinicalDataService {
         const infectious = this.calculateCategoryRisk(factors, 'infectious')
 
         // Calculate overall score
-        const overall = factors.reduce((sum, factor) => 
+        const overall = factors.reduce((sum, factor) =>
             sum + (factor.impact * factor.weight), 0
         )
 
@@ -412,7 +412,7 @@ export default class ClinicalDataService {
      */
     private calculateCategoryRisk(factors: any[], category: string): number {
         const categoryFactors = factors.filter(f => f.category === category)
-        return categoryFactors.reduce((sum, factor) => 
+        return categoryFactors.reduce((sum, factor) =>
             sum + (factor.impact * factor.weight), 0
         )
     }

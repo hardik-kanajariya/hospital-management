@@ -33,7 +33,7 @@ interface AdvancedSearchFilters {
     phone?: string
     email?: string
     patient_id?: string
-    
+
     // Date filters
     date_of_birth_from?: string
     date_of_birth_to?: string
@@ -41,7 +41,7 @@ interface AdvancedSearchFilters {
     created_to?: string
     last_visit_from?: string
     last_visit_to?: string
-    
+
     // Demographics
     gender?: string
     age_from?: number
@@ -51,13 +51,13 @@ interface AdvancedSearchFilters {
     city?: string
     state?: string
     postal_code?: string
-    
+
     // Medical filters
     allergies?: string[]
     medications?: string[]
     conditions?: string[]
     insurance_provider?: string
-    
+
     // Sort and pagination
     sort_by?: string
     sort_order?: 'asc' | 'desc'
@@ -84,7 +84,7 @@ export default function AdvancedPatientSearch({ onSearchResults, onLoading }: Ad
         limit: 20,
         page: 1
     })
-    
+
     const [isAdvancedOpen, setIsAdvancedOpen] = useState(false)
     const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([])
     const [saveSearchName, setSaveSearchName] = useState('')
@@ -108,10 +108,10 @@ export default function AdvancedPatientSearch({ onSearchResults, onLoading }: Ad
     const performSearch = async () => {
         setIsSearchLoading(true)
         onLoading(true)
-        
+
         try {
             const searchParams = new URLSearchParams()
-            
+
             // Add all non-empty filters to search params
             Object.entries(filters).forEach(([key, value]) => {
                 if (value !== undefined && value !== '' && value !== null) {
@@ -184,7 +184,7 @@ export default function AdvancedPatientSearch({ onSearchResults, onLoading }: Ad
         const updatedSaves = [...savedSearches, newSavedSearch]
         setSavedSearches(updatedSaves)
         localStorage.setItem('savedPatientSearches', JSON.stringify(updatedSaves))
-        
+
         setSaveSearchName('')
         toast.success('Search saved successfully')
     }
@@ -275,7 +275,7 @@ export default function AdvancedPatientSearch({ onSearchResults, onLoading }: Ad
                     </div>
                 </div>
             </CardHeader>
-            
+
             <CardContent className="space-y-6">
                 {/* Quick Search */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -359,7 +359,7 @@ export default function AdvancedPatientSearch({ onSearchResults, onLoading }: Ad
                             )}
                         </Button>
                     </CollapsibleTrigger>
-                    
+
                     <CollapsibleContent className="space-y-4 mt-4">
                         <Tabs defaultValue="demographics" className="w-full">
                             <TabsList className="grid w-full grid-cols-4">
@@ -368,7 +368,7 @@ export default function AdvancedPatientSearch({ onSearchResults, onLoading }: Ad
                                 <TabsTrigger value="medical">Medical</TabsTrigger>
                                 <TabsTrigger value="location">Location</TabsTrigger>
                             </TabsList>
-                            
+
                             <TabsContent value="demographics" className="space-y-4 mt-4">
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
@@ -420,7 +420,7 @@ export default function AdvancedPatientSearch({ onSearchResults, onLoading }: Ad
                                         />
                                     </div>
                                 </div>
-                                
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <Label htmlFor="age_from">Age From</Label>
@@ -444,7 +444,7 @@ export default function AdvancedPatientSearch({ onSearchResults, onLoading }: Ad
                                     </div>
                                 </div>
                             </TabsContent>
-                            
+
                             <TabsContent value="dates" className="space-y-4 mt-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
@@ -466,7 +466,7 @@ export default function AdvancedPatientSearch({ onSearchResults, onLoading }: Ad
                                         />
                                     </div>
                                 </div>
-                                
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <Label htmlFor="created_from">Registration Date From</Label>
@@ -488,7 +488,7 @@ export default function AdvancedPatientSearch({ onSearchResults, onLoading }: Ad
                                     </div>
                                 </div>
                             </TabsContent>
-                            
+
                             <TabsContent value="medical" className="space-y-4 mt-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
@@ -567,7 +567,7 @@ export default function AdvancedPatientSearch({ onSearchResults, onLoading }: Ad
                                     </div>
                                 </div>
                             </TabsContent>
-                            
+
                             <TabsContent value="location" className="space-y-4 mt-4">
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
@@ -672,7 +672,7 @@ export default function AdvancedPatientSearch({ onSearchResults, onLoading }: Ad
                             Clear All
                         </Button>
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
                         <Select
                             value={filters.sort_by || 'created_at'}

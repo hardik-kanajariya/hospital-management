@@ -1098,7 +1098,7 @@ export default class PatientsController {
     async addAllergy({ params, request, response }: HttpContext) {
         try {
             const payload = await request.validateUsing(allergyValidator)
-            
+
             const allergy = await PatientAllergy.create({
                 patientId: params.id,
                 allergen: payload.allergen,
@@ -1161,7 +1161,7 @@ export default class PatientsController {
     async addMedication({ params, request, response }: HttpContext) {
         try {
             const payload = await request.validateUsing(medicationValidator)
-            
+
             const medication = await PatientMedication.create({
                 patientId: params.id,
                 status: 'active',
@@ -1268,7 +1268,7 @@ export default class PatientsController {
     async addInsurance({ params, request, response }: HttpContext) {
         try {
             const payload = await request.validateUsing(insuranceValidator)
-            
+
             const insurance = await PatientInsurance.create({
                 patientId: params.id,
                 status: 'active',
@@ -1338,7 +1338,7 @@ export default class PatientsController {
     async updateCommunicationPreferences({ params, request, response }: HttpContext) {
         try {
             const payload = await request.validateUsing(communicationPreferencesValidator)
-            
+
             let preferences = await PatientCommunicationPreferences.query()
                 .where('patient_id', params.id)
                 .first()
@@ -1424,7 +1424,7 @@ export default class PatientsController {
     async addConsent({ params, request, response }: HttpContext) {
         try {
             const payload = await request.validateUsing(consentValidator)
-            
+
             const consent = await PatientConsent.create({
                 patientId: params.id,
                 consentType: 'treatment', // Default to treatment consent

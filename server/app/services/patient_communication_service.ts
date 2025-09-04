@@ -150,7 +150,7 @@ export default class PatientCommunicationService {
     async sendAppointmentReminders(): Promise<void> {
         const tomorrow = DateTime.now().plus({ days: 1 })
         const in24Hours = DateTime.now().plus({ hours: 24 })
-        
+
         // Get upcoming appointments
         const upcomingAppointments = await Appointment.query()
             .whereBetween('appointment_date_time', [tomorrow.startOf('day').toJSDate(), tomorrow.endOf('day').toJSDate()])
@@ -159,7 +159,7 @@ export default class PatientCommunicationService {
 
         for (const appointment of upcomingAppointments) {
             const patient = appointment.patient
-            
+
             // Get patient communication preferences
             const preferences = await PatientCommunicationPreferences.query()
                 .where('patient_id', patient.id)
@@ -274,10 +274,10 @@ export default class PatientCommunicationService {
      */
     async sendBirthdayGreetings(): Promise<void> {
         const today = DateTime.now()
-        
+
         // Find patients with birthdays today
         const birthdayPatients = await Patient.query()
-            .whereRaw("EXTRACT(month FROM date_of_birth) = ? AND EXTRACT(day FROM date_of_birth) = ?", 
+            .whereRaw("EXTRACT(month FROM date_of_birth) = ? AND EXTRACT(day FROM date_of_birth) = ?",
                 [today.month, today.day])
             .preload('communicationPreferences')
 
@@ -315,13 +315,13 @@ export default class PatientCommunicationService {
             // Get patient's conditions and medications
             const conditions = this.extractPatientConditions(patient)
             const ageGroup = this.getAgeGroup(patient.dateOfBirth)
-            
+
             // Find relevant health tips
             const relevantTips = this.findRelevantHealthTips(conditions, ageGroup, patient.gender)
-            
+
             if (relevantTips.length > 0) {
                 const tip = relevantTips[Math.floor(Math.random() * relevantTips.length)]
-                
+
                 const variables = {
                     patientName: patient.name,
                     tipTitle: tip.title,
@@ -421,7 +421,7 @@ export default class PatientCommunicationService {
      */
     async handleIncomingSMS(from: string, message: string): Promise<string> {
         const normalizedMessage = message.toLowerCase().trim()
-        
+
         // Find patient by phone number
         const patient = await Patient.query()
             .where('phone', from)
@@ -435,17 +435,17 @@ export default class PatientCommunicationService {
         if (normalizedMessage.includes('confirm') || normalizedMessage === 'yes' || normalizedMessage === 'y') {
             return `Thank you ${patient.name}! Your appointment has been confirmed. We look forward to seeing you.`
         }
-        
+
         if (normalizedMessage.includes('cancel') || normalizedMessage.includes('reschedule')) {
             return `We understand you need to make changes to your appointment. Please call our office at +1-555-0123 to reschedule.`
         }
-        
+
         if (normalizedMessage.includes('stop') || normalizedMessage.includes('unsubscribe')) {
             // Update communication preferences
             await PatientCommunicationPreferences.query()
                 .where('patient_id', patient.id)
                 .update({ appointmentReminders: false })
-            
+
             return 'You have been unsubscribed from appointment reminders. You can update your preferences in the patient portal.'
         }
 
@@ -456,28 +456,28 @@ export default class PatientCommunicationService {
     // Private helper methods
     private async sendSMS(phoneNumber: string, template: string, variables: Record<string, any>): Promise<void> {
         const message = this.replaceTemplateVariables(template, variables)
-        
+
         // Here you would integrate with an SMS service like Twilio, AWS SNS, etc.
         console.log(`SMS to ${phoneNumber}: ${message}`)
-        
+
         // Simulate SMS sending
         await new Promise(resolve => setTimeout(resolve, 100))
     }
 
     private async sendEmail(
-        email: string, 
-        subject: string, 
-        template: string, 
+        email: string,
+        subject: string,
+        template: string,
         variables: Record<string, any>
     ): Promise<void> {
         const finalSubject = this.replaceTemplateVariables(subject, variables)
         const finalContent = this.replaceTemplateVariables(template, variables)
-        
+
         // Here you would integrate with an email service like SendGrid, AWS SES, etc.
         console.log(`Email to ${email}:`)
         console.log(`Subject: ${finalSubject}`)
         console.log(`Content: ${finalContent}`)
-        
+
         // Simulate email sending
         await new Promise(resolve => setTimeout(resolve, 100))
     }
@@ -502,12 +502,12 @@ export default class PatientCommunicationService {
 
     private extractPatientConditions(patient: any): string[] {
         const conditions: string[] = []
-        
+
         // Add chronic conditions
         if (patient.chronicConditions) {
             conditions.push(...patient.chronicConditions)
         }
-        
+
         // Add conditions based on allergies
         if (patient.allergyRecords) {
             patient.allergyRecords.forEach((allergy: PatientAllergy) => {
@@ -516,7 +516,7 @@ export default class PatientCommunicationService {
                 }
             })
         }
-        
+
         // Add conditions based on medications
         if (patient.currentMedications) {
             patient.currentMedications.forEach((medication: PatientMedication) => {
@@ -530,13 +530,13 @@ export default class PatientCommunicationService {
                 }
             })
         }
-        
+
         return conditions
     }
 
     private getAgeGroup(dateOfBirth: DateTime): string {
         const age = DateTime.now().diff(dateOfBirth, 'years').years
-        
+
         if (age < 18) return 'pediatric'
         if (age < 65) return 'adult'
         return 'senior'
@@ -546,22 +546,22 @@ export default class PatientCommunicationService {
         return this.HEALTH_TIPS.filter(tip => {
             // Check condition match
             if (tip.targetConditions) {
-                const hasMatchingCondition = tip.targetConditions.some(condition => 
+                const hasMatchingCondition = tip.targetConditions.some(condition =>
                     conditions.includes(condition)
                 )
                 if (!hasMatchingCondition) return false
             }
-            
+
             // Check age group match
             if (tip.targetAgeGroups && !tip.targetAgeGroups.includes(ageGroup)) {
                 return false
             }
-            
+
             // Check gender match
             if (tip.targetGender && tip.targetGender !== 'all' && tip.targetGender !== gender) {
                 return false
             }
-            
+
             return true
         })
     }

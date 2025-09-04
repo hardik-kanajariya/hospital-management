@@ -12,7 +12,7 @@ export interface User {
   createdAt: string;
   lastLogin?: string;
   permissions: Permission[];
-  
+
   // Patient portal specific properties
   avatar?: string;
   patientId?: string;

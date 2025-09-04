@@ -28,7 +28,7 @@ interface CompletePatientProfile {
         vaccinationRecords?: object[]
         insuranceInfo?: object
     }
-    
+
     // Extended data
     demographics?: Partial<PatientDemographics>
     insurances?: Partial<PatientInsurance>[]
@@ -60,7 +60,7 @@ export default class PatientService {
         return Database.transaction(async (trx) => {
             // Generate unique patient ID
             const patientId = await this.generateUniquePatientId()
-            
+
             // Create main patient record
             const patient = new Patient()
             patient.useTransaction(trx)
@@ -77,7 +77,7 @@ export default class PatientService {
             patient.chronicConditions = data.patient.chronicConditions || []
             patient.vaccinationRecords = data.patient.vaccinationRecords || []
             patient.insuranceInfo = data.patient.insuranceInfo || {}
-            
+
             await patient.save()
 
             // Create demographics if provided
@@ -178,7 +178,7 @@ export default class PatientService {
             await PatientInsurance.query({ client: trx })
                 .where('patient_id', patientId)
                 .delete()
-            
+
             // Create new insurances
             return this.createInsurances(patientId, insuranceData, trx)
         })
@@ -193,13 +193,13 @@ export default class PatientService {
         days: number
         exact: string
     } {
-        const birthDate = typeof dateOfBirth === 'string' 
-            ? DateTime.fromISO(dateOfBirth) 
+        const birthDate = typeof dateOfBirth === 'string'
+            ? DateTime.fromISO(dateOfBirth)
             : dateOfBirth
         const now = DateTime.now()
-        
+
         const diff = now.diff(birthDate, ['years', 'months', 'days']).toObject()
-        
+
         return {
             years: Math.floor(diff.years || 0),
             months: Math.floor(diff.months || 0),
@@ -230,7 +230,7 @@ export default class PatientService {
         const matches = potentialDuplicates.map((patient) => {
             const score = this.calculateSimilarityScore(patientData, patient)
             const matchingFields = this.getMatchingFields(patientData, patient)
-            
+
             return {
                 patient,
                 score,
@@ -254,17 +254,17 @@ export default class PatientService {
     async mergePatients(primaryPatientId: string, duplicatePatientIds: string[]): Promise<Patient> {
         return Database.transaction(async (trx) => {
             const primaryPatient = await Patient.findOrFail(primaryPatientId)
-            
+
             for (const duplicateId of duplicatePatientIds) {
                 // Transfer all related records to primary patient
                 await this.transferRelatedRecords(duplicateId, primaryPatientId, trx)
-                
+
                 // Soft delete the duplicate
                 await Patient.query({ client: trx })
                     .where('id', duplicateId)
                     .update({ deletedAt: DateTime.now() })
             }
-            
+
             return primaryPatient
         })
     }
@@ -275,22 +275,22 @@ export default class PatientService {
     private async generateUniquePatientId(): Promise<string> {
         let patientId: string
         let isUnique = false
-        
+
         while (!isUnique) {
             // Generate patient ID in format: P + YYYYMMDD + 4-digit sequence
             const today = DateTime.now()
             const dateStr = today.toFormat('yyyyMMdd')
             const sequence = Math.floor(Math.random() * 9999).toString().padStart(4, '0')
             patientId = `P${dateStr}${sequence}`
-            
+
             // Check if this ID already exists
             const existing = await Patient.query()
                 .where('patient_id', patientId)
                 .first()
-            
+
             isUnique = !existing
         }
-        
+
         return patientId!
     }
 
@@ -372,7 +372,7 @@ export default class PatientService {
     private getMatchingFields(data1: any, data2: Patient): string[] {
         const matching: string[] = []
 
-        if (data1.name && data2.name && 
+        if (data1.name && data2.name &&
             this.calculateStringsimilarity(data1.name.toLowerCase(), data2.name.toLowerCase()) > 0.8) {
             matching.push('name')
         }
@@ -404,7 +404,7 @@ export default class PatientService {
 
     private async createInsurances(patientId: string, insurances: Partial<PatientInsurance>[], trx: any): Promise<PatientInsurance[]> {
         const created: PatientInsurance[] = []
-        
+
         for (const insuranceData of insurances) {
             const insurance = new PatientInsurance()
             insurance.useTransaction(trx)
@@ -413,13 +413,13 @@ export default class PatientService {
             await insurance.save()
             created.push(insurance)
         }
-        
+
         return created
     }
 
     private async createAllergyRecords(patientId: string, allergies: Partial<PatientAllergy>[], trx: any): Promise<PatientAllergy[]> {
         const created: PatientAllergy[] = []
-        
+
         for (const allergyData of allergies) {
             const allergy = new PatientAllergy()
             allergy.useTransaction(trx)
@@ -428,13 +428,13 @@ export default class PatientService {
             await allergy.save()
             created.push(allergy)
         }
-        
+
         return created
     }
 
     private async createMedications(patientId: string, medications: Partial<PatientMedication>[], trx: any): Promise<PatientMedication[]> {
         const created: PatientMedication[] = []
-        
+
         for (const medicationData of medications) {
             const medication = new PatientMedication()
             medication.useTransaction(trx)
@@ -443,13 +443,13 @@ export default class PatientService {
             await medication.save()
             created.push(medication)
         }
-        
+
         return created
     }
 
     private async createImmunizations(patientId: string, immunizations: Partial<PatientImmunization>[], trx: any): Promise<PatientImmunization[]> {
         const created: PatientImmunization[] = []
-        
+
         for (const immunizationData of immunizations) {
             const immunization = new PatientImmunization()
             immunization.useTransaction(trx)
@@ -458,13 +458,13 @@ export default class PatientService {
             await immunization.save()
             created.push(immunization)
         }
-        
+
         return created
     }
 
     private async createFamilyHistory(patientId: string, familyHistory: Partial<PatientFamilyHistory>[], trx: any): Promise<PatientFamilyHistory[]> {
         const created: PatientFamilyHistory[] = []
-        
+
         for (const historyData of familyHistory) {
             const history = new PatientFamilyHistory()
             history.useTransaction(trx)
@@ -473,13 +473,13 @@ export default class PatientService {
             await history.save()
             created.push(history)
         }
-        
+
         return created
     }
 
     private async createConsents(patientId: string, consents: Partial<PatientConsent>[], trx: any): Promise<PatientConsent[]> {
         const created: PatientConsent[] = []
-        
+
         for (const consentData of consents) {
             const consent = new PatientConsent()
             consent.useTransaction(trx)
@@ -488,7 +488,7 @@ export default class PatientService {
             await consent.save()
             created.push(consent)
         }
-        
+
         return created
     }
 
@@ -524,7 +524,7 @@ export default class PatientService {
             PatientPortalAccess.query({ client: trx }).where('patient_id', fromPatientId).update({ patientId: toPatientId }),
             PatientCommunicationPreferences.query({ client: trx }).where('patient_id', fromPatientId).update({ patientId: toPatientId })
         ]
-        
+
         await Promise.all(updateQueries)
     }
 }

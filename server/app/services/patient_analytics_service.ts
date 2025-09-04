@@ -1,8 +1,5 @@
 import { DateTime } from 'luxon'
-import Database from '@adonisjs/lucid/services/db'
 import Patient from '#models/patient'
-import PatientAllergy from '#models/patient_allergy'
-import PatientMedication from '#models/patient_medication'
 import Appointment from '#models/appointment'
 
 interface DemographicAnalysis {
@@ -137,7 +134,7 @@ export default class PatientAnalyticsService {
      */
     async generateDemographicAnalysis(dateRange?: { start: DateTime, end: DateTime }): Promise<DemographicAnalysis> {
         let query = Patient.query().whereNull('deleted_at')
-        
+
         if (dateRange) {
             query = query.whereBetween('created_at', [dateRange.start.toJSDate(), dateRange.end.toJSDate()])
         }
@@ -234,7 +231,7 @@ export default class PatientAnalyticsService {
                         byGender: {}
                     }
                 }
-                
+
                 conditionCounts[chronicCondition].total++
                 conditionCounts[chronicCondition].byAge[ageGroup] = (conditionCounts[chronicCondition].byAge[ageGroup] || 0) + 1
                 conditionCounts[chronicCondition].byGender[gender] = (conditionCounts[chronicCondition].byGender[gender] || 0) + 1
@@ -251,7 +248,7 @@ export default class PatientAnalyticsService {
                             byGender: {}
                         }
                     }
-                    
+
                     conditionCounts[inferredCondition].total++
                     conditionCounts[inferredCondition].byAge[ageGroup] = (conditionCounts[inferredCondition].byAge[ageGroup] || 0) + 1
                     conditionCounts[inferredCondition].byGender[gender] = (conditionCounts[inferredCondition].byGender[gender] || 0) + 1
@@ -372,7 +369,7 @@ export default class PatientAnalyticsService {
 
         const periodStart = period.start
         const periodEnd = period.end
-        
+
         let newPatients = 0
         let returningPatients = 0
         const riskPatients: RetentionMetrics['riskOfLeaving'] = []
@@ -398,10 +395,10 @@ export default class PatientAnalyticsService {
 
             // Risk assessment
             if (appointments.length > 0) {
-                const lastAppointment = appointments.sort((a, b) => 
+                const lastAppointment = appointments.sort((a, b) =>
                     b.appointmentDate.getTime() - a.appointmentDate.getTime()
                 )[0]
-                
+
                 const lastVisit = DateTime.fromJSDate(lastAppointment.appointmentDate)
                 const daysSinceLastVisit = DateTime.now().diff(lastVisit, 'days').days
 
@@ -409,7 +406,7 @@ export default class PatientAnalyticsService {
                     const riskFactors = []
                     if (daysSinceLastVisit > 365) riskFactors.push('Long absence')
                     if (appointments.length < 3) riskFactors.push('Low engagement')
-                    
+
                     const riskScore = Math.min(daysSinceLastVisit / 365, 1.0)
 
                     riskPatients.push({
@@ -474,7 +471,7 @@ export default class PatientAnalyticsService {
             }
 
             // Severe allergies
-            const severeAllergies = patient.allergyRecords?.filter(a => 
+            const severeAllergies = patient.allergyRecords?.filter(a =>
                 a.severity === 'severe' || a.severity === 'life-threatening'
             ) || []
             if (severeAllergies.length > 0) {
@@ -484,7 +481,7 @@ export default class PatientAnalyticsService {
 
             if (riskScore > 0.5) {
                 const recommendedActions = this.generateRecommendedActions(riskFactors, patient)
-                
+
                 highRiskPatients.push({
                     patientId: patient.id,
                     patientName: patient.name,
@@ -543,13 +540,13 @@ export default class PatientAnalyticsService {
         // Simple region extraction - in real implementation, use geocoding services
         const regions = ['Downtown', 'Suburbs', 'North Side', 'South Side', 'East End', 'West End']
         const lowerAddress = address.toLowerCase()
-        
+
         for (const region of regions) {
             if (lowerAddress.includes(region.toLowerCase())) {
                 return region
             }
         }
-        
+
         return 'Other'
     }
 
@@ -605,7 +602,7 @@ export default class PatientAnalyticsService {
         }
 
         actions.push('Consider case management enrollment')
-        
+
         return actions
     }
 }

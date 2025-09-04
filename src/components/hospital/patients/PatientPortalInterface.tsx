@@ -105,14 +105,14 @@ export default function PatientPortalInterface() {
     const { user } = useAuth()
     const [loading, setLoading] = useState(true)
     const [activeTab, setActiveTab] = useState('overview')
-    
+
     // Data states
     const [appointments, setAppointments] = useState<PortalAppointment[]>([])
     const [labResults, setLabResults] = useState<LabResult[]>([])
     const [healthRecords, setHealthRecords] = useState<HealthRecord[]>([])
     const [medications, setMedications] = useState<Medication[]>([])
     const [billing, setBilling] = useState<BillingRecord[]>([])
-    
+
     // Form states
     const [appointmentRequest, setAppointmentRequest] = useState({
         preferredDate: '',
@@ -121,7 +121,7 @@ export default function PatientPortalInterface() {
         reason: '',
         urgency: 'routine'
     })
-    
+
     const [messageToProvider, setMessageToProvider] = useState({
         subject: '',
         message: '',
@@ -440,32 +440,32 @@ export default function PatientPortalInterface() {
                                     <CardTitle>Quick Actions</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
-                                    <Button 
-                                        className="w-full justify-start" 
+                                    <Button
+                                        className="w-full justify-start"
                                         variant="outline"
                                         onClick={() => setActiveTab('appointments')}
                                     >
                                         <CalendarIcon className="w-4 h-4 mr-2" />
                                         Schedule Appointment
                                     </Button>
-                                    <Button 
-                                        className="w-full justify-start" 
+                                    <Button
+                                        className="w-full justify-start"
                                         variant="outline"
                                         onClick={() => setActiveTab('messages')}
                                     >
                                         <ChatCircleIcon className="w-4 h-4 mr-2" />
                                         Message Provider
                                     </Button>
-                                    <Button 
-                                        className="w-full justify-start" 
+                                    <Button
+                                        className="w-full justify-start"
                                         variant="outline"
                                         onClick={() => setActiveTab('lab-results')}
                                     >
                                         <FileTextIcon className="w-4 h-4 mr-2" />
                                         View Lab Results
                                     </Button>
-                                    <Button 
-                                        className="w-full justify-start" 
+                                    <Button
+                                        className="w-full justify-start"
                                         variant="outline"
                                         onClick={() => setActiveTab('medications')}
                                     >
@@ -493,7 +493,7 @@ export default function PatientPortalInterface() {
                                                 </div>
                                                 <Badge variant={
                                                     appointment.status === 'scheduled' ? 'default' :
-                                                    appointment.status === 'completed' ? 'secondary' : 'outline'
+                                                        appointment.status === 'completed' ? 'secondary' : 'outline'
                                                 }>
                                                     {appointment.status}
                                                 </Badge>
@@ -521,8 +521,8 @@ export default function PatientPortalInterface() {
                                                     <h4 className="font-semibold">{appointment.type}</h4>
                                                     <Badge variant={
                                                         appointment.status === 'scheduled' ? 'default' :
-                                                        appointment.status === 'completed' ? 'secondary' :
-                                                        appointment.status === 'cancelled' ? 'destructive' : 'outline'
+                                                            appointment.status === 'completed' ? 'secondary' :
+                                                                appointment.status === 'cancelled' ? 'destructive' : 'outline'
                                                     }>
                                                         {appointment.status}
                                                     </Badge>
@@ -658,7 +658,7 @@ export default function PatientPortalInterface() {
                                                 <div className="flex items-center gap-2">
                                                     <Badge variant={
                                                         result.status === 'completed' ? 'default' :
-                                                        result.status === 'pending' ? 'secondary' : 'outline'
+                                                            result.status === 'pending' ? 'secondary' : 'outline'
                                                     }>
                                                         {result.status}
                                                     </Badge>
@@ -674,7 +674,7 @@ export default function PatientPortalInterface() {
                                                     )}
                                                 </div>
                                             </div>
-                                            
+
                                             {result.results && (
                                                 <div className="overflow-x-auto">
                                                     <table className="w-full text-sm">
@@ -695,7 +695,7 @@ export default function PatientPortalInterface() {
                                                                     <td className="p-2">
                                                                         <Badge variant={
                                                                             item.flag === 'high' ? 'destructive' :
-                                                                            item.flag === 'low' ? 'destructive' : 'secondary'
+                                                                                item.flag === 'low' ? 'destructive' : 'secondary'
                                                                         }>
                                                                             {item.flag || 'normal'}
                                                                         </Badge>
@@ -706,7 +706,7 @@ export default function PatientPortalInterface() {
                                                     </table>
                                                 </div>
                                             )}
-                                            
+
                                             {result.doctorNotes && (
                                                 <div className="mt-4 p-3 bg-muted rounded-lg">
                                                     <h5 className="font-semibold mb-2">Doctor's Notes</h5>
@@ -739,12 +739,12 @@ export default function PatientPortalInterface() {
                                                 </div>
                                                 <Badge variant={
                                                     medication.status === 'active' ? 'default' :
-                                                    medication.status === 'completed' ? 'secondary' : 'outline'
+                                                        medication.status === 'completed' ? 'secondary' : 'outline'
                                                 }>
                                                     {medication.status}
                                                 </Badge>
                                             </div>
-                                            
+
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-3">
                                                 <div>
                                                     <p><strong>Prescribed by:</strong> {medication.prescribedBy}</p>
@@ -758,7 +758,7 @@ export default function PatientPortalInterface() {
                                                     <p><strong>Instructions:</strong> {medication.instructions}</p>
                                                 </div>
                                             </div>
-                                            
+
                                             {medication.status === 'active' && (
                                                 <div className="flex gap-2">
                                                     <Button size="sm" variant="outline">
