@@ -65,6 +65,16 @@ const sidebars: SidebarsConfig = {
             'developer/scalability',
           ],
         },
+        {
+          type: 'category',
+          label: 'Multimedia Content',
+          items: [
+            'multimedia/video-strategy',
+            'multimedia/video-scripts',
+            'multimedia/interactive-demos',
+            'multimedia/visual-enhancement',
+          ],
+        },
       ],
     },
   ],
