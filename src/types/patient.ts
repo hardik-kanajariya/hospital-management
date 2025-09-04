@@ -30,6 +30,11 @@ export interface Patient {
     portalAccess?: PatientPortalAccess;
     communicationPreferences?: PatientCommunicationPreferences;
 
+    // Derived data for enhanced profile
+    allergyRecords?: PatientAllergy[];
+    currentMedications?: PatientMedication[];
+    photo?: string;
+
     // Related data (populated when needed)
     appointments?: Appointment[];
     medicalRecords?: MedicalRecord[];
