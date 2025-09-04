@@ -261,14 +261,41 @@ router.group(() => {
     // Bed management routes
     router.group(() => {
       router.get('/', '#controllers/beds_controller.index')
+      router.get('/occupancy-stats', '#controllers/beds_controller.occupancyStats')
+      router.get('/available', '#controllers/beds_controller.available')
       router.get('/:id', '#controllers/beds_controller.show')
       router.post('/', '#controllers/beds_controller.store')
       router.put('/:id', '#controllers/beds_controller.update')
       router.delete('/:id', '#controllers/beds_controller.destroy')
-      router.get('/available', '#controllers/beds_controller.available')
       router.post('/:id/assign', '#controllers/beds_controller.assign')
       router.post('/:id/discharge', '#controllers/beds_controller.discharge')
+      router.post('/:id/clean', '#controllers/beds_controller.clean')
+      router.post('/:id/maintain', '#controllers/beds_controller.maintain')
     }).prefix('/beds')
+
+    // Room management routes
+    router.group(() => {
+      router.get('/', '#controllers/rooms_controller.index')
+      router.post('/', '#controllers/rooms_controller.store')
+      router.get('/availability', '#controllers/rooms_controller.availability')
+      router.get('/available-for-admission', '#controllers/rooms_controller.availableForAdmission')
+      router.get('/:id', '#controllers/rooms_controller.show')
+      router.put('/:id', '#controllers/rooms_controller.update')
+      router.delete('/:id', '#controllers/rooms_controller.destroy')
+    }).prefix('/rooms')
+
+    // Admission management routes
+    router.group(() => {
+      router.get('/', '#controllers/admissions_controller.index')
+      router.post('/', '#controllers/admissions_controller.store')
+      router.get('/statistics', '#controllers/admissions_controller.statistics')
+      router.get('/:id', '#controllers/admissions_controller.show')
+      router.put('/:id', '#controllers/admissions_controller.update')
+      router.post('/:id/discharge', '#controllers/admissions_controller.discharge')
+      router.post('/:id/transfer', '#controllers/admissions_controller.transfer')
+      router.get('/:id/bill-summary', '#controllers/admissions_controller.billSummary')
+      router.post('/:id/charges', '#controllers/admissions_controller.addCharge')
+    }).prefix('/admissions')
 
     // Prescription routes
     router.group(() => {

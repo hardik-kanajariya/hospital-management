@@ -3,7 +3,6 @@ import User from '#models/user'
 import { updateUserValidator, createUserValidator } from '#validators/user'
 import Database from '@adonisjs/lucid/services/db'
 import { v4 as uuid } from 'uuid'
-import hash from '@adonisjs/core/services/hash'
 import { inject } from '@adonisjs/core'
 import RoleFieldService from '#services/role_field_service'
 
