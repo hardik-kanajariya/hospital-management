@@ -1553,6 +1553,270 @@ export default class extends BaseSeeder {
         isSystem: true,
         metadata: { color: "#f59e0b", allowBooking: false },
       },
+
+      // Room Types
+      {
+        category: "room_type",
+        name: "General Ward",
+        description: "General ward room",
+        value: "general",
+        display_order: 1,
+        is_system: true,
+        metadata: { daily_rate: 800 }
+      },
+      {
+        category: "room_type",
+        name: "Private Room",
+        description: "Private room",
+        value: "private",
+        display_order: 2,
+        is_system: true,
+        metadata: { daily_rate: 2000 }
+      },
+      {
+        category: "room_type",
+        name: "ICU",
+        description: "Intensive Care Unit",
+        value: "icu",
+        display_order: 3,
+        is_system: true,
+        metadata: { daily_rate: 5000 }
+      },
+      {
+        category: "room_type",
+        name: "Emergency",
+        description: "Emergency room",
+        value: "emergency",
+        display_order: 4,
+        is_system: true,
+        metadata: { daily_rate: 1500 }
+      },
+      {
+        category: "room_type",
+        name: "Maternity Ward",
+        description: "Maternity ward room",
+        value: "maternity",
+        display_order: 5,
+        is_system: true,
+        metadata: { daily_rate: 1200 }
+      },
+      {
+        category: "room_type",
+        name: "Pediatric Ward",
+        description: "Pediatric ward room",
+        value: "pediatric",
+        display_order: 6,
+        is_system: true,
+        metadata: { daily_rate: 1000 }
+      },
+      {
+        category: "room_type",
+        name: "Isolation Room",
+        description: "Isolation room",
+        value: "isolation",
+        display_order: 7,
+        is_system: true,
+        metadata: { daily_rate: 3000 }
+      },
+      {
+        category: "room_type",
+        name: "NICU",
+        description: "Neonatal Intensive Care Unit",
+        value: "nicu",
+        display_order: 8,
+        is_system: true,
+        metadata: { daily_rate: 6000 }
+      },
+
+      // Room Amenities
+      {
+        category: "room_amenity",
+        name: "Air Conditioning",
+        description: "Air conditioning",
+        value: "ac",
+        display_order: 1,
+        is_system: true
+      },
+      {
+        category: "room_amenity",
+        name: "Television",
+        description: "Television",
+        value: "tv",
+        display_order: 2,
+        is_system: true
+      },
+      {
+        category: "room_amenity",
+        name: "WiFi",
+        description: "WiFi internet access",
+        value: "wifi",
+        display_order: 3,
+        is_system: true
+      },
+      {
+        category: "room_amenity",
+        name: "Attached Bathroom",
+        description: "Attached bathroom",
+        value: "bathroom",
+        display_order: 4,
+        is_system: true
+      },
+      {
+        category: "room_amenity",
+        name: "Refrigerator",
+        description: "Refrigerator",
+        value: "fridge",
+        display_order: 5,
+        is_system: true
+      },
+      {
+        category: "room_amenity",
+        name: "Attendant Bed",
+        description: "Attendant bed",
+        value: "attendant_bed",
+        display_order: 6,
+        is_system: true
+      },
+      {
+        category: "room_amenity",
+        name: "Telephone",
+        description: "Telephone",
+        value: "phone",
+        display_order: 7,
+        is_system: true
+      },
+      {
+        category: "room_amenity",
+        name: "Safety Locker",
+        description: "Safety locker",
+        value: "safe",
+        display_order: 8,
+        is_system: true
+      },
+
+      // Admission Charge Types
+      {
+        category: "admission_charge_type",
+        name: "Room Charges",
+        description: "Room charges",
+        value: "room",
+        display_order: 1,
+        is_system: true
+      },
+      {
+        category: "admission_charge_type",
+        name: "Medicine Charges",
+        description: "Medicine charges",
+        value: "medicine",
+        display_order: 2,
+        is_system: true
+      },
+      {
+        category: "admission_charge_type",
+        name: "Procedure Charges",
+        description: "Procedure charges",
+        value: "procedure",
+        display_order: 3,
+        is_system: true
+      },
+      {
+        category: "admission_charge_type",
+        name: "Lab Test Charges",
+        description: "Lab test charges",
+        value: "lab",
+        display_order: 4,
+        is_system: true
+      },
+      {
+        category: "admission_charge_type",
+        name: "Consultation Charges",
+        description: "Consultation charges",
+        value: "consultation",
+        display_order: 5,
+        is_system: true
+      },
+      {
+        category: "admission_charge_type",
+        name: "Nursing Charges",
+        description: "Nursing charges",
+        value: "nursing",
+        display_order: 6,
+        is_system: true
+      },
+      {
+        category: "admission_charge_type",
+        name: "Equipment Charges",
+        description: "Equipment charges",
+        value: "equipment",
+        display_order: 7,
+        is_system: true
+      },
+      {
+        category: "admission_charge_type",
+        name: "Dietary Charges",
+        description: "Dietary charges",
+        value: "dietary",
+        display_order: 8,
+        is_system: true
+      },
+      {
+        category: "admission_charge_type",
+        name: "Other Charges",
+        description: "Other charges",
+        value: "other",
+        display_order: 9,
+        is_system: true
+      },
+
+      // Discharge Types
+      {
+        category: "discharge_type",
+        name: "Normal Discharge",
+        description: "Normal discharge",
+        value: "normal",
+        display_order: 1,
+        is_system: true
+      },
+      {
+        category: "discharge_type",
+        name: "Against Medical Advice",
+        description: "Against medical advice",
+        value: "ama",
+        display_order: 2,
+        is_system: true
+      },
+      {
+        category: "discharge_type",
+        name: "Absconded",
+        description: "Patient absconded",
+        value: "absconded",
+        display_order: 3,
+        is_system: true
+      },
+      {
+        category: "discharge_type",
+        name: "Transferred",
+        description: "Transferred to another facility",
+        value: "transferred",
+        display_order: 4,
+        is_system: true
+      },
+      {
+        category: "discharge_type",
+        name: "Expired",
+        description: "Patient expired",
+        value: "expired",
+        display_order: 5,
+        is_system: true
+      },
+      {
+        category: "discharge_type",
+        name: "Referred",
+        description: "Referred to another facility",
+        value: "referred",
+        display_order: 6,
+        is_system: true
+      },
     ];
 
     console.log("🔄 Starting master data seeding...");
