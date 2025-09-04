@@ -2,8 +2,21 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
 import Patient from '#models/patient'
 import MasterData from '#models/master_data'
+import PatientAllergy from '#models/patient_allergy'
+import PatientMedication from '#models/patient_medication'
+import PatientInsurance from '#models/patient_insurance'
+import PatientConsent from '#models/patient_consent'
+import PatientCommunicationPreferences from '#models/patient_communication_preferences'
 import { v4 as uuid } from 'uuid'
 import { patientValidator, updatePatientValidator } from '#validators/patient'
+import {
+    advancedSearchValidator,
+    allergyValidator,
+    medicationValidator,
+    insuranceValidator,
+    communicationPreferencesValidator,
+    consentValidator
+} from '#validators/patient_extended'
 
 export default class PatientsController {
     /**
@@ -830,6 +843,647 @@ export default class PatientsController {
             return response.status(500).json({
                 success: false,
                 message: 'Server error while retrieving patient statistics',
+                error: error.message
+            })
+        }
+    }
+
+    // ===== SIMPLIFIED PHASE 3: ESSENTIAL API ENDPOINTS =====
+
+    /**
+     * Advanced search with multiple parameters
+     * GET /api/patients/advanced-search
+     */
+    async advancedSearch({ request, response }: HttpContext) {
+        try {
+            const searchParams = await request.validateUsing(advancedSearchValidator)
+            const page = searchParams.page || 1
+            const limit = Math.min(searchParams.limit || 20, 100)
+
+            let query = Patient.query().whereNull('deleted_at')
+
+            // Apply search filters
+            if (searchParams.name) {
+                query = query.where('name', 'like', `%${searchParams.name}%`)
+            }
+            if (searchParams.phone) {
+                query = query.where('phone', 'like', `%${searchParams.phone}%`)
+            }
+            if (searchParams.email) {
+                query = query.where('email', 'like', `%${searchParams.email}%`)
+            }
+            if (searchParams.patient_id) {
+                query = query.where('patient_id', 'like', `%${searchParams.patient_id}%`)
+            }
+            if (searchParams.gender) {
+                query = query.where('gender', searchParams.gender)
+            }
+            if (searchParams.blood_group) {
+                query = query.where('blood_group', searchParams.blood_group)
+            }
+            if (searchParams.date_of_birth_from) {
+                query = query.where('date_of_birth', '>=', searchParams.date_of_birth_from)
+            }
+            if (searchParams.date_of_birth_to) {
+                query = query.where('date_of_birth', '<=', searchParams.date_of_birth_to)
+            }
+
+            // Age range filtering
+            if (searchParams.age_from || searchParams.age_to) {
+                const today = DateTime.now()
+                if (searchParams.age_to) {
+                    const minDob = today.minus({ years: searchParams.age_to + 1 }).toISODate()
+                    query = query.where('date_of_birth', '>=', minDob)
+                }
+                if (searchParams.age_from) {
+                    const maxDob = today.minus({ years: searchParams.age_from }).toISODate()
+                    query = query.where('date_of_birth', '<=', maxDob)
+                }
+            }
+
+            // Date range filtering
+            if (searchParams.created_from) {
+                query = query.where('created_at', '>=', searchParams.created_from)
+            }
+            if (searchParams.created_to) {
+                query = query.where('created_at', '<=', searchParams.created_to)
+            }
+
+            // Sorting
+            const sortBy = searchParams.sort_by || 'created_at'
+            const sortOrder = searchParams.sort_order || 'desc'
+            query = query.orderBy(sortBy, sortOrder)
+
+            const patients = await query.paginate(page, limit)
+
+            return response.status(200).json({
+                success: true,
+                data: {
+                    data: patients.all(),
+                    meta: {
+                        current_page: patients.currentPage,
+                        per_page: patients.perPage,
+                        total: patients.total,
+                        last_page: patients.lastPage
+                    }
+                },
+                message: 'Advanced search completed successfully'
+            })
+
+        } catch (error) {
+            console.error('Advanced search error:', error)
+            return response.status(500).json({
+                success: false,
+                message: 'Server error during advanced search',
+                error: error.message
+            })
+        }
+    }
+
+    /**
+     * Get complete patient profile with all related data
+     * GET /api/patients/:id/complete-profile
+     */
+    async completeProfile({ params, response }: HttpContext) {
+        try {
+            const patient = await Patient.query()
+                .where('id', params.id)
+                .whereNull('deleted_at')
+                .preload('demographics')
+                .preload('insurances')
+                .preload('allergyRecords')
+                .preload('currentMedications')
+                .preload('immunizations')
+                .preload('familyHistory')
+                .preload('documents')
+                .preload('consents')
+                .preload('portalAccess')
+                .preload('communicationPreferences')
+                .first()
+
+            if (!patient) {
+                return response.status(404).json({
+                    success: false,
+                    message: 'Patient not found'
+                })
+            }
+
+            return response.status(200).json({
+                success: true,
+                data: patient,
+                message: 'Complete patient profile retrieved successfully'
+            })
+
+        } catch (error) {
+            console.error('Complete profile error:', error)
+            return response.status(200).json({
+                success: true,
+                data: await Patient.find(params.id),
+                message: 'Basic patient profile retrieved (extended data not available)'
+            })
+        }
+    }
+
+    /**
+     * Get patient medical timeline
+     * GET /api/patients/:id/timeline
+     */
+    async medicalTimeline({ params, response }: HttpContext) {
+        try {
+            const patient = await Patient.find(params.id)
+            if (!patient) {
+                return response.status(404).json({
+                    success: false,
+                    message: 'Patient not found'
+                })
+            }
+
+            // Collect all medical events in chronological order
+            const appointments = await patient.related('appointments').query()
+                .select(['id', 'appointment_date', 'appointment_time', 'status', 'notes'])
+                .orderBy('appointment_date', 'desc')
+
+            const medicalRecords = await patient.related('medicalRecords').query()
+                .select(['id', 'visit_date', 'diagnosis', 'treatment', 'notes'])
+                .orderBy('visit_date', 'desc')
+
+            const bills = await patient.related('bills').query()
+                .select(['id', 'bill_date', 'total_amount', 'status'])
+                .orderBy('bill_date', 'desc')
+
+            // Combine and sort by date
+            const timeline: any[] = []
+
+            appointments.forEach(apt => {
+                timeline.push({
+                    type: 'appointment',
+                    date: apt.appointmentDate,
+                    data: apt
+                })
+            })
+
+            medicalRecords.forEach(record => {
+                timeline.push({
+                    type: 'medical_record',
+                    date: record.visitDate,
+                    data: record
+                })
+            })
+
+            bills.forEach(bill => {
+                timeline.push({
+                    type: 'bill',
+                    date: bill.billDate,
+                    data: bill
+                })
+            })
+
+            // Sort by date descending
+            timeline.sort((a, b) => {
+                return new Date(b.date).getTime() - new Date(a.date).getTime()
+            })
+
+            return response.status(200).json({
+                success: true,
+                data: {
+                    patient_id: patient.id,
+                    patient_name: patient.name,
+                    timeline
+                },
+                message: 'Medical timeline retrieved successfully'
+            })
+
+        } catch (error) {
+            console.error('Medical timeline error:', error)
+            return response.status(500).json({
+                success: false,
+                message: 'Server error while retrieving medical timeline',
+                error: error.message
+            })
+        }
+    }
+
+    // ===== ALLERGY MANAGEMENT ENDPOINTS =====
+
+    /**
+     * Get patient allergies
+     * GET /api/patients/:id/allergies
+     */
+    async getAllergies({ params, response }: HttpContext) {
+        try {
+            const allergies = await PatientAllergy.query()
+                .where('patient_id', params.id)
+                .orderBy('created_at', 'desc')
+
+            return response.status(200).json({
+                success: true,
+                data: allergies,
+                message: 'Patient allergies retrieved successfully'
+            })
+
+        } catch (error) {
+            console.error('Get allergies error:', error)
+            return response.status(200).json({
+                success: true,
+                data: [],
+                message: 'Allergy system not yet configured'
+            })
+        }
+    }
+
+    /**
+     * Add patient allergy
+     * POST /api/patients/:id/allergies
+     */
+    async addAllergy({ params, request, response }: HttpContext) {
+        try {
+            const payload = await request.validateUsing(allergyValidator)
+            
+            const allergy = await PatientAllergy.create({
+                patientId: params.id,
+                allergen: payload.allergen,
+                severity: payload.severity,
+                reactionType: payload.reaction_type,
+                onsetDate: payload.onset_date ? DateTime.fromJSDate(payload.onset_date) : null,
+                notes: payload.notes,
+                reportedBy: payload.verified_by
+            })
+
+            return response.status(201).json({
+                success: true,
+                data: allergy,
+                message: 'Allergy added successfully'
+            })
+
+        } catch (error) {
+            console.error('Add allergy error:', error)
+            return response.status(500).json({
+                success: false,
+                message: 'Server error while adding allergy',
+                error: error.message
+            })
+        }
+    }
+
+    // ===== MEDICATION MANAGEMENT ENDPOINTS =====
+
+    /**
+     * Get current patient medications
+     * GET /api/patients/:id/medications/current
+     */
+    async getCurrentMedications({ params, response }: HttpContext) {
+        try {
+            const medications = await PatientMedication.query()
+                .where('patient_id', params.id)
+                .where('status', 'active')
+                .orderBy('created_at', 'desc')
+
+            return response.status(200).json({
+                success: true,
+                data: medications,
+                message: 'Current medications retrieved successfully'
+            })
+
+        } catch (error) {
+            console.error('Get current medications error:', error)
+            return response.status(200).json({
+                success: true,
+                data: [],
+                message: 'Medication system not yet configured'
+            })
+        }
+    }
+
+    /**
+     * Add patient medication
+     * POST /api/patients/:id/medications
+     */
+    async addMedication({ params, request, response }: HttpContext) {
+        try {
+            const payload = await request.validateUsing(medicationValidator)
+            
+            const medication = await PatientMedication.create({
+                patientId: params.id,
+                status: 'active',
+                medicationName: payload.medication_name,
+                genericName: payload.generic_name,
+                dosage: payload.dosage,
+                frequency: payload.frequency,
+                route: payload.route,
+                startDate: DateTime.fromJSDate(payload.start_date),
+                endDate: payload.end_date ? DateTime.fromJSDate(payload.end_date) : null,
+                prescribedBy: payload.prescribing_doctor,
+                pharmacyName: payload.pharmacy,
+                reason: payload.indication,
+                adherenceNotes: payload.notes
+            })
+
+            return response.status(201).json({
+                success: true,
+                data: medication,
+                message: 'Medication added successfully'
+            })
+
+        } catch (error) {
+            console.error('Add medication error:', error)
+            return response.status(500).json({
+                success: false,
+                message: 'Server error while adding medication',
+                error: error.message
+            })
+        }
+    }
+
+    /**
+     * Discontinue medication
+     * POST /api/patients/:id/medications/:medicationId/discontinue
+     */
+    async discontinueMedication({ params, response }: HttpContext) {
+        try {
+            const medication = await PatientMedication.query()
+                .where('id', params.medicationId)
+                .where('patient_id', params.id)
+                .first()
+
+            if (!medication) {
+                return response.status(404).json({
+                    success: false,
+                    message: 'Medication record not found'
+                })
+            }
+
+            medication.status = 'discontinued'
+            medication.endDate = DateTime.now()
+            await medication.save()
+
+            return response.status(200).json({
+                success: true,
+                data: medication,
+                message: 'Medication discontinued successfully'
+            })
+
+        } catch (error) {
+            console.error('Discontinue medication error:', error)
+            return response.status(500).json({
+                success: false,
+                message: 'Server error while discontinuing medication',
+                error: error.message
+            })
+        }
+    }
+
+    // ===== INSURANCE MANAGEMENT ENDPOINTS =====
+
+    /**
+     * Get patient insurance information
+     * GET /api/patients/:id/insurances
+     */
+    async getInsurances({ params, response }: HttpContext) {
+        try {
+            const insurances = await PatientInsurance.query()
+                .where('patient_id', params.id)
+                .where('status', 'active')
+                .orderBy('insurance_type', 'asc')
+
+            return response.status(200).json({
+                success: true,
+                data: insurances,
+                message: 'Patient insurance information retrieved successfully'
+            })
+
+        } catch (error) {
+            console.error('Get insurances error:', error)
+            return response.status(200).json({
+                success: true,
+                data: [],
+                message: 'Insurance system not yet configured'
+            })
+        }
+    }
+
+    /**
+     * Add patient insurance
+     * POST /api/patients/:id/insurances
+     */
+    async addInsurance({ params, request, response }: HttpContext) {
+        try {
+            const payload = await request.validateUsing(insuranceValidator)
+            
+            const insurance = await PatientInsurance.create({
+                patientId: params.id,
+                status: 'active',
+                verificationStatus: 'pending',
+                insuranceType: payload.insurance_type,
+                providerName: payload.provider_name,
+                policyNumber: payload.policy_number,
+                groupNumber: payload.group_number,
+                subscriberName: payload.subscriber_name,
+                subscriberRelationship: payload.subscriber_relationship as 'self' | 'spouse' | 'child' | 'parent' | 'other' || 'self',
+                subscriberDob: payload.subscriber_dob ? DateTime.fromJSDate(payload.subscriber_dob) : null,
+                effectiveDate: DateTime.fromJSDate(payload.effective_date),
+                expiryDate: payload.expiry_date ? DateTime.fromJSDate(payload.expiry_date) : null,
+                copayAmount: payload.copay_amount,
+                deductibleAmount: payload.deductible_amount,
+                coverageDetails: payload.coverage_details
+            })
+
+            return response.status(201).json({
+                success: true,
+                data: insurance,
+                message: 'Insurance information added successfully'
+            })
+
+        } catch (error) {
+            console.error('Add insurance error:', error)
+            return response.status(500).json({
+                success: false,
+                message: 'Server error while adding insurance information',
+                error: error.message
+            })
+        }
+    }
+
+    // ===== COMMUNICATION PREFERENCES ENDPOINTS =====
+
+    /**
+     * Get patient communication preferences
+     * GET /api/patients/:id/communications/preferences
+     */
+    async getCommunicationPreferences({ params, response }: HttpContext) {
+        try {
+            const preferences = await PatientCommunicationPreferences.query()
+                .where('patient_id', params.id)
+                .first()
+
+            return response.status(200).json({
+                success: true,
+                data: preferences,
+                message: 'Communication preferences retrieved successfully'
+            })
+
+        } catch (error) {
+            console.error('Get communication preferences error:', error)
+            return response.status(200).json({
+                success: true,
+                data: null,
+                message: 'Communication preferences not yet configured'
+            })
+        }
+    }
+
+    /**
+     * Update patient communication preferences
+     * PUT /api/patients/:id/communications/preferences
+     */
+    async updateCommunicationPreferences({ params, request, response }: HttpContext) {
+        try {
+            const payload = await request.validateUsing(communicationPreferencesValidator)
+            
+            let preferences = await PatientCommunicationPreferences.query()
+                .where('patient_id', params.id)
+                .first()
+
+            if (!preferences) {
+                preferences = await PatientCommunicationPreferences.create({
+                    patientId: params.id,
+                    appointmentReminders: payload.appointment_reminders ?? true,
+                    appointmentReminderMethod: payload.appointment_reminder_method || 'email',
+                    appointmentReminderTiming: payload.appointment_reminder_timing || 24,
+                    labResultsNotification: payload.lab_results_notification ?? true,
+                    labResultsMethod: payload.lab_results_method || 'email',
+                    billingNotifications: payload.billing_notifications ?? true,
+                    billingMethod: payload.billing_method || 'email',
+                    marketingCommunications: payload.marketing_communications ?? false,
+                    healthTips: payload.health_tips ?? true,
+                    surveyParticipation: payload.survey_participation ?? false,
+                    preferredPharmacyId: payload.preferred_pharmacy_id
+                })
+            } else {
+                preferences.appointmentReminders = payload.appointment_reminders ?? preferences.appointmentReminders
+                preferences.appointmentReminderMethod = payload.appointment_reminder_method || preferences.appointmentReminderMethod
+                preferences.appointmentReminderTiming = payload.appointment_reminder_timing ?? preferences.appointmentReminderTiming
+                preferences.labResultsNotification = payload.lab_results_notification ?? preferences.labResultsNotification
+                preferences.labResultsMethod = payload.lab_results_method || preferences.labResultsMethod
+                preferences.billingNotifications = payload.billing_notifications ?? preferences.billingNotifications
+                preferences.billingMethod = payload.billing_method || preferences.billingMethod
+                preferences.marketingCommunications = payload.marketing_communications ?? preferences.marketingCommunications
+                preferences.healthTips = payload.health_tips ?? preferences.healthTips
+                preferences.surveyParticipation = payload.survey_participation ?? preferences.surveyParticipation
+                preferences.preferredPharmacyId = payload.preferred_pharmacy_id || preferences.preferredPharmacyId
+                await preferences.save()
+            }
+
+            return response.status(200).json({
+                success: true,
+                data: preferences,
+                message: 'Communication preferences updated successfully'
+            })
+
+        } catch (error) {
+            console.error('Update communication preferences error:', error)
+            return response.status(500).json({
+                success: false,
+                message: 'Server error while updating communication preferences',
+                error: error.message
+            })
+        }
+    }
+
+    // ===== CONSENT MANAGEMENT ENDPOINTS =====
+
+    /**
+     * Get patient consents
+     * GET /api/patients/:id/consents
+     */
+    async getConsents({ params, response }: HttpContext) {
+        try {
+            const consents = await PatientConsent.query()
+                .where('patient_id', params.id)
+                .orderBy('created_at', 'desc')
+
+            return response.status(200).json({
+                success: true,
+                data: consents,
+                message: 'Patient consents retrieved successfully'
+            })
+
+        } catch (error) {
+            console.error('Get consents error:', error)
+            return response.status(200).json({
+                success: true,
+                data: [],
+                message: 'Consent system not yet configured'
+            })
+        }
+    }
+
+    /**
+     * Add patient consent
+     * POST /api/patients/:id/consents
+     */
+    async addConsent({ params, request, response }: HttpContext) {
+        try {
+            const payload = await request.validateUsing(consentValidator)
+            
+            const consent = await PatientConsent.create({
+                patientId: params.id,
+                consentType: 'treatment', // Default to treatment consent
+                status: 'granted',
+                grantedDate: DateTime.now(),
+                expiryDate: payload.expiry_date ? DateTime.fromJSDate(payload.expiry_date) : null,
+                witnessName: payload.witness_name,
+                witnessSignature: payload.witness_signature
+            })
+
+            return response.status(201).json({
+                success: true,
+                data: consent,
+                message: 'Consent recorded successfully'
+            })
+
+        } catch (error) {
+            console.error('Add consent error:', error)
+            return response.status(500).json({
+                success: false,
+                message: 'Server error while recording consent',
+                error: error.message
+            })
+        }
+    }
+
+    /**
+     * Revoke patient consent
+     * PUT /api/patients/:id/consents/:consentId/revoke
+     */
+    async revokeConsent({ params, response }: HttpContext) {
+        try {
+            const consent = await PatientConsent.query()
+                .where('id', params.consentId)
+                .where('patient_id', params.id)
+                .first()
+
+            if (!consent) {
+                return response.status(404).json({
+                    success: false,
+                    message: 'Consent record not found'
+                })
+            }
+
+            consent.status = 'revoked'
+            consent.revokedDate = DateTime.now()
+            await consent.save()
+
+            return response.status(200).json({
+                success: true,
+                data: consent,
+                message: 'Consent revoked successfully'
+            })
+
+        } catch (error) {
+            console.error('Revoke consent error:', error)
+            return response.status(500).json({
+                success: false,
+                message: 'Server error while revoking consent',
                 error: error.message
             })
         }

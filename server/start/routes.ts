@@ -93,6 +93,7 @@ router.group(() => {
 
     // Patient management routes
     router.group(() => {
+      // Basic CRUD operations
       router.get('/', '#controllers/patients_controller.index')
       router.get('/stats', '#controllers/patients_controller.stats')
       router.get('/search', '#controllers/patients_controller.search')
@@ -100,6 +101,35 @@ router.group(() => {
       router.post('/', '#controllers/patients_controller.store')
       router.put('/:id', '#controllers/patients_controller.update')
       router.delete('/:id', '#controllers/patients_controller.destroy')
+      
+      // Phase 3: Enhanced API endpoints
+      router.get('/advanced-search', '#controllers/patients_controller.advancedSearch')
+      router.get('/:id/complete-profile', '#controllers/patients_controller.completeProfile')
+      router.get('/:id/timeline', '#controllers/patients_controller.medicalTimeline')
+      
+      // Allergy management
+      router.get('/:id/allergies', '#controllers/patients_controller.getAllergies')
+      router.post('/:id/allergies', '#controllers/patients_controller.addAllergy')
+      
+      // Medication management
+      router.get('/:id/medications/current', '#controllers/patients_controller.getCurrentMedications')
+      router.post('/:id/medications', '#controllers/patients_controller.addMedication')
+      router.post('/:id/medications/:medicationId/discontinue', '#controllers/patients_controller.discontinueMedication')
+      
+      // Insurance management
+      router.get('/:id/insurances', '#controllers/patients_controller.getInsurances')
+      router.post('/:id/insurances', '#controllers/patients_controller.addInsurance')
+      
+      // Communication preferences
+      router.get('/:id/communications/preferences', '#controllers/patients_controller.getCommunicationPreferences')
+      router.put('/:id/communications/preferences', '#controllers/patients_controller.updateCommunicationPreferences')
+      
+      // Consent management
+      router.get('/:id/consents', '#controllers/patients_controller.getConsents')
+      router.post('/:id/consents', '#controllers/patients_controller.addConsent')
+      router.put('/:id/consents/:consentId/revoke', '#controllers/patients_controller.revokeConsent')
+      
+      // Legacy endpoints (maintaining backward compatibility)
       router.get('/:id/medical-history', '#controllers/patients_controller.medicalHistory')
       router.get('/:id/appointments', '#controllers/patients_controller.appointments')
       router.get('/:id/bills', '#controllers/patients_controller.bills')
