@@ -352,7 +352,7 @@ export default class DocumentService {
 
                 // Replace original with optimized version
                 // await fs.rename(`${filePath}.optimized`, filePath)
-                
+
                 console.log('Image optimization skipped - sharp not installed')
             } catch (error) {
                 console.error('Image optimization failed:', error)
