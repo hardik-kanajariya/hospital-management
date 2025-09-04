@@ -68,11 +68,11 @@ export default function EnhancedPatientProfile() {
         const birthDate = new Date(dateOfBirth)
         let age = today.getFullYear() - birthDate.getFullYear()
         const monthDiff = today.getMonth() - birthDate.getMonth()
-        
+
         if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
             age--
         }
-        
+
         return age
     }
 
@@ -112,7 +112,7 @@ export default function EnhancedPatientProfile() {
                         <h1 className="text-2xl font-bold">Patient Profile</h1>
                     </div>
                 </div>
-                
+
                 <div className="flex gap-2">
                     <Button variant="outline" size="sm">
                         <PrinterIcon className="w-4 h-4 mr-2" />
@@ -146,7 +146,7 @@ export default function EnhancedPatientProfile() {
                                     {patient.patient_id}
                                 </Badge>
                             </div>
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                                 <div className="flex items-center gap-2">
                                     <CalendarIcon className="w-4 h-4 text-muted-foreground" />
@@ -155,12 +155,12 @@ export default function EnhancedPatientProfile() {
                                         ({new Date(patient.date_of_birth).toLocaleDateString()})
                                     </span>
                                 </div>
-                                
+
                                 <div className="flex items-center gap-2">
                                     <PhoneIcon className="w-4 h-4 text-muted-foreground" />
                                     <span>{patient.phone}</span>
                                 </div>
-                                
+
                                 {patient.blood_group && (
                                     <div className="flex items-center gap-2">
                                         <HeartIcon className="w-4 h-4 text-muted-foreground" />
@@ -284,7 +284,7 @@ export default function EnhancedPatientProfile() {
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 {patient.demographics?.emergency_contact_2?.name && (
                                     <div>
                                         <h4 className="font-medium text-sm">Secondary Contact</h4>
@@ -316,7 +316,7 @@ export default function EnhancedPatientProfile() {
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 {/* Add more activity items based on appointments, visits, etc. */}
                             </div>
                         </CardContent>

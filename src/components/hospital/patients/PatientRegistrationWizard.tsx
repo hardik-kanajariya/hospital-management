@@ -30,9 +30,9 @@ import {
     IdentificationCardIcon
 } from '@phosphor-icons/react'
 import { usePatientApi } from '@/hooks/usePatientApi'
-import { 
-    PatientCreateRequest, 
-    PatientDemographics, 
+import {
+    PatientCreateRequest,
+    PatientDemographics,
     PatientInsurance,
     PatientAllergy,
     PatientMedication,
@@ -190,37 +190,37 @@ export default function PatientRegistrationWizard({ isEdit = false, patientId }:
         description: string
         icon: React.ReactNode
     }> = [
-        {
-            key: 'basic',
-            title: 'Basic Information',
-            description: 'Personal details and photo',
-            icon: <UserPlusIcon className="w-5 h-5" />
-        },
-        {
-            key: 'contact',
-            title: 'Contact & Demographics',
-            description: 'Address, emergency contacts, preferences',
-            icon: <PhoneIcon className="w-5 h-5" />
-        },
-        {
-            key: 'insurance',
-            title: 'Insurance Information',
-            description: 'Coverage details and verification',
-            icon: <ShieldIcon className="w-5 h-5" />
-        },
-        {
-            key: 'medical',
-            title: 'Medical History',
-            description: 'Allergies, medications, family history',
-            icon: <HeartIcon className="w-5 h-5" />
-        },
-        {
-            key: 'consents',
-            title: 'Consents & Portal',
-            description: 'Permissions and portal setup',
-            icon: <FileTextIcon className="w-5 h-5" />
-        }
-    ]
+            {
+                key: 'basic',
+                title: 'Basic Information',
+                description: 'Personal details and photo',
+                icon: <UserPlusIcon className="w-5 h-5" />
+            },
+            {
+                key: 'contact',
+                title: 'Contact & Demographics',
+                description: 'Address, emergency contacts, preferences',
+                icon: <PhoneIcon className="w-5 h-5" />
+            },
+            {
+                key: 'insurance',
+                title: 'Insurance Information',
+                description: 'Coverage details and verification',
+                icon: <ShieldIcon className="w-5 h-5" />
+            },
+            {
+                key: 'medical',
+                title: 'Medical History',
+                description: 'Allergies, medications, family history',
+                icon: <HeartIcon className="w-5 h-5" />
+            },
+            {
+                key: 'consents',
+                title: 'Consents & Portal',
+                description: 'Permissions and portal setup',
+                icon: <FileTextIcon className="w-5 h-5" />
+            }
+        ]
 
     const getCurrentStepIndex = () => steps.findIndex(step => step.key === currentStep)
     const getProgress = () => ((getCurrentStepIndex() + 1) / steps.length) * 100
@@ -230,21 +230,21 @@ export default function PatientRegistrationWizard({ isEdit = false, patientId }:
         if (!wizardData.basic.name || !wizardData.basic.phone) return
 
         setDuplicateCheck({ loading: true, duplicates: [], resolved: false })
-        
+
         try {
             // Simulate API call for duplicate checking
             // In real implementation, this would call the API
             await new Promise(resolve => setTimeout(resolve, 1000))
-            
+
             // For demo purposes, simulate finding duplicates if name contains "test"
             const foundDuplicates = wizardData.basic.name.toLowerCase().includes('test') ? [
                 { id: '1', name: 'Test Patient', phone: '1234567890', similarity: 85 }
             ] : []
 
-            setDuplicateCheck({ 
-                loading: false, 
-                duplicates: foundDuplicates, 
-                resolved: foundDuplicates.length === 0 
+            setDuplicateCheck({
+                loading: false,
+                duplicates: foundDuplicates,
+                resolved: foundDuplicates.length === 0
             })
 
             if (foundDuplicates.length > 0) {
@@ -292,7 +292,7 @@ export default function PatientRegistrationWizard({ isEdit = false, patientId }:
     // Validation functions
     const validateBasicInfo = () => {
         const { name, phone, date_of_birth, gender, address } = wizardData.basic
-        
+
         if (!name.trim()) {
             toast.error('Name is required')
             return false
@@ -319,7 +319,7 @@ export default function PatientRegistrationWizard({ isEdit = false, patientId }:
 
     const validateContactInfo = () => {
         const { emergency_contact_1 } = wizardData.contact
-        
+
         if (!emergency_contact_1?.name.trim()) {
             toast.error('Primary emergency contact name is required')
             return false
@@ -361,7 +361,7 @@ export default function PatientRegistrationWizard({ isEdit = false, patientId }:
                 break
             case 'consents':
                 // Validate that required consents are granted
-                const requiredConsents = wizardData.consents.consents.filter(c => 
+                const requiredConsents = wizardData.consents.consents.filter(c =>
                     c.consent_type === 'treatment'
                 )
                 if (requiredConsents.length === 0) {
@@ -404,7 +404,7 @@ export default function PatientRegistrationWizard({ isEdit = false, patientId }:
 
             const patient = await createPatient(patientData)
             toast.success('Patient registered successfully!')
-            
+
             // Navigate to patient profile
             navigate(`/patients/${patient.id}`)
         } catch (error) {
@@ -429,7 +429,7 @@ export default function PatientRegistrationWizard({ isEdit = false, patientId }:
                         </h1>
                     </div>
                 </div>
-                
+
                 <Badge variant="outline" className="text-sm">
                     Step {getCurrentStepIndex() + 1} of {steps.length}
                 </Badge>
@@ -452,13 +452,12 @@ export default function PatientRegistrationWizard({ isEdit = false, patientId }:
                             <div key={step.key} className="flex items-center">
                                 <button
                                     onClick={() => goToStep(step.key)}
-                                    className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                                        currentStep === step.key
+                                    className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${currentStep === step.key
                                             ? 'bg-primary text-primary-foreground'
                                             : completedSteps.has(step.key)
-                                            ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                                            : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                                    }`}
+                                                ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                                        }`}
                                 >
                                     <div className="flex items-center gap-2">
                                         {completedSteps.has(step.key) ? (
@@ -568,7 +567,7 @@ function BasicInformationStep({ data, onChange, onPhotoCapture, duplicateCheck, 
                 <UserPlusIcon className="w-5 h-5 text-primary" />
                 <h2 className="text-xl font-semibold">Basic Information</h2>
             </div>
-            
+
             {/* Photo capture section */}
             <Card>
                 <CardHeader>
@@ -578,9 +577,9 @@ function BasicInformationStep({ data, onChange, onPhotoCapture, duplicateCheck, 
                     <div className="flex items-center gap-4">
                         <div className="w-24 h-24 bg-muted rounded-lg flex items-center justify-center">
                             {data.photo ? (
-                                <img 
-                                    src={URL.createObjectURL(data.photo)} 
-                                    alt="Patient" 
+                                <img
+                                    src={URL.createObjectURL(data.photo)}
+                                    alt="Patient"
                                     className="w-full h-full object-cover rounded-lg"
                                 />
                             ) : (
@@ -734,7 +733,7 @@ function BasicInformationStep({ data, onChange, onPhotoCapture, duplicateCheck, 
                             <Button variant="outline" size="sm">
                                 Review Duplicates
                             </Button>
-                            <Button 
+                            <Button
                                 size="sm"
                                 onClick={() => duplicateCheck.resolved = true}
                             >

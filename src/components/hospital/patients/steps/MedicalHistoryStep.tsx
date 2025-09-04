@@ -68,7 +68,7 @@ export default function MedicalHistoryStep({ data, onChange }: MedicalHistorySte
     }
 
     const updateAllergy = (index: number, field: keyof PatientAllergy, value: any) => {
-        const updated = data.allergies.map((allergy, i) => 
+        const updated = data.allergies.map((allergy, i) =>
             i === index ? { ...allergy, [field]: value } : allergy
         )
         onChange({ ...data, allergies: updated })
@@ -107,7 +107,7 @@ export default function MedicalHistoryStep({ data, onChange }: MedicalHistorySte
     }
 
     const updateMedication = (index: number, field: keyof PatientMedication, value: any) => {
-        const updated = data.medications.map((medication, i) => 
+        const updated = data.medications.map((medication, i) =>
             i === index ? { ...medication, [field]: value } : medication
         )
         onChange({ ...data, medications: updated })
@@ -127,7 +127,7 @@ export default function MedicalHistoryStep({ data, onChange }: MedicalHistorySte
     }
 
     const updateChronicCondition = (index: number, value: string) => {
-        const updated = data.chronic_conditions.map((condition, i) => 
+        const updated = data.chronic_conditions.map((condition, i) =>
             i === index ? value : condition
         )
         onChange({ ...data, chronic_conditions: updated })
@@ -153,7 +153,7 @@ export default function MedicalHistoryStep({ data, onChange }: MedicalHistorySte
     }
 
     const updateFamilyHistory = (index: number, field: string, value: any) => {
-        const updated = data.family_history.map((history, i) => 
+        const updated = data.family_history.map((history, i) =>
             i === index ? { ...history, [field]: value } : history
         )
         onChange({ ...data, family_history: updated })
@@ -274,8 +274,8 @@ export default function MedicalHistoryStep({ data, onChange }: MedicalHistorySte
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             <div>
                                                 <Label htmlFor={`allergy_type_${index}`}>Allergy Type</Label>
-                                                <Select 
-                                                    value={allergy.allergy_type} 
+                                                <Select
+                                                    value={allergy.allergy_type}
                                                     onValueChange={(value) => updateAllergy(index, 'allergy_type', value)}
                                                 >
                                                     <SelectTrigger>
@@ -302,8 +302,8 @@ export default function MedicalHistoryStep({ data, onChange }: MedicalHistorySte
 
                                             <div>
                                                 <Label htmlFor={`severity_${index}`}>Severity</Label>
-                                                <Select 
-                                                    value={allergy.severity} 
+                                                <Select
+                                                    value={allergy.severity}
                                                     onValueChange={(value) => updateAllergy(index, 'severity', value)}
                                                 >
                                                     <SelectTrigger>
@@ -340,9 +340,9 @@ export default function MedicalHistoryStep({ data, onChange }: MedicalHistorySte
 
                                             <div className="flex items-center gap-2">
                                                 {getSeverityBadge(allergy.severity)}
-                                                <Button 
-                                                    variant="outline" 
-                                                    size="sm" 
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
                                                     onClick={() => removeAllergy(index)}
                                                     className="text-red-600 hover:text-red-700"
                                                 >
@@ -432,8 +432,8 @@ export default function MedicalHistoryStep({ data, onChange }: MedicalHistorySte
 
                                             <div>
                                                 <Label htmlFor={`frequency_${index}`}>Frequency</Label>
-                                                <Select 
-                                                    value={medication.frequency} 
+                                                <Select
+                                                    value={medication.frequency}
                                                     onValueChange={(value) => updateMedication(index, 'frequency', value)}
                                                 >
                                                     <SelectTrigger>
@@ -453,8 +453,8 @@ export default function MedicalHistoryStep({ data, onChange }: MedicalHistorySte
 
                                             <div>
                                                 <Label htmlFor={`route_${index}`}>Route</Label>
-                                                <Select 
-                                                    value={medication.route || 'oral'} 
+                                                <Select
+                                                    value={medication.route || 'oral'}
                                                     onValueChange={(value) => updateMedication(index, 'route', value)}
                                                 >
                                                     <SelectTrigger>
@@ -474,9 +474,9 @@ export default function MedicalHistoryStep({ data, onChange }: MedicalHistorySte
 
                                             <div className="flex items-center gap-2">
                                                 {getStatusBadge(medication.status)}
-                                                <Button 
-                                                    variant="outline" 
-                                                    size="sm" 
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
                                                     onClick={() => removeMedication(index)}
                                                     className="text-red-600 hover:text-red-700"
                                                 >
@@ -550,9 +550,9 @@ export default function MedicalHistoryStep({ data, onChange }: MedicalHistorySte
                                                     placeholder="Enter chronic condition"
                                                 />
                                             </div>
-                                            <Button 
-                                                variant="outline" 
-                                                size="sm" 
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
                                                 onClick={() => removeChronicCondition(index)}
                                                 className="text-red-600 hover:text-red-700"
                                             >
@@ -598,8 +598,8 @@ export default function MedicalHistoryStep({ data, onChange }: MedicalHistorySte
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             <div>
                                                 <Label htmlFor={`fh_relationship_${index}`}>Relationship</Label>
-                                                <Select 
-                                                    value={history.relationship} 
+                                                <Select
+                                                    value={history.relationship}
                                                     onValueChange={(value) => updateFamilyHistory(index, 'relationship', value)}
                                                 >
                                                     <SelectTrigger>
@@ -643,8 +643,8 @@ export default function MedicalHistoryStep({ data, onChange }: MedicalHistorySte
 
                                             <div>
                                                 <Label htmlFor={`fh_status_${index}`}>Current Status</Label>
-                                                <Select 
-                                                    value={history.current_status || 'living'} 
+                                                <Select
+                                                    value={history.current_status || 'living'}
                                                     onValueChange={(value) => updateFamilyHistory(index, 'current_status', value)}
                                                 >
                                                     <SelectTrigger>
@@ -660,9 +660,9 @@ export default function MedicalHistoryStep({ data, onChange }: MedicalHistorySte
 
                                             <div className="md:col-span-2 lg:col-span-1">
                                                 <div className="flex items-center justify-end h-full">
-                                                    <Button 
-                                                        variant="outline" 
-                                                        size="sm" 
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
                                                         onClick={() => removeFamilyHistory(index)}
                                                         className="text-red-600 hover:text-red-700"
                                                     >

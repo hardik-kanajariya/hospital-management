@@ -76,8 +76,8 @@ export default function ContactDemographicsStep({ data, onChange }: ContactDemog
 
                         <div>
                             <Label htmlFor="primary_language">Primary Language</Label>
-                            <Select 
-                                value={data.primary_language || 'English'} 
+                            <Select
+                                value={data.primary_language || 'English'}
                                 onValueChange={(value) => updateField('primary_language', value)}
                             >
                                 <SelectTrigger>
@@ -97,8 +97,8 @@ export default function ContactDemographicsStep({ data, onChange }: ContactDemog
 
                         <div>
                             <Label htmlFor="secondary_language">Secondary Language</Label>
-                            <Select 
-                                value={data.secondary_language || ''} 
+                            <Select
+                                value={data.secondary_language || ''}
                                 onValueChange={(value) => updateField('secondary_language', value)}
                             >
                                 <SelectTrigger>
@@ -119,8 +119,8 @@ export default function ContactDemographicsStep({ data, onChange }: ContactDemog
 
                         <div>
                             <Label htmlFor="marital_status">Marital Status</Label>
-                            <Select 
-                                value={data.marital_status || 'single'} 
+                            <Select
+                                value={data.marital_status || 'single'}
                                 onValueChange={(value) => updateField('marital_status', value)}
                             >
                                 <SelectTrigger>
@@ -182,8 +182,8 @@ export default function ContactDemographicsStep({ data, onChange }: ContactDemog
 
                         <div className="md:col-span-2">
                             <Label htmlFor="education_level">Education Level</Label>
-                            <Select 
-                                value={data.education_level || 'high_school'} 
+                            <Select
+                                value={data.education_level || 'high_school'}
                                 onValueChange={(value) => updateField('education_level', value)}
                             >
                                 <SelectTrigger>
@@ -216,8 +216,8 @@ export default function ContactDemographicsStep({ data, onChange }: ContactDemog
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="preferred_contact_method">Preferred Contact Method</Label>
-                            <Select 
-                                value={data.preferred_contact_method || 'phone'} 
+                            <Select
+                                value={data.preferred_contact_method || 'phone'}
                                 onValueChange={(value) => updateField('preferred_contact_method', value)}
                             >
                                 <SelectTrigger>
@@ -234,8 +234,8 @@ export default function ContactDemographicsStep({ data, onChange }: ContactDemog
 
                         <div>
                             <Label htmlFor="preferred_contact_time">Preferred Contact Time</Label>
-                            <Select 
-                                value={data.preferred_contact_time || ''} 
+                            <Select
+                                value={data.preferred_contact_time || ''}
                                 onValueChange={(value) => updateField('preferred_contact_time', value)}
                             >
                                 <SelectTrigger>
@@ -276,8 +276,8 @@ export default function ContactDemographicsStep({ data, onChange }: ContactDemog
 
                         <div>
                             <Label htmlFor="ec1_relationship">Relationship *</Label>
-                            <Select 
-                                value={data.emergency_contact_1?.relationship || ''} 
+                            <Select
+                                value={data.emergency_contact_1?.relationship || ''}
                                 onValueChange={(value) => updateEmergencyContact('emergency_contact_1', 'relationship', value)}
                             >
                                 <SelectTrigger>
@@ -353,8 +353,8 @@ export default function ContactDemographicsStep({ data, onChange }: ContactDemog
 
                         <div>
                             <Label htmlFor="ec2_relationship">Relationship</Label>
-                            <Select 
-                                value={data.emergency_contact_2?.relationship || ''} 
+                            <Select
+                                value={data.emergency_contact_2?.relationship || ''}
                                 onValueChange={(value) => updateEmergencyContact('emergency_contact_2', 'relationship', value)}
                             >
                                 <SelectTrigger>
@@ -433,8 +433,8 @@ export default function ContactDemographicsStep({ data, onChange }: ContactDemog
 
                         <div>
                             <Label htmlFor="nok_relationship">Relationship</Label>
-                            <Select 
-                                value={data.next_of_kin?.relationship || ''} 
+                            <Select
+                                value={data.next_of_kin?.relationship || ''}
                                 onValueChange={(value) => updateEmergencyContact('next_of_kin', 'relationship', value)}
                             >
                                 <SelectTrigger>

@@ -83,7 +83,7 @@ export default function ConsentsPortalStep({ data, onChange }: ConsentsPortalSte
 
     const updateConsent = (consentType: string, granted: boolean) => {
         const existingConsent = data.consents.find(c => c.consent_type === consentType)
-        
+
         if (granted && !existingConsent) {
             // Add new consent
             const newConsent: PatientConsent = {
@@ -97,7 +97,7 @@ export default function ConsentsPortalStep({ data, onChange }: ConsentsPortalSte
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
             }
-            
+
             onChange({
                 ...data,
                 consents: [...data.consents, newConsent]
@@ -161,7 +161,7 @@ export default function ConsentsPortalStep({ data, onChange }: ConsentsPortalSte
                     <p className="text-sm text-muted-foreground">
                         Please provide your digital signature to sign consent forms.
                     </p>
-                    
+
                     <div className="space-y-4">
                         <div>
                             <Label htmlFor="digital_signature">Type Your Full Name</Label>
@@ -176,7 +176,7 @@ export default function ConsentsPortalStep({ data, onChange }: ConsentsPortalSte
                                 By typing your name, you agree that this constitutes your legal digital signature.
                             </p>
                         </div>
-                        
+
                         {digitalSignature && (
                             <div className="p-4 border rounded-lg bg-muted/50">
                                 <p className="text-sm text-muted-foreground mb-2">Preview of your signature:</p>
@@ -209,8 +209,8 @@ export default function ConsentsPortalStep({ data, onChange }: ConsentsPortalSte
                                 />
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2">
-                                        <Label 
-                                            htmlFor={`consent-${form.type}`} 
+                                        <Label
+                                            htmlFor={`consent-${form.type}`}
                                             className="text-base font-medium cursor-pointer"
                                         >
                                             {form.title}
@@ -223,7 +223,7 @@ export default function ConsentsPortalStep({ data, onChange }: ConsentsPortalSte
                                         )}
                                     </div>
                                     <p className="text-sm text-muted-foreground mt-1">{form.description}</p>
-                                    
+
                                     <details className="mt-2">
                                         <summary className="text-sm text-primary cursor-pointer hover:underline">
                                             Read full consent text
@@ -234,18 +234,18 @@ export default function ConsentsPortalStep({ data, onChange }: ConsentsPortalSte
                                     </details>
                                 </div>
                             </div>
-                            
+
                             {form.required && !isConsentGranted(form.type) && (
                                 <div className="flex items-center gap-2 text-red-600 bg-red-50 p-2 rounded">
                                     <WarningIcon className="w-4 h-4" />
                                     <span className="text-sm">This consent is required to proceed</span>
                                 </div>
                             )}
-                            
+
                             <Separator />
                         </div>
                     ))}
-                    
+
                     {!digitalSignature && data.consents.length > 0 && (
                         <div className="bg-orange-50 border border-orange-200 p-4 rounded-lg">
                             <div className="flex items-center gap-2 text-orange-800">
@@ -281,7 +281,7 @@ export default function ConsentsPortalStep({ data, onChange }: ConsentsPortalSte
                                 Appointment Reminders
                             </Label>
                         </div>
-                        
+
                         {data.communicationPreferences.appointment_reminders && (
                             <div className="ml-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
@@ -301,7 +301,7 @@ export default function ConsentsPortalStep({ data, onChange }: ConsentsPortalSte
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                
+
                                 <div>
                                     <Label htmlFor="reminder_timing">Reminder Timing</Label>
                                     <Select
@@ -337,7 +337,7 @@ export default function ConsentsPortalStep({ data, onChange }: ConsentsPortalSte
                                 Lab Results Notifications
                             </Label>
                         </div>
-                        
+
                         {data.communicationPreferences.lab_results_notification && (
                             <div className="ml-6">
                                 <Label htmlFor="lab_method">Notification Method</Label>
@@ -372,7 +372,7 @@ export default function ConsentsPortalStep({ data, onChange }: ConsentsPortalSte
                                 Billing Notifications
                             </Label>
                         </div>
-                        
+
                         {data.communicationPreferences.billing_notifications && (
                             <div className="ml-6">
                                 <Label htmlFor="billing_method">Billing Method</Label>
@@ -454,7 +454,7 @@ export default function ConsentsPortalStep({ data, onChange }: ConsentsPortalSte
                     </div>
 
                     <p className="text-sm text-muted-foreground">
-                        The patient portal allows you to view lab results, book appointments, 
+                        The patient portal allows you to view lab results, book appointments,
                         communicate with providers, and manage your health information online.
                     </p>
 
@@ -470,8 +470,8 @@ export default function ConsentsPortalStep({ data, onChange }: ConsentsPortalSte
                                             onChange={(e) => updatePortalAccess('username', e.target.value)}
                                             placeholder="Choose username"
                                         />
-                                        <Button 
-                                            variant="outline" 
+                                        <Button
+                                            variant="outline"
                                             size="sm"
                                             onClick={generateUsername}
                                         >
@@ -509,7 +509,7 @@ export default function ConsentsPortalStep({ data, onChange }: ConsentsPortalSte
                                     <span className="font-medium">Portal Security</span>
                                 </div>
                                 <p className="text-sm text-blue-700 mt-1">
-                                    A temporary password will be generated and sent to your email. 
+                                    A temporary password will be generated and sent to your email.
                                     You'll be required to change it on first login for security.
                                 </p>
                             </div>
@@ -540,7 +540,7 @@ export default function ConsentsPortalStep({ data, onChange }: ConsentsPortalSte
                             </div>
                         )}
                     </div>
-                    
+
                     <p className="text-sm text-green-700 mt-4">
                         Your registration is complete! Click "Complete Registration" to finalize your patient profile.
                     </p>

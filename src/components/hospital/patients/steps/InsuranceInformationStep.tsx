@@ -57,7 +57,7 @@ export default function InsuranceInformationStep({ data, onChange }: InsuranceIn
     }
 
     const updateInsurance = (index: number, field: keyof PatientInsurance, value: any) => {
-        const updated = data.map((insurance, i) => 
+        const updated = data.map((insurance, i) =>
             i === index ? { ...insurance, [field]: value } : insurance
         )
         onChange(updated)
@@ -66,7 +66,7 @@ export default function InsuranceInformationStep({ data, onChange }: InsuranceIn
     const removeInsurance = (index: number) => {
         const updated = data.filter((_, i) => i !== index)
         onChange(updated)
-        
+
         if (activeInsurance >= updated.length && updated.length > 0) {
             setActiveInsurance(updated.length - 1)
         } else if (updated.length === 0) {
@@ -82,17 +82,17 @@ export default function InsuranceInformationStep({ data, onChange }: InsuranceIn
         }
 
         setVerifyingInsurance(insurance.id)
-        
+
         try {
             // Simulate API call for insurance verification
             await new Promise(resolve => setTimeout(resolve, 2000))
-            
+
             // Simulate verification result
             const isValid = Math.random() > 0.3 // 70% success rate for demo
-            
+
             updateInsurance(index, 'verification_status', isValid ? 'verified' : 'failed')
             updateInsurance(index, 'verified_date', new Date().toISOString())
-            
+
             if (isValid) {
                 toast.success('Insurance verified successfully')
                 // Update coverage details from verification response
@@ -148,7 +148,7 @@ export default function InsuranceInformationStep({ data, onChange }: InsuranceIn
                         <div>
                             <h3 className="font-medium text-blue-900">Insurance Information</h3>
                             <p className="text-sm text-blue-700 mt-1">
-                                Add your insurance details for coverage verification and billing. 
+                                Add your insurance details for coverage verification and billing.
                                 You can add up to 3 insurance plans (Primary, Secondary, Tertiary).
                             </p>
                         </div>
@@ -246,8 +246,8 @@ export default function InsuranceInformationStep({ data, onChange }: InsuranceIn
 
                                         <div>
                                             <Label htmlFor={`relationship_${index}`}>Relationship to Subscriber</Label>
-                                            <Select 
-                                                value={insurance.subscriber_relationship} 
+                                            <Select
+                                                value={insurance.subscriber_relationship}
                                                 onValueChange={(value) => updateInsurance(index, 'subscriber_relationship', value)}
                                             >
                                                 <SelectTrigger>
@@ -334,14 +334,14 @@ export default function InsuranceInformationStep({ data, onChange }: InsuranceIn
                                                     <div className="mt-2 border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
                                                         {insurance.card_front_image ? (
                                                             <div className="space-y-2">
-                                                                <img 
-                                                                    src={insurance.card_front_image} 
-                                                                    alt="Insurance card front" 
+                                                                <img
+                                                                    src={insurance.card_front_image}
+                                                                    alt="Insurance card front"
                                                                     className="w-full h-32 object-cover rounded"
                                                                 />
-                                                                <Button 
-                                                                    variant="outline" 
-                                                                    size="sm" 
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
                                                                     onClick={() => document.getElementById(`front-upload-${index}`)?.click()}
                                                                 >
                                                                     Replace Image
@@ -351,7 +351,7 @@ export default function InsuranceInformationStep({ data, onChange }: InsuranceIn
                                                             <div className="text-center">
                                                                 <IdentificationCardIcon className="mx-auto h-12 w-12 text-muted-foreground" />
                                                                 <div className="mt-2">
-                                                                    <Button 
+                                                                    <Button
                                                                         variant="outline"
                                                                         onClick={() => document.getElementById(`front-upload-${index}`)?.click()}
                                                                     >
@@ -383,14 +383,14 @@ export default function InsuranceInformationStep({ data, onChange }: InsuranceIn
                                                     <div className="mt-2 border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
                                                         {insurance.card_back_image ? (
                                                             <div className="space-y-2">
-                                                                <img 
-                                                                    src={insurance.card_back_image} 
-                                                                    alt="Insurance card back" 
+                                                                <img
+                                                                    src={insurance.card_back_image}
+                                                                    alt="Insurance card back"
                                                                     className="w-full h-32 object-cover rounded"
                                                                 />
-                                                                <Button 
-                                                                    variant="outline" 
-                                                                    size="sm" 
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
                                                                     onClick={() => document.getElementById(`back-upload-${index}`)?.click()}
                                                                 >
                                                                     Replace Image
@@ -400,7 +400,7 @@ export default function InsuranceInformationStep({ data, onChange }: InsuranceIn
                                                             <div className="text-center">
                                                                 <IdentificationCardIcon className="mx-auto h-12 w-12 text-muted-foreground" />
                                                                 <div className="mt-2">
-                                                                    <Button 
+                                                                    <Button
                                                                         variant="outline"
                                                                         onClick={() => document.getElementById(`back-upload-${index}`)?.click()}
                                                                     >
@@ -450,8 +450,8 @@ export default function InsuranceInformationStep({ data, onChange }: InsuranceIn
                                                         )}
                                                     </div>
                                                 </div>
-                                                
-                                                <Button 
+
+                                                <Button
                                                     onClick={() => verifyInsurance(index)}
                                                     disabled={verifyingInsurance === insurance.id}
                                                     variant={insurance.verification_status === 'verified' ? 'outline' : 'default'}
@@ -501,8 +501,8 @@ export default function InsuranceInformationStep({ data, onChange }: InsuranceIn
 
                                     {/* Remove Insurance */}
                                     <div className="flex justify-end">
-                                        <Button 
-                                            variant="outline" 
+                                        <Button
+                                            variant="outline"
                                             onClick={() => removeInsurance(index)}
                                             className="text-red-600 hover:text-red-700"
                                         >
