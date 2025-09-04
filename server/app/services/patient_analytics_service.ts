@@ -84,25 +84,26 @@ interface RetentionMetrics {
     }[]
 }
 
-interface SatisfactionScoring {
-    overallSatisfaction: number
-    categoryScores: {
-        category: string
-        score: number
-        responseCount: number
-    }[]
-    npsScore: number
-    satisfactionTrends: {
-        period: string
-        score: number
-        responseCount: number
-    }[]
-    topComplaints: {
-        issue: string
-        frequency: number
-        category: string
-    }[]
-}
+// TODO: This interface will be used for future satisfaction scoring features
+// interface SatisfactionScoring {
+//     overallSatisfaction: number
+//     categoryScores: {
+//         category: string
+//         score: number
+//         responseCount: number
+//     }[]
+//     npsScore: number
+//     satisfactionTrends: {
+//         period: string
+//         score: number
+//         responseCount: number
+//     }[]
+//     topComplaints: {
+//         issue: string
+//         frequency: number
+//         category: string
+//     }[]
+// }
 
 interface PredictiveHealthAnalytics {
     highRiskPatients: {
@@ -314,8 +315,8 @@ export default class PatientAnalyticsService {
         let reschedules = 0
 
         for (const appointment of appointments) {
-            // Appointment types
-            const type = appointment.appointmentType || 'general'
+            // Appointment types - using notes as type indicator for now
+            const type = appointment.notes || 'general'
             if (!appointmentTypes[type]) {
                 appointmentTypes[type] = { count: 0, totalDuration: 0 }
             }
@@ -323,11 +324,11 @@ export default class PatientAnalyticsService {
             appointmentTypes[type].totalDuration += 30 // Default 30 minutes
 
             // Peak hours
-            const hour = appointment.appointmentDate.getHours()
+            const hour = appointment.appointmentDate.hour
             hourCounts[hour] = (hourCounts[hour] || 0) + 1
 
             // Busy days
-            const dayOfWeek = appointment.appointmentDate.toLocaleDateString('en-US', { weekday: 'long' })
+            const dayOfWeek = appointment.appointmentDate.toFormat('cccc') // 'Monday', 'Tuesday', etc.
             dayCounts[dayOfWeek] = (dayCounts[dayOfWeek] || 0) + 1
 
             // Status counts (mock data)
@@ -384,7 +385,7 @@ export default class PatientAnalyticsService {
             } else {
                 // Check if they had appointments in this period
                 const hasAppointmentInPeriod = appointments.some(apt => {
-                    const aptDate = DateTime.fromJSDate(apt.appointmentDate)
+                    const aptDate = apt.appointmentDate // already a DateTime object
                     return aptDate >= periodStart && aptDate <= periodEnd
                 })
 
@@ -396,10 +397,10 @@ export default class PatientAnalyticsService {
             // Risk assessment
             if (appointments.length > 0) {
                 const lastAppointment = appointments.sort((a, b) =>
-                    b.appointmentDate.getTime() - a.appointmentDate.getTime()
+                    b.appointmentDate.toMillis() - a.appointmentDate.toMillis()
                 )[0]
 
-                const lastVisit = DateTime.fromJSDate(lastAppointment.appointmentDate)
+                const lastVisit = lastAppointment.appointmentDate // already a DateTime object
                 const daysSinceLastVisit = DateTime.now().diff(lastVisit, 'days').days
 
                 if (daysSinceLastVisit > 365) { // More than a year
@@ -578,7 +579,7 @@ export default class PatientAnalyticsService {
         return conditions
     }
 
-    private generateRecommendedActions(riskFactors: string[], patient: any): string[] {
+    private generateRecommendedActions(riskFactors: string[], _patient: any): string[] {
         const actions: string[] = []
 
         if (riskFactors.includes('Advanced age')) {

@@ -276,7 +276,7 @@ export default class ClinicalDataService {
     /**
      * Calculate patient risk score
      */
-    async calculateRiskScore(patientId: string, demographics: any, allergies: PatientAllergy[], medications: PatientMedication[]): Promise<RiskScore> {
+    async calculateRiskScore(_patientId: string, demographics: any, allergies: PatientAllergy[], medications: PatientMedication[]): Promise<RiskScore> {
         const factors: Array<{ category: string, factor: string, impact: number, weight: number }> = []
 
         // Age factor
@@ -338,7 +338,7 @@ export default class ClinicalDataService {
     /**
      * Generate preventive care reminders
      */
-    async generatePreventiveCareReminders(patientId: string, age: number, gender: string): Promise<PreventiveCareReminder[]> {
+    async generatePreventiveCareReminders(_patientId: string, age: number, gender: string): Promise<PreventiveCareReminder[]> {
         const reminders: PreventiveCareReminder[] = []
 
         // Age and gender-based screenings

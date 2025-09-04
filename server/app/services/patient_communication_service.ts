@@ -5,27 +5,28 @@ import Appointment from '#models/appointment'
 import PatientAllergy from '#models/patient_allergy'
 import PatientMedication from '#models/patient_medication'
 
-interface CommunicationMessage {
-    id: string
-    patientId: string
-    type: 'sms' | 'email' | 'call' | 'push_notification'
-    template: string
-    subject?: string
-    content: string
-    variables: Record<string, any>
-    scheduledFor: DateTime
-    status: 'pending' | 'sent' | 'failed' | 'delivered' | 'read'
-    metadata: Record<string, any>
-}
+// TODO: These interfaces will be used for future communication features
+// interface CommunicationMessage {
+//     id: string
+//     patientId: string
+//     type: 'sms' | 'email' | 'call' | 'push_notification'
+//     template: string
+//     subject?: string
+//     content: string
+//     variables: Record<string, any>
+//     scheduledFor: DateTime
+//     status: 'pending' | 'sent' | 'failed' | 'delivered' | 'read'
+//     metadata: Record<string, any>
+// }
 
-interface AppointmentReminder {
-    appointmentId: string
-    patientId: string
-    reminderTime: DateTime
-    reminderType: 'sms' | 'email' | 'call'
-    content: string
-    status: 'scheduled' | 'sent' | 'failed'
-}
+// interface AppointmentReminder {
+//     appointmentId: string
+//     patientId: string
+//     reminderTime: DateTime
+//     reminderType: 'sms' | 'email' | 'call'
+//     content: string
+//     status: 'scheduled' | 'sent' | 'failed'
+// }
 
 interface HealthTip {
     id: string

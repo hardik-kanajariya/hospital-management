@@ -5,7 +5,8 @@ import app from '@adonisjs/core/services/app'
 import { cuid } from '@adonisjs/core/helpers'
 import fs from 'fs/promises'
 import path from 'path'
-import sharp from 'sharp'
+// TODO: Install sharp for image processing: npm install sharp
+// import sharp from 'sharp'
 
 interface DocumentUploadResult {
     document: PatientDocument
@@ -319,13 +320,17 @@ export default class DocumentService {
         const thumbnailPath = path.join(this.THUMBNAIL_PATH, thumbnailFilename)
 
         try {
-            await sharp(filePath)
-                .resize(200, 200, {
-                    fit: 'inside',
-                    withoutEnlargement: true
-                })
-                .jpeg({ quality: 80 })
-                .toFile(thumbnailPath)
+            // TODO: Implement thumbnail generation when sharp is installed
+            // await sharp(filePath)
+            //     .resize(200, 200, {
+            //         fit: 'inside',
+            //         withoutEnlargement: true
+            //     })
+            //     .jpeg({ quality: 80 })
+            //     .toFile(thumbnailPath)
+
+            // For now, just copy the original file as thumbnail
+            await fs.copyFile(filePath, thumbnailPath)
 
             return `thumbnails/${thumbnailFilename}`
         } catch (error) {
@@ -337,15 +342,18 @@ export default class DocumentService {
     /**
      * Optimize document size
      */
-    private async optimizeDocument(filePath: string, extension: string): Promise<void> {
+    private async optimizeDocument(_filePath: string, extension: string): Promise<void> {
         if (this.isImageFile(extension)) {
             try {
-                await sharp(filePath)
-                    .jpeg({ quality: 85, progressive: true })
-                    .toFile(`${filePath}.optimized`)
+                // TODO: Implement image optimization when sharp is installed
+                // await sharp(filePath)
+                //     .jpeg({ quality: 85, progressive: true })
+                //     .toFile(`${filePath}.optimized`)
 
                 // Replace original with optimized version
-                await fs.rename(`${filePath}.optimized`, filePath)
+                // await fs.rename(`${filePath}.optimized`, filePath)
+                
+                console.log('Image optimization skipped - sharp not installed')
             } catch (error) {
                 console.error('Image optimization failed:', error)
             }
