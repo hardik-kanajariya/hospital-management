@@ -6,7 +6,7 @@
 - Review CodeCanyon's latest documentation requirements
 - Study top-selling hospital management systems on CodeCanyon for documentation standards
 - Create a checklist of mandatory documentation sections:
-  - Installation Guide (with video)
+  - Installation Guide
   - User Manual (role-based)
   - API Documentation
   - Customization Guide

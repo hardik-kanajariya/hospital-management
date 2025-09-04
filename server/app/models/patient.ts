@@ -1,9 +1,19 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
-import type { HasMany } from '@adonisjs/lucid/types/relations'
+import { BaseModel, column, hasMany, hasOne } from '@adonisjs/lucid/orm'
+import type { HasMany, HasOne } from '@adonisjs/lucid/types/relations'
 import Appointment from './appointment.js'
 import Bill from './bill.js'
 import MedicalRecord from './medical_record.js'
+import PatientDemographics from './patient_demographics.js'
+import PatientInsurance from './patient_insurance.js'
+import PatientAllergy from './patient_allergy.js'
+import PatientMedication from './patient_medication.js'
+import PatientImmunization from './patient_immunization.js'
+import PatientFamilyHistory from './patient_family_history.js'
+import PatientDocument from './patient_document.js'
+import PatientConsent from './patient_consent.js'
+import PatientPortalAccess from './patient_portal_access.js'
+import PatientCommunicationPreferences from './patient_communication_preferences.js'
 
 export default class Patient extends BaseModel {
     public static readonly deletedAtColumn = 'deleted_at'
@@ -195,4 +205,35 @@ export default class Patient extends BaseModel {
 
     @hasMany(() => Bill)
     declare bills: HasMany<typeof Bill>
+
+    // Enhanced Patient Data Relationships
+    @hasOne(() => PatientDemographics)
+    declare demographics: HasOne<typeof PatientDemographics>
+
+    @hasMany(() => PatientInsurance)
+    declare insurances: HasMany<typeof PatientInsurance>
+
+    @hasMany(() => PatientAllergy)
+    declare allergyRecords: HasMany<typeof PatientAllergy>
+
+    @hasMany(() => PatientMedication)
+    declare currentMedications: HasMany<typeof PatientMedication>
+
+    @hasMany(() => PatientImmunization)
+    declare immunizations: HasMany<typeof PatientImmunization>
+
+    @hasMany(() => PatientFamilyHistory)
+    declare familyHistory: HasMany<typeof PatientFamilyHistory>
+
+    @hasMany(() => PatientDocument)
+    declare documents: HasMany<typeof PatientDocument>
+
+    @hasMany(() => PatientConsent)
+    declare consents: HasMany<typeof PatientConsent>
+
+    @hasOne(() => PatientPortalAccess)
+    declare portalAccess: HasOne<typeof PatientPortalAccess>
+
+    @hasOne(() => PatientCommunicationPreferences)
+    declare communicationPreferences: HasOne<typeof PatientCommunicationPreferences>
 }

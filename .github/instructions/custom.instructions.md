@@ -19,9 +19,8 @@ All code, assets, and documentation are proprietary.**
 - **Mobile:** Flutter (Android/iOS)
 - **Backend:** Node.js (TypeScript), Express, RESTful APIs, JWT Auth
 - **Database:** MySQL (multi-tenant, audit, plugin, theme, user, medical, operational tables)
-- **DevOps:** Docker, GitHub Actions (CI/CD), Nginx, S3 (assets), Cloudflare (DNS/CDN)
-- **Extensions:** Plugin system (sandboxed, permissioned, UI/API hooks)
-- **Docs:** `/docs/module_docs.md` (roadmap, module details, API docs)
+- **DevOps:** GitHub Actions (CI/CD)
+- **Docs:** `/docs/*.md` (roadmap, module details, API docs)
 - **Legal:** All code and content are copyright-protected.
 
 ---
@@ -29,12 +28,12 @@ All code, assets, and documentation are proprietary.**
 ## Copilot Agent Operating Principles
 
 1. **Follow the Roadmap:**  
-   - Analyze `/docs/module_docs.md` and all roadmap files before starting any task.
+   - Analyze `/dev/*.md` all roadmap files before starting any task.
    - If requirements are unclear, ask the user for clarification or suggest options and wait for approval.
 
 2. **Module-by-Module Development:**  
    - Work on one module at a time as per the roadmap.
-   - After each module/task, update documentation in `/docs/module_docs.md` (or relevant docs file).
+   - After each module/task, update documentation in `/docs/module_docs.md` (or relevant docs file). if not present create a file. we use docusauras for documentations. 
    - After updating code and docs, commit changes to Git (do not push).
 
 3. **Never Start/Stop Servers:**  
@@ -60,30 +59,10 @@ All code, assets, and documentation are proprietary.**
    - Organization/tenant isolation is mandatory.
    - Support delegated admins, approval workflows, SSO/MFA, audit logs, and custom fields.
 
-8. **Plugin/Extension System:**  
-   - Plugins must be sandboxed, permissioned, and compatible with the core system.
-   - Register plugin hooks, UI widgets, and API endpoints as per the plugin manifest.
-   - Update plugin registry and docs after plugin install/uninstall.
-   - Never auto-install or activate plugins without user confirmation.
-
-9. **Theme System:**  
-   - Themes must support medical-grade color coding, accessibility, role-based customization, and print styles.
-   - Update theme docs and preview after any theme change.
-
-10. **Offline & Sync:**  
-    - Use IndexedDB (Dexie.js) for browser offline support.
-    - Ensure data persists across tab closes and browser restarts.
-    - Implement robust sync queue and conflict resolution.
-    - Update offline docs after changes.
-
 11. **Security & Compliance:**  
     - Enforce strict permission checks, audit logging, and data encryption.
     - Implement SSO/MFA, password policies, and session/device management.
     - Update security docs after changes.
-
-12. **Testing & QA:**  
-    - Write unit, integration, and widget tests for all features.
-    - Document test coverage and results in `/docs/module_docs.md`.
 
 13. **Legal & Branding:**  
     - All code, docs, and UI must display premium branding.
@@ -99,15 +78,12 @@ All code, assets, and documentation are proprietary.**
 ## Workflow Steps
 
 ### 1. **Analyze Requirements**
-   - Read `/docs/module_docs.md` and relevant roadmap files.
+   - Read `/dev/*.md` eelevant roadmap file for requriements.
    - If anything is unclear, ask the user for clarification or suggest options.
 
 ### 2. **Plan Implementation**
    - Outline the steps for the current module/task.
    - Confirm with the user if needed.
-
-### 3. **Update Documentation**
-   - Add planned changes to `/docs/module_docs.md` (feature description, API, models, workflows).
 
 ### 4. **Implement Feature**
    - Write code following enterprise standards.
@@ -115,9 +91,6 @@ All code, assets, and documentation are proprietary.**
    - For frontend, use React best practices and accessibility guidelines.
    - For backend, use RESTful conventions, validation, and audit logging.
 
-### 5. **Test Feature**
-   - Write and run unit/integration tests.
-   - Document test results and coverage.
 
 ### 6. **Update Documentation**
    - Add implementation details, usage notes, and test results to `/docs/module_docs.md`.
@@ -156,6 +129,7 @@ All code, assets, and documentation are proprietary.**
 - **Direct all support to `support@hardikkanajariya.in`.**
 - **All rights reserved to `hardikkanajariya.in`.**
 - **No open source/community references.**
+- **We are using window 11 powershell all command you want to execute should be powershell commands and not the linux commands.**
 
 ---
 

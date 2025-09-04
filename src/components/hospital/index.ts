@@ -24,6 +24,9 @@ export * from './inventory'
 // Facilities
 export * from './facilities'
 
+// Bed Management
+export * from './bed-management'
+
 // Dashboard
 export * from './dashboard'
 

@@ -94,6 +94,7 @@ router.group(() => {
 
     // Patient management routes
     router.group(() => {
+      // Basic CRUD operations
       router.get('/', '#controllers/patients_controller.index')
       router.get('/stats', '#controllers/patients_controller.stats')
       router.get('/search', '#controllers/patients_controller.search')
@@ -101,6 +102,35 @@ router.group(() => {
       router.post('/', '#controllers/patients_controller.store')
       router.put('/:id', '#controllers/patients_controller.update')
       router.delete('/:id', '#controllers/patients_controller.destroy')
+
+      // Phase 3: Enhanced API endpoints
+      router.get('/advanced-search', '#controllers/patients_controller.advancedSearch')
+      router.get('/:id/complete-profile', '#controllers/patients_controller.completeProfile')
+      router.get('/:id/timeline', '#controllers/patients_controller.medicalTimeline')
+
+      // Allergy management
+      router.get('/:id/allergies', '#controllers/patients_controller.getAllergies')
+      router.post('/:id/allergies', '#controllers/patients_controller.addAllergy')
+
+      // Medication management
+      router.get('/:id/medications/current', '#controllers/patients_controller.getCurrentMedications')
+      router.post('/:id/medications', '#controllers/patients_controller.addMedication')
+      router.post('/:id/medications/:medicationId/discontinue', '#controllers/patients_controller.discontinueMedication')
+
+      // Insurance management
+      router.get('/:id/insurances', '#controllers/patients_controller.getInsurances')
+      router.post('/:id/insurances', '#controllers/patients_controller.addInsurance')
+
+      // Communication preferences
+      router.get('/:id/communications/preferences', '#controllers/patients_controller.getCommunicationPreferences')
+      router.put('/:id/communications/preferences', '#controllers/patients_controller.updateCommunicationPreferences')
+
+      // Consent management
+      router.get('/:id/consents', '#controllers/patients_controller.getConsents')
+      router.post('/:id/consents', '#controllers/patients_controller.addConsent')
+      router.put('/:id/consents/:consentId/revoke', '#controllers/patients_controller.revokeConsent')
+
+      // Legacy endpoints (maintaining backward compatibility)
       router.get('/:id/medical-history', '#controllers/patients_controller.medicalHistory')
       router.get('/:id/appointments', '#controllers/patients_controller.appointments')
       router.get('/:id/bills', '#controllers/patients_controller.bills')
@@ -262,14 +292,41 @@ router.group(() => {
     // Bed management routes
     router.group(() => {
       router.get('/', '#controllers/beds_controller.index')
+      router.get('/occupancy-stats', '#controllers/beds_controller.occupancyStats')
+      router.get('/available', '#controllers/beds_controller.available')
       router.get('/:id', '#controllers/beds_controller.show')
       router.post('/', '#controllers/beds_controller.store')
       router.put('/:id', '#controllers/beds_controller.update')
       router.delete('/:id', '#controllers/beds_controller.destroy')
-      router.get('/available', '#controllers/beds_controller.available')
       router.post('/:id/assign', '#controllers/beds_controller.assign')
       router.post('/:id/discharge', '#controllers/beds_controller.discharge')
+      router.post('/:id/clean', '#controllers/beds_controller.clean')
+      router.post('/:id/maintain', '#controllers/beds_controller.maintain')
     }).prefix('/beds')
+
+    // Room management routes
+    router.group(() => {
+      router.get('/', '#controllers/rooms_controller.index')
+      router.post('/', '#controllers/rooms_controller.store')
+      router.get('/availability', '#controllers/rooms_controller.availability')
+      router.get('/available-for-admission', '#controllers/rooms_controller.availableForAdmission')
+      router.get('/:id', '#controllers/rooms_controller.show')
+      router.put('/:id', '#controllers/rooms_controller.update')
+      router.delete('/:id', '#controllers/rooms_controller.destroy')
+    }).prefix('/rooms')
+
+    // Admission management routes
+    router.group(() => {
+      router.get('/', '#controllers/admissions_controller.index')
+      router.post('/', '#controllers/admissions_controller.store')
+      router.get('/statistics', '#controllers/admissions_controller.statistics')
+      router.get('/:id', '#controllers/admissions_controller.show')
+      router.put('/:id', '#controllers/admissions_controller.update')
+      router.post('/:id/discharge', '#controllers/admissions_controller.discharge')
+      router.post('/:id/transfer', '#controllers/admissions_controller.transfer')
+      router.get('/:id/bill-summary', '#controllers/admissions_controller.billSummary')
+      router.post('/:id/charges', '#controllers/admissions_controller.addCharge')
+    }).prefix('/admissions')
 
     // Prescription routes
     router.group(() => {
